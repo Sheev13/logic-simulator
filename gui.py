@@ -8,7 +8,6 @@ Classes:
 MyGLCanvas - handles all canvas drawing operations.
 Gui - configures the main window and all the widgets.
 """
-from django.shortcuts import redirect
 from matplotlib.ft2font import VERTICAL
 import wx
 import os
@@ -35,8 +34,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     This class contains functions for drawing onto the canvas. It
     also contains handlers for events relating to the canvas.
-
     
+    Parameters
     ----------
     parent: parent window.
     devices: instance of the devices.Devices() class.
@@ -333,7 +332,6 @@ class Gui(wx.Frame):
         # Configure sizers for layout
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
         side_sizer = wx.BoxSizer(wx.VERTICAL)
-        #side_sizer.SetDimension(0, 0, 400, wx.EXPAND)
 
         # Sizers to be contained within side_sizer
         file_name_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -350,19 +348,16 @@ class Gui(wx.Frame):
         main_sizer.Add(side_sizer, 5, wx.EXPAND | wx.ALL, 5)
         main_sizer.Add(self.canvas, 10, wx.EXPAND | wx.ALL, 5)
 
-        # Add sizers to side_szer
+        # Add sizers to side_sizer
         side_sizer.Add(manual_settings_sizer, 1, wx.ALL, 5)
-        #side_sizer.AddStretchSpacer()
         side_sizer.Add(cycles_sizer, 0, wx.LEFT, 5)
         side_sizer.Add(go_sizer, 0, wx.LEFT, 5)
         side_sizer.Add(command_line_sizer, 0, wx.LEFT, 5)
         
-
         #Add widgets to smaller sizers
         command_line_sizer.Add(self.command_line_input, 1, wx.ALL, 5)
 
         manual_settings_sizer.Add(file_name_sizer, 1, wx.TOP, 5)
-        #manual_settings_sizer.AddStretchSpacer()
         manual_settings_sizer.Add(self.switches_text, 0, wx.ALL, 5)
         manual_settings_sizer.Add(switch_buttons_sizer, 0, wx.ALL, 5)
         manual_settings_sizer.Add(monitors_sizer)
@@ -388,9 +383,7 @@ class Gui(wx.Frame):
         
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
-        
         self.Layout()
-
 
     def on_menu(self, event):
         """Handle the event when the user selects a menu item."""
@@ -402,7 +395,6 @@ class Gui(wx.Frame):
                           "About Logsim", wx.ICON_INFORMATION | wx.OK)
         if Id == wx.ID_HELP_COMMANDS:
             wx.MessageBox(self.help_string, "User Guide", wx.ICON_INFORMATION | wx.OK)
-
 
     def on_browse(self, event):
         """Handle the event when user wants to find circuit definition file."""
@@ -424,21 +416,17 @@ class Gui(wx.Frame):
         #     self.devices = parser[1]
         #     self.network = parser[2]
         #     self.monitors = parser[3]
-
-        
-        
+   
     def on_spin_cycles(self, event):
         """Handle the event when the user changes the number of cycles."""
         cycles = self.spin_cycles.GetValue()
         text = "".join(["Number of cycles: ", str(cycles)])
         self.canvas.render(text)
 
-
     def on_run_button(self, event):
         """Handle the event when the user clicks the run button."""
         text = "Run button pressed."
         self.canvas.render(text)
-
 
     def on_switch_button(self, event):
         """Handle the event when the user clicks the switch button."""
@@ -578,7 +566,6 @@ class Gui(wx.Frame):
         else:
             text = "Invalid monitor"
         self.canvas.render(text)
-
 
 paleyellow = wx.Colour(252, 251, 241)
 lightblue = wx.Colour(225, 239, 246)
