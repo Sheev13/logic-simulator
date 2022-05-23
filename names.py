@@ -55,12 +55,15 @@ class Names:
 
         If the name string is not present in the names list, return None.
         """
+        # TODO: similar to prelim (single string -> single id) NO addition
 
     def lookup(self, name_string_list):
         """Return a list of name IDs for each name string in name_string_list.
 
         If the name string is not present in the names list, add it.
         """
+        # TODO: similar to preliminary work but now accepts and return lists
+
 
     def get_name_string(self, name_id):
         """Return the corresponding name string for name_id.
