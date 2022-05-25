@@ -8,6 +8,8 @@ Classes
 Scanner - reads definition file and translates characters into symbols.
 Symbol - encapsulates a symbol and stores its properties.
 """
+import sys
+import pathlib
 
 
 class Symbol:
@@ -27,6 +29,8 @@ class Symbol:
         """Initialise symbol properties."""
         self.type = None
         self.id = None
+        self.line = None
+        self.pos = None
 
 
 class Scanner:
@@ -51,6 +55,96 @@ class Scanner:
 
     def __init__(self, path, names):
         """Open specified file and initialise reserved words and IDs."""
+        self.f = self._open_file(path)
+        self.names = names
+        self.symbol_types = [self.PUNCTUATION, self.KEYWORD, self.NUMBER, self.NAME] = range(4)
+        self.keywords = ["CIRCUIT", "DEVICES", "CONNECTIONS", "MONITOR"]
+        self.puncs = [":", "[", "]", "{", "}", ";", ",", "."] # could treat them each as own symbol type
+        self.current_char = ""
+
+    def _open_file(self, path):
+        """Open and return the file specified by path."""
+        directory = pathlib.Path().resolve()
+
+        try:
+            return open(path)
+        except FileNotFoundError:
+            print("File '", path, "' either does not exist or is not in '", directory, "'", sep='')
+            sys.exit()
+
+    def _next(self):
+        """Reads the next character in the definition file"""
+        self.current_char = self.f.read(1)
+        return self.current_char
+
+    def _next_non_ws(self):
+        """Reads the next non-whitespace character in the definition file"""
+        while self._next().isspace():
+            pass # keep looping
+        return self.current_char
+
+    def _next_non_sc(self):
+        """Reads the next non-semicolon character in the file"""
+        while self._next_non_ws() == ";":
+            pass # keep looping
+        return self.current_char
+    
+    def _next_name(self):
+        """Reads the file as necessary to return the next name string.
+        Assumes current_char at time of function call is alphabetic"""
+        name = ""
+        while self.current_char.isalnum():
+            name += self.current_char
+            self._next()
+        return name
+
+    def _next_number(self):
+        """Reads the file as necessary to return the next number as an int.
+        Assumes current_char at time of functionc all is numeric"""
+        n = ""
+        while self.current_char.isdigit():
+            n += self.current_char
+            self._next()
+        return int(n)
 
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
+        sym = Symbol()
+        self._next_non_ws()
+
+        # name/keyword
+        if self.current_char.isalpha(): 
+            name_string = self._next_name()
+            if name_string in self.keywords:
+                sym.type = self.KEYWORD
+            else:
+                sym.type = self.NAME
+            [sym.id] = self.names.lookup([name_string])
+
+        # number
+        elif self.current_char.isdigit():
+            sym.type = self.NUMBER
+            sym.id = self._next_number()
+
+        # punctuation
+        elif self.current_char in self.puncs:
+            sym.type = self.PUNCTUATION
+            #sym.id = #TODO
+
+        # end of file
+        elif self.current_char == "":
+            pass 
+            #TODO
+            # introduce a self.EOF symbol?
+
+        # invalid char
+        else:
+            pass
+            #TODO
+            # throw error? just move on?
+    
+    def show_error(self):
+        """prints current input line and a carrot on the line below
+        at erroneous location"""
+        pass
+        #TODO
