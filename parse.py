@@ -39,8 +39,10 @@ class Parser:
         self.names = names
         self.devices = devices
         self.network = network
-        self. monitors = monitors
+        self.monitors = monitors
         self.scanner = scanner
+
+        self.error_count = 0
 
         self.symbol = None
         # given by scanner
@@ -64,10 +66,11 @@ class Parser:
             if self.symbol.id == self.scanner.DEVICES:
                 # device_list has been found
                 self.parse_device_list()
-
+                devices_done = True
             # etc etc for other 'lists'
 
 
+        #TODO: deal with connections coming before devices...
 
 
         return True
@@ -81,65 +84,125 @@ class Parser:
 
         if self.symbol.type != self.scanner.COLON:
             self.error("syntax", "Expected a ':' symbol")
-            return False
 
         self.symbol = self.scanner.get_symbol()
 
         if self.symbol.type != self.scanner.OPEN_SQUARE:
             self.error("syntax", "Expected a '[' symbol")
-            return False
 
         parsing_devices = True
         while parsing_devices:
             parsing_devices = self.parse_device()
 
-        self.symbol = self.scanner.get_symbol()
-
+        #self.symbol = self.scanner.get_symbol()
         if self.symbol.type != self.scanner.CLOSE_SQAURE:
             self.error("syntax", "Expected a ']' symbol")
-            return False
 
         self.symbol.type = self.scanner.get_symbol()
         if self.symbol != self.scanner.SEMICOLON:
             self.error("syntax", "Expected a ';' symbol")
-            return False
-
-        return True
 
     def parse_device(self):
+        print("parsing a device")
+
         self.symbol = self.scanner.get_symbol()
         if self.symbol.type != self.scanner.OPEN_CURLY:
             self.error("syntax", "Expected a '{' symbol")
-            return False  # not sure about these anymore
 
         self.symbol = self.scanner.get_symbol()
-        self.device()
-        # TODO: need to change EBNF so we can do this
-        # TODO: change from semicolon to comma? or not necessary
-        while self.symbol.type == self.scanner.SEMICOLON:
-            self.symbol = self.scanner.get_symbol()  # write helper function
-            self.device()
-
-        if self.symbol.type == self.scanner.CLOSE_CURLY:
+        if self.symbol.type == self.scanner.ID_KEYWORD:
             self.symbol = self.scanner.get_symbol()
+            if self.symbol.type == self.scanner.COLON:
+                # TODO: check this statement
+                # should it be "u provided a punctuation mark instead of a valid name"
+                # or maybe just "name *%^&*% is invalid"
+                self.symbol = self.scanner.get_symbol()
+                if self.symbol.type == self.scanner.NAME:
+                    print("valid id for a device")
+                    # make note of the device name for the build later (if no errors)
+                    # dev_id = self.symbol.as_string  # maybe this is just
+                    # lookup/query... sort out later
+                else:
+                    self.error("semantic",
+                               "device name provided is invalid/eg. not "
+                               "alnum")
+            else:
+                self.error("syntax", "Expected ':' delimiter")
         else:
+            self.error("syntax", "Expected 'id'")
+
+        self.symbol = self.scanner.get_symbol()
+        if self.symbol.type != self.scanner.SEMICOLON:
+            self.error("syntax", "Expected ';'")
+
+        self.symbol = self.scanner.get_symbol()
+        if self.symbol.type == self.scanner.KIND_KEYWORD:
+            self.symbol = self.scanner.get_symbol()
+            if self.symbol.type == self.scanner.COLON:
+                self.symbol = self.scanner.get_symbol()
+                # TODO: this might be instead: is symbol.as_string in
+                #  allowed_devices_list?
+                if self.symbol.type == self.scanner.DEV_KIND:
+                    print("valid type of device")
+                    # dev_kind
+                else:
+                    self.error("semantic", "Device type not supported")
+            else:
+                self.error("syntax", "Expected ':' delimiter")
+        else:
+            self.error("syntax", "Expected 'kind'")
+
+        self.symbol = self.scanner.get_symbol()
+        if self.symbol.type != self.scanner.SEMICOLON:
+            self.error("syntax", "Expected ';'")
+
+        self.symbol = self.scanner.get_symbol()
+        if self.symbol.type == self.scanner.QUAL_KEYWORD:
+            self.symbol = self.scanner.get_symbol()
+            if self.symbol.type == self.scanner.COLON:
+                self.symbol = self.scanner.get_symbol()
+                # TODO: this might be instead: is symbol.as_string a valid qual?
+                if self.symbol.type == self.scanner.DEV_QUAL:
+                    print("valid qualifier")
+                    # store for making device later
+                    # qual = self.symbol
+                else:
+                    self.error("semantic", "Unsupported qualifier input")
+            else:
+                self.error("syntax", "Expected ':' delimiter")
+        else:
+            self.error("syntax", "Expected 'qual'")
+
+        self.symbol = self.scanner.get_symbol()
+        if self.symbol.type != self.scanner.SEMICOLON:
+            self.error("syntax", "Expected ';'")
+
+        # TODO: need to clarify the error recovery stuff.... not sure this
+        #  code will work anymore :/
+
+        self.symbol = self.scanner.get_symbol()
+        if self.symbol.type != self.scanner.CLOSE_CURLY:
             self.error("syntax", "Expected a '}' symbol")
 
-        if self.symbol.type == self.scanner.SEMICOLON:
-            self.symbol = self.scanner.get_symbol()
+        self.symbol = self.scanner.get_symbol()
+        if self.symbol.type != self.scanner.SEMICOLON:
+            self.error("syntax", "Expected ';'")
+
+        if self.error_count == 0:
+            print("no errors when parsing device --> proceed to build")
+
+        #TODO: figure out how to detect errors after the end of parsing...?
+        # is it just when u go back to main function? probs
+
+        self.symbol = self.scanner.get_symbol()
+        if self.symbol == self.scanner.OPEN_CURLY:
+            keep_parsing = True
+        elif self.symbol == self.scanner.CLOSE_SQAURE:
+            keep_parsing = False
         else:
-            self.error("syntax", "Expected a ';' symbol")
+            self.error("syntax", "something")
 
-    def device(self):
-        # find 'id' --> then find : and name() and ;
-        # find kind --> then find : and name() and ;
-        # find qual --> then find : and int() and ;
-
-        # maybe the curly braces go in here?
-        pass
-
-
-
+        return keep_parsing
 
 
 
@@ -147,4 +210,6 @@ class Parser:
         # access to the offending symbol is via self.symbol
         # still a bit confused about error recovery / show all syntax errors
         # at once
-        pass
+        self.error_count += 1
+        if error_type == "syntax":
+            raise SyntaxError(message)
