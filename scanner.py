@@ -137,6 +137,10 @@ class Scanner:
         elif self.current_char == "":
             sym.type = self.EOF
 
+        # newline character
+        elif self.current_char == "\n":
+            self._next()
+
         # invalid char
         else:
             self._next()
@@ -144,6 +148,11 @@ class Scanner:
             # throw error? just move on?
 
         return sym
+
+    def _get_error_line(self):
+        """returns erroneous line as a string"""
+        pass
+        #TODO
     
     def show_error(self):
         """Public function that prints current input line and a carrot on the 
