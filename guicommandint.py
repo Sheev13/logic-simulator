@@ -18,10 +18,12 @@ class GuiCommandInterface:
 
     Parameters
     -----------
+    line: user input from GUI command line.
     names: instance of the names.Names() class.
     devices: instance of the devices.Devices() class.
     network: instance of the network.Network() class.
     monitors: instance of the monitors.Monitors() class.
+    cycles_completed: number of completed cycles.
 
     Public methods:
     ---------------
@@ -62,7 +64,7 @@ class GuiCommandInterface:
     continue_command(self): Continues a previously run simulation.
     """
     
-    def __init__(self, line, names, devices, network, monitors):
+    def __init__(self, line, names, devices, network, monitors, cycles_completed=0):
         """Initialise variables."""
         self.names = names
         self.devices = devices
@@ -70,7 +72,7 @@ class GuiCommandInterface:
         self.network = network
         self.line = line
 
-        self.cycles_completed = 0  # number of simulation cycles completed
+        self.cycles_completed = cycles_completed  # number of simulation cycles completed
 
         self.character = ""  # current character
         self.cursor = 0  # cursor position
@@ -132,7 +134,7 @@ class GuiCommandInterface:
         if name_string is None:
             return None
         else:
-            name_id = self.names.query(name_string)
+            name_id = self.names.query(name_string.upper())
         if name_id is None:
             print("Error! Unknown name.")
         return name_id
@@ -200,8 +202,8 @@ class GuiCommandInterface:
             monitor_error = self.monitors.make_monitor(device, port,
                                                        self.cycles_completed)
             if monitor_error == self.monitors.NO_ERROR:
-                return "Successfully made monitor.", monitor
-        return "Error! Could not make monitor.", None
+                return "Successfully made monitor.", [self.monitors, monitor]
+        return "Error! Could not make monitor.", [self.monitors, monitor]
 
     def zap_command(self):
         """Remove the specified monitor."""
@@ -209,8 +211,8 @@ class GuiCommandInterface:
         if monitor is not None:
             [device, port] = monitor
             if self.monitors.remove_monitor(device, port):
-                return "Successfully zapped monitor.", monitor
-        return "Error! Could not zap monitor.", None
+                return "Successfully zapped monitor.", [self.monitors, monitor]
+        return "Error! Could not zap monitor.", [self.monitors, monitor]
 
     def run_network(self, cycles):
         """Run the network for the specified number of simulation cycles.
@@ -223,7 +225,7 @@ class GuiCommandInterface:
             else:
                 print("Error! Network oscillating.")
                 return False
-        self.monitors.display_signals()
+        self.monitors.display_signals_console()
         return True
 
     def run_command(self):
@@ -237,16 +239,16 @@ class GuiCommandInterface:
             if self.run_network(cycles):
                 self.cycles_completed += cycles
             return "".join(["Running for ", str(cycles), " cycles."]), cycles
-        return "Invalid number of cycles.", None
+        return "Invalid number of cycles.", cycles
 
     def continue_command(self):
         """Continue a previously run simulation."""
         cycles = self.read_number(0, None)
         if cycles is not None:  # if the number of cycles provided is valid
             if self.cycles_completed == 0:
-                return "Error! Nothing to continue. Run first.", None
+                return "Error! Nothing to continue. Run first.", cycles
             elif self.run_network(cycles):
                 self.cycles_completed += cycles
                 return " ".join(["Continuing for", str(cycles), "cycles.",
                                 "Total:", str(self.cycles_completed)]), cycles
-        return "Error! Invalid number of cycles.", None
+        return "Error! Invalid number of cycles.", cycles
