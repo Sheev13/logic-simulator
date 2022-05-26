@@ -62,8 +62,10 @@ class Parser:
 
         self.symbol = self.scanner.get_symbol()
 
+        print(type(self.symbol), self.names.get_name_string(self.symbol.id))
+
         if self.symbol.type == self.scanner.KEYWORD:
-            if self.symbol.id == self.scanner.DEVICES:
+            if self.symbol.id == self.scanner.DEVICES_ID:
                 # device_list has been found
                 self.parse_device_list()
                 devices_done = True
@@ -82,7 +84,7 @@ class Parser:
 
         # this assumes that get_symbol will remove whitespace
 
-        if self.symbol.type != self.scanner.COLON:
+        if self.symbol.id != self.scanner.COLON:
             self.error("syntax", "Expected a ':' symbol")
 
         self.symbol = self.scanner.get_symbol()
@@ -212,4 +214,4 @@ class Parser:
         # at once
         self.error_count += 1
         if error_type == "syntax":
-            raise SyntaxError(message)
+            raise SyntaxError(message + f"received {self.names.get_name_string(self.symbol.id)}") 

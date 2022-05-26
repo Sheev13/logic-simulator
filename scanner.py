@@ -58,9 +58,14 @@ class Scanner:
         self.f = self._open_file(path)
         self.names = names
         self.symbol_types = [self.PUNCTUATION, self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(5)
+
         self.keywords = ["CIRCUIT", "DEVICES", "CONNECTIONS", "MONITOR"]
-        self.puncs = [":", "[", "]", "{", "}", ";", ",", "."] # could treat them each as own symbol type
         [self.CIRCUIT_ID, self.DEVICES_ID, self.CONNECTIONS_ID, self.MONITOR_ID] = self.names.lookup(self.keywords)
+
+        self.puncs = [":", "[", "]", "{", "}", ";", ",", "."] # could treat them each as own symbol type
+        [self.COLON, self.OPEN_SQUARE, self.CLOSE_SQUARE, self.OPEN_CURLY, self.CLOSE_CURLY, self.SEMICOLON, 
+            self.COMMA, self.DOT] = self.names.lookup(self.puncs)
+
         self.current_char = ""
 
     def _open_file(self, path):
@@ -81,12 +86,6 @@ class Scanner:
     def _next_non_ws(self):
         """Reads the next non-whitespace character in the definition file"""
         while self._next().isspace():
-            pass # keep looping
-        return self.current_char
-
-    def _next_non_sc(self):
-        """Reads the next non-semicolon character in the file"""
-        while self._next_non_ws() == ";":
             pass # keep looping
         return self.current_char
     
@@ -130,7 +129,8 @@ class Scanner:
         # punctuation
         elif self.current_char in self.puncs:
             sym.type = self.PUNCTUATION
-            #sym.id = #TODO
+            sym.id = self.names.query(self.current_char)
+            self._next()
 
         # end of file
         elif self.current_char == "":
@@ -138,9 +138,13 @@ class Scanner:
 
         # invalid char
         else:
-            pass
+            self._next()
             #TODO
             # throw error? just move on?
+        
+        print("print information: ", sym.type)
+
+        return sym
     
     def show_error(self):
         """Public function that prints current input line and a carrot on the 
