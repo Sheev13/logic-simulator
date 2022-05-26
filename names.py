@@ -70,7 +70,10 @@ class Names:
         # TODO: this is very inefficient :( change if time?
         list_of_name_ids = []
         for name in name_string_list:
-            if name in self.names_list:
+            if not isinstance(name, str):
+                raise TypeError(f"""This element of name_string_list is {name}, 
+                    but elements of name_string_list must be strings""")
+            elif name in self.names_list:
                 list_of_name_ids.append(self.names_list.index(name))
             else:
                 self.names_list.append(name)
@@ -84,7 +87,7 @@ class Names:
         If the name_id is not an index in the names list, return None.
         """
         if not isinstance(name_id, int):
-            raise TypeError(f"name_id is {type(name_id)}, but it must be an integer")
+            raise TypeError(f"name_id is {name_id}, but it must be an integer")
         elif name_id < 0:
             raise ValueError(f"name_id is {name_id}, but it must be positive")
         elif name_id > len(self.names_list):
