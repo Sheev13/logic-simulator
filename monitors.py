@@ -12,7 +12,6 @@ import collections
 
 
 class Monitors:
-
     """Record and display output signals.
 
     This class contains functions for recording and displaying the signal state
@@ -44,7 +43,7 @@ class Monitors:
 
     get_margin(self): Returns the length of the longest monitor's name.
 
-    display_signals(self): Displays signal trace(s) in the text console.
+    display_signals_console(self): Displays signal trace(s) in the text console.
     """
 
     def __init__(self, names, devices, network):
@@ -155,7 +154,7 @@ class Monitors:
         else:
             return None
 
-    def display_signals(self):
+    def display_signals_console(self):
         """Display the signal trace(s) in the text console."""
         margin = self.get_margin()
         for device_id, output_id in self.monitors_dictionary:

@@ -253,7 +253,7 @@ class UserInterface:
             else:
                 print("Error! Network oscillating.")
                 return False
-        self.monitors.display_signals()
+        self.monitors.display_signals_console()
         return True
 
     def run_command(self):

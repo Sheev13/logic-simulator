@@ -238,9 +238,11 @@ class Gui(wx.Frame):
         self.devices = devices
         self.monitors = monitors
         self.network = network
-        self.path = path
+        self.cycles_completed = 0
+        self.cycles_to_run = 10
         
         """Initialise user interface."""
+        self.path = path
         self.userint = UserInterface(names, devices, network, monitors)
         self.help_string = help_string
 
@@ -461,13 +463,23 @@ class Gui(wx.Frame):
    
     def on_spin_cycles(self, event):
         """Handle the event when the user changes the number of cycles."""
-        cycles = self.spin_cycles.GetValue()
-        text = "".join(["Number of cycles: ", str(cycles)])
+        self.cycles_to_run = self.spin_cycles.GetValue()
+        text = "".join(["Number of cycles: ", str(self.cycles_to_run)])
+        print(self.cycles_to_run)
         self.canvas.render(text)
 
     def on_run_button(self, event):
         """Handle the event when the user clicks the run button."""
-        text = "Run button pressed."
+        int = GuiCommandInterface(f"{self.cycles_to_run}", self.names, self.devices, self.network, self.monitors)
+        text, cycles = int.run_command()
+        self.cycles_completed = cycles
+        self.canvas.render(text)
+
+    def on_continue_button(self, event):
+        """Handle the event when the user clicks the continue button."""
+        int = GuiCommandInterface(f"{self.cycles_to_run}", self.names, self.devices, self.network, self.monitors, cycles_completed = self.cycles_completed)
+        text, cycles = int.continue_command()
+        self.cycles_completed += cycles
         self.canvas.render(text)
 
     def on_switch_button(self, event):
@@ -497,6 +509,7 @@ class Gui(wx.Frame):
         self.monitorButtons.pop(label)
         self.canvas.render(text)
         self.Layout()
+        print(self.monitors.get_signal_names())
 
     def on_clear_all_monitors_button(self, event):
         """Handle the event when the user clears all monitors."""   
@@ -521,13 +534,47 @@ class Gui(wx.Frame):
                 self.addMonitorButton(name)
         else:
             text = "Invalid monitor"
+        print(self.monitors.get_signal_names())
 
         self.canvas.render(text)
-    
-    def on_continue_button(self, event):
-        """Handle the event when the user clicks the continue button."""
-        text = "Continue button pressed."
+
+    def on_command_line_input(self, event):
+        """Handle the event when the user enters command line text."""
+        line = self.command_line_input.GetValue()
+        commandint = GuiCommandInterface(line, self.names, self.devices, self.network, self.monitors, self.cycles_completed)
+        action = commandint.command_interface()
+        command = action[0]
+        text = action[1]
+        extraInfo = action[2]
+        self.names = action[3]
+        self.devices = action[4]
+        self.network = action[5]
+        self.monitors = action[6]
+            
+        if extraInfo is not None:
+            if command == "s":
+                self.on_command_line_set_switch(extraInfo) #extraInfo = switch_state
+            elif command == "m":
+                self.on_command_line_add_monitor(extraInfo[1][0], extraInfo[1][1]) # extraInfo = monitors, [device_id, port_id]
+            elif command == "z":
+                self.on_command_line_zap_monitor(extraInfo[1][0], extraInfo[1][1]) # extraInfo = monitors, [device_id, port_id]
+            elif command == "r":
+                self.on_command_line_run(extraInfo) #extraInfo = number of cycles
+            elif command == "c":
+                self.on_command_line_continue(extraInfo) #extraInfo = number of cycles
+
         self.canvas.render(text)
+
+    def on_command_line_run(self, cycles):
+        """Handle display of signals when run command issued via command line."""
+        self.cycles_completed = cycles
+        return
+    
+    def on_command_line_continue(self, cycles):
+        """Handle display of signals when run command issued via command line."""
+        self.cycles_completed += cycles
+        return
+
 
     def on_command_line_set_switch(self, switch):
         """Change colour of switch button based on command line input."""
@@ -543,42 +590,19 @@ class Gui(wx.Frame):
 
     def on_command_line_add_monitor(self, deviceId, portId):
         """Add monitor button based on command line input."""
+        print(self.monitors.get_signal_names())
         monitorName = self.getMonitorName(deviceId, portId)
-        self.makeMonitor(monitorName)
         self.addMonitorButton(monitorName)
 
     def on_command_line_zap_monitor(self, deviceId, portId):
         """Destroy monitor button based on command line input."""
         monitorName = self.getMonitorName(deviceId, portId)
-        self.destroyMonitor(monitorName)
         button = self.monitorButtons[monitorName]
         button.Destroy()
         self.monitorButtons.pop(monitorName)
+        print(self.monitors.get_signal_names())
         self.Layout()
 
-    def on_command_line_input(self, event):
-        """Handle the event when the user enters command line text."""
-        line = self.command_line_input.GetValue()
-        commandint = GuiCommandInterface(line, self.names, self.devices, self.network, self.monitors)
-        action = commandint.command_interface()
-        command = action[0]
-        text = action[1]
-        extraInfo = action[2]
-        if extraInfo is not None:
-            if command == "s":
-                self.on_command_line_set_switch(extraInfo) #extraInfo = switch_state
-            elif command == "m":
-                self.on_command_line_add_monitor(extraInfo[0], extraInfo[1]) # extraInfo = [device_id, port_id]
-            elif command == "z":
-                self.on_command_line_zap_monitor(extraInfo[0], extraInfo[1])
-
-        self.canvas.render(text)
-
-        self.names = action[3]
-        self.devices = action[4]
-        self.network = action[5]
-        self.monitors = action[6]
-            
     def getMonitorName(self, deviceId, portId):
         """Get name of monitor from device id and port id."""
         deviceName = self.names.get_name_string(deviceId)
@@ -592,20 +616,16 @@ class Gui(wx.Frame):
     def makeMonitor(self, monitorName):
         """Create a new monitoring point based on user selection."""
         commandint = GuiCommandInterface(monitorName, self.names, self.devices, self.network, self.monitors)
-        [deviceId, portId] = commandint.read_signal_name()
-        monitor_error = self.monitors.make_monitor(deviceId, portId)
-        if monitor_error == self.monitors.NO_ERROR:
-            return "Successfully made monitor."
-        else:
-            return "Error! Could not make monitor."
+        text, [self.monitors, monitor] = commandint.monitor_command()
+        self.canvas.render(text)
+        return text
         
     def destroyMonitor(self, monitorName):
         """Destroy monitor."""
         commandint = GuiCommandInterface(monitorName, self.names, self.devices, self.network, self.monitors)
-        [deviceId, portId] = commandint.read_signal_name()
-        if self.monitors.remove_monitor(deviceId, portId):
-            return "Successfully zapped monitor."
-        return "Error! Could not zap monitor."
+        text, [self.monitors, monitor] = commandint.zap_command()
+        self.canvas.render(text)
+        return text
 
     def isMonitoring(self, monitor):
         """Return True if suggested monitor point is already being monitored."""
