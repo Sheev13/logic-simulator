@@ -52,7 +52,10 @@ class Parser:
         # also string representation of the symbol?
         # symbol.as_string ? something like
 
-
+        self.expect_qualifier = [self.devices.AND, self.devices.NAND,
+                                 self.devices.OR, self.devices.NOR,
+                                 self.devices.CLOCK, self.devices.SWITCH]
+        # if the symb.type is one of these, we need qualifier...
 
     def parse_network(self):
         """Parse the circuit definition file."""
@@ -124,10 +127,10 @@ class Parser:
                 # or maybe just "name *%^&*% is invalid"
                 self.symbol = self.scanner.get_symbol()
                 if self.symbol.type == self.scanner.NAME:
-                    print("valid id for a device")
+                    print("valid name for a device")
                     # make note of the device name for the build later (if no errors)
-                    # dev_id = self.symbol.as_string  # maybe this is just
-                    # lookup/query... sort out later
+                    device_name = self.names.get_name_string(self.symbol.id)
+                    #is this device id?? i think so? :/ the userdefined one
                 else:
                     self.error("semantic",
                                "device name provided is invalid/eg. not "
@@ -146,13 +149,13 @@ class Parser:
             self.symbol = self.scanner.get_symbol()
             if self.symbol.id == self.scanner.COLON:
                 self.symbol = self.scanner.get_symbol()
-                # TODO: this might be instead: is symbol.as_string in
-                #  allowed_devices_list?
                 if self.symbol.type == self.scanner.NAME:
-                    print(f"valid type of device, "
-                          f"{self.names.get_name_string(self.symbol.id)}")
-                    # I believe this tells us that the name is alphanum?
-                    # dev_kind
+                    # this only tells us its alphanum aka TODO still syntax?
+                    device_kind_string = self.names.get_name_string(
+                        self.symbol.id)
+                    [device_kind_id] = self.devices.names.lookup(
+                        [device_kind_string])
+
                 else:
                     self.error("semantic", "Device type not supported")
             else:
@@ -164,26 +167,28 @@ class Parser:
         if self.symbol.id != self.scanner.SEMICOLON:
             self.error("syntax", "Expected ';'")
 
-        self.symbol = self.scanner.get_symbol()
-        if self.symbol.id == self.scanner.QUAL_KEYWORD_ID:
+        if device_kind_id in self.expect_qualifier:
             self.symbol = self.scanner.get_symbol()
-            if self.symbol.id == self.scanner.COLON:
+            if self.symbol.id == self.scanner.QUAL_KEYWORD_ID:
                 self.symbol = self.scanner.get_symbol()
-                if self.symbol.type == self.scanner.NUMBER:
-                    print("valid qualifier")
-                    # TODO: but are all numbers valid? i think devices takes
-                    #  care of this....
-                    # qual = self.symbol
+                if self.symbol.id == self.scanner.COLON:
+                    self.symbol = self.scanner.get_symbol()
+                    if self.symbol.type == self.scanner.NUMBER:
+                        #print("valid qualifier")
+                        device_qualifier = self.symbol.id
+                    else:
+                        self.error("semantic", "Unsupported qualifier input")
                 else:
-                    self.error("semantic", "Unsupported qualifier input")
+                    self.error("syntax", "Expected ':' delimiter")
             else:
-                self.error("syntax", "Expected ':' delimiter")
-        else:
-            self.error("syntax", "Expected 'qual'")
+                self.error("syntax", "Expected 'qual'")
 
-        self.symbol = self.scanner.get_symbol()
-        if self.symbol.id != self.scanner.SEMICOLON:
-            self.error("syntax", "Expected ';'")
+            self.symbol = self.scanner.get_symbol()
+            if self.symbol.id != self.scanner.SEMICOLON:
+                self.error("syntax", "Expected ';'")
+        else:
+            device_qualifier = None
+
 
         # TODO: need to clarify the error recovery stuff.... not sure this
         #  code will work anymore :/
@@ -198,13 +203,22 @@ class Parser:
 
         if self.error_count == 0:
             print("no errors when parsing device --> proceed to build")
+            error_type = self.devices.make_device(device_name,
+                                                  device_kind_id,
+                                                  device_qualifier)
+            if error_type != self.devices.NO_ERROR:
+                self.error("semantic", "something :///// will we ever get "
+                                       "here?")
+            else:
+                print(f"successfully built a device {device_name}-"
+                      f"{device_kind_id}-{device_qualifier}")
 
         #TODO: figure out how to detect errors after the end of parsing...?
         # is it just when u go back to main function? probs
 
         self.symbol = self.scanner.get_symbol()
         if self.symbol.id == self.scanner.OPEN_CURLY:
-            keep_parsing= True
+            keep_parsing = True
         elif self.symbol.id == self.scanner.CLOSE_SQUARE:
             keep_parsing = False
         else:
