@@ -57,9 +57,10 @@ class Scanner:
         """Open specified file and initialise reserved words and IDs."""
         self.f = self._open_file(path)
         self.names = names
-        self.symbol_types = [self.PUNCTUATION, self.KEYWORD, self.NUMBER, self.NAME] = range(4)
+        self.symbol_types = [self.PUNCTUATION, self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(5)
         self.keywords = ["CIRCUIT", "DEVICES", "CONNECTIONS", "MONITOR"]
         self.puncs = [":", "[", "]", "{", "}", ";", ",", "."] # could treat them each as own symbol type
+        [self.CIRCUIT_ID, self.DEVICES_ID, self.CONNECTIONS_ID, self.MONITOR_ID] = self.names.lookup(self.keywords)
         self.current_char = ""
 
     def _open_file(self, path):
@@ -108,7 +109,7 @@ class Scanner:
         return int(n)
 
     def get_symbol(self):
-        """Translate the next sequence of characters into a symbol."""
+        """Public function to translate the next sequence of characters into a symbol."""
         sym = Symbol()
         self._next_non_ws()
 
@@ -133,9 +134,7 @@ class Scanner:
 
         # end of file
         elif self.current_char == "":
-            pass 
-            #TODO
-            # introduce a self.EOF symbol?
+            sym.type = self.EOF
 
         # invalid char
         else:
@@ -144,7 +143,7 @@ class Scanner:
             # throw error? just move on?
     
     def show_error(self):
-        """prints current input line and a carrot on the line below
-        at erroneous location"""
-        pass
+        """Public function that prints current input line and a carrot on the 
+        line below at erroneous location"""
+        print("there is an error here I think")
         #TODO
