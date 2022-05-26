@@ -130,7 +130,7 @@ class GuiCommandInterface:
         """
         name_string = self.read_string()
         if name_string is None:
-            return None, ""
+            return None
         else:
             name_id = self.names.query(name_string.upper())
         if name_id is None:
