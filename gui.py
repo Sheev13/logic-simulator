@@ -52,7 +52,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                                            operations.
     """
 
-    def __init__(self, parent, devices, monitors):
+    def __init__(self, parent, devices, monitors, names):
         """Initialise canvas properties and useful variables."""
         super().__init__(parent, -1,
                          attribList=[wxcanvas.WX_GL_RGBA,
@@ -61,6 +61,9 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GLUT.glutInit()
         self.init = False
         self.context = wxcanvas.GLContext(self)
+        self.monitors = monitors
+        self.devices = devices
+        self.names = names
 
         # Initialise variables for panning
         self.pan_x = 0
@@ -105,25 +108,57 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         # Draw specified text at position (10, 10)
         self.render_text(text, 10, 10)
 
-        # Draw a sample signal trace
-        GL.glColor3f(0.0, 0.0, 1.0)  # signal trace is blue
-        GL.glBegin(GL.GL_LINE_STRIP)
-        for i in range(10):
-            x = (i * 20) + 10
-            x_next = (i * 20) + 30
-            if i % 2 == 0:
-                y = 75
-            else:
-                y = 100
-            GL.glVertex2f(x, y)
-            GL.glVertex2f(x_next, y)
-        GL.glEnd()
-
+        #Draw signal traces
+        signalData = self.monitors.display_signals_gui()
+        shift = 0
+        ylow = 45
+        for monitor in signalData.keys():
+            desc, X, Y, device_kind = signalData[monitor]
+            if len(X)>0:
+                X = [20+x for x in X]
+                Y = [y+shift for y in Y]  
+                rgb = self.traceColour(device_kind)
+                self.render_text(desc, X[0]-20, ylow+12)
+                self.drawTrace(X, Y, ylow, rgb)
+                shift += 100
+                ylow += 100
+            
         # We have been drawing to the back buffer, flush the graphics pipeline
         # and swap the back buffer to the front
         GL.glFlush()
         self.SwapBuffers()
 
+    def drawTrace(self, X, Y, ylow, rgb):
+        """Draw a signal trace."""
+        # Insert x axis
+        GL.glColor3f(0, 0, 0)  # x axis is black
+        GL.glBegin(GL.GL_LINE_STRIP)
+        for i in range(len(X)):
+            GL.glVertex2f(X[i], ylow)
+        GL.glEnd()
+
+        # Draw trace
+        GL.glColor3f(rgb[0], rgb[1], rgb[2])
+        GL.glBegin(GL.GL_LINE_STRIP)
+        for i in range(len(X)):
+            GL.glVertex2f(X[i], Y[i])
+        GL.glEnd()
+
+    def traceColour(self, device_kind):
+        """Colour code trace based on device kind."""
+        gate_strings = ["AND", "OR", "NAND", "NOR", "XOR"]
+        if self.names.get_name_string(device_kind) in gate_strings:
+            return [0, 0, 1]
+        if self.names.get_name_string(device_kind) == "CLOCK":
+            return [0, 1, 0]
+        if self.names.get_name_string(device_kind) == "SWITCH":
+            return [1, 0, 1]
+        if self.names.get_name_string(device_kind) == "DTYPE":
+            return [1, 1, 0]
+        else:
+            return [0, 0, 0]
+
+    
     def on_paint(self, event):
         """Handle the paint event."""
         self.SetCurrent(self.context)
@@ -178,7 +213,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.pan_x -= (self.zoom - old_zoom) * ox
             self.pan_y -= (self.zoom - old_zoom) * oy
             self.init = False
-            text = "".join(["Negative mouse wheel rotation. Zoom is now: ",
+            text = "".join(["Scroll out. Zoom is now: ",
                             str(self.zoom)])
         if event.GetWheelRotation() > 0:
             self.zoom /= (1.0 - (
@@ -187,7 +222,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.pan_x -= (self.zoom - old_zoom) * ox
             self.pan_y -= (self.zoom - old_zoom) * oy
             self.init = False
-            text = "".join(["Positive mouse wheel rotation. Zoom is now: ",
+            text = "".join(["Scroll in. Zoom is now: ",
                             str(self.zoom)])
         if text:
             self.render(text)
@@ -245,6 +280,7 @@ class Gui(wx.Frame):
         self.path = path
         self.userint = UserInterface(names, devices, network, monitors)
         self.help_string = help_string
+        self.canvas_control_string = canvas_control_string
 
         """Initialise widgets and layout."""
         super().__init__(parent=None, title=title, size=(800, 600))
@@ -255,7 +291,8 @@ class Gui(wx.Frame):
         menuBar = wx.MenuBar()
         fileMenu.Append(wx.ID_ABOUT, "&About")
         fileMenu.Append(wx.ID_EXIT, "&Exit")
-        userGuideMenu.Append(wx.ID_HELP_COMMANDS, "&Command Line Inputs")
+        userGuideMenu.Append(wx.ID_HELP_COMMANDS, "&Command Line Guide")
+        userGuideMenu.Append(wx.ID_CONTEXT_HELP, "&Canvas Controls")
         menuBar.Append(fileMenu, "&File")
         menuBar.Append(userGuideMenu, "&User Guide")
         self.SetMenuBar(menuBar)
@@ -264,7 +301,7 @@ class Gui(wx.Frame):
         self.SetBackgroundColour(paleyellow)
 
         # Canvas for drawing signals
-        self.canvas = MyGLCanvas(self, devices, monitors)
+        self.canvas = MyGLCanvas(self, devices, monitors, names)
 
         # Configure the widgets
         subHeadingFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD)
@@ -441,7 +478,9 @@ class Gui(wx.Frame):
             wx.MessageBox("Logic Simulator\nCreated by pp490\n2022",
                           "About Logsim", wx.ICON_INFORMATION | wx.OK)
         if Id == wx.ID_HELP_COMMANDS:
-            wx.MessageBox(self.help_string, "User Guide", wx.ICON_INFORMATION | wx.OK)
+            wx.MessageBox(self.help_string, "Command Line Guide", wx.ICON_INFORMATION | wx.OK)
+        if Id == wx.ID_CONTEXT_HELP:
+            wx.MessageBox(self.canvas_control_string, "Canvas Controls", wx.ICON_INFORMATION | wx.OK)
 
     def on_browse(self, event):
         """Handle the event when user wants to find circuit definition file."""
@@ -568,12 +607,10 @@ class Gui(wx.Frame):
     def on_command_line_run(self, cycles):
         """Handle display of signals when run command issued via command line."""
         self.cycles_completed = cycles
-        return
     
     def on_command_line_continue(self, cycles):
         """Handle display of signals when run command issued via command line."""
         self.cycles_completed += cycles
-        return
 
 
     def on_command_line_set_switch(self, switch):
@@ -654,6 +691,10 @@ darkgreen = wx.Colour(76, 129, 73)
 cornflower = wx.Colour(145, 143, 214)
 white = wx.Colour(255, 255, 255)
 
+signalColour = {
+
+}
+
 help_string = "Enter command line inputs in the bottom left of the interface.\n" \
                             "\nPossible commands:" \
                             "\n \nr N\nRun simulator for N cycles" \
@@ -661,3 +702,9 @@ help_string = "Enter command line inputs in the bottom left of the interface.\n"
                             "\n \ns X N\nSet switch X to N (0 or 1)" \
                             "\n \nm X\nStart monitoring output signal X" \
                             "\n \nz X\nStop monitoring X"
+
+canvas_control_string = "Signals on the canvas can be manipulated to better view them.\n" \
+                            "\nPossible controls:" \
+                            "\n \nScroll in to zoom in" \
+                            "\n \nScroll out to zoom out" \
+                            "\n \nClick and hold, then move the mouse to drag the signals around the space"

@@ -175,6 +175,35 @@ class Monitors:
                     print(" ", end="")
             print("\n", end="")
 
-    # def display_signals_gui(self):
-    #     """Display the signal trace(s) in the GUI."""
-        
+    def display_signals_gui(self):
+        """Display the signal trace(s) in the GUI."""
+        margin = self.get_margin()
+        signalData = {}
+        for device_id, output_id in self.monitors_dictionary:
+            monitor_name = self.devices.get_signal_name(device_id, output_id)
+            kind = self.devices.get_device(device_id).device_kind
+            name_length = len(monitor_name)
+            signal_list = self.monitors_dictionary[(device_id, output_id)]
+            desc = monitor_name + (margin - name_length) * " " + ": "
+            xcoords = []
+            ycoords = []
+
+            x = 0
+            y = 0
+
+            for signal in signal_list:
+                xcoords.extend([x, x+20])
+                if signal == self.devices.HIGH: 
+                    ycoords.extend([75, 75])
+                if signal == self.devices.LOW:
+                    ycoords.extend([50, 50])
+                if signal == self.devices.RISING:
+                    ycoords.extend([50, 75])
+                if signal == self.devices.FALLING:
+                    ycoords.extend([75, 50])
+                if signal == self.devices.BLANK:
+                    ycoords.extend([0, 0])
+                x = xcoords[-1]
+                y = ycoords[-1]
+            signalData[monitor_name] = [desc, xcoords, ycoords, kind]
+        return signalData   

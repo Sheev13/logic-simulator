@@ -78,6 +78,7 @@ def main(arg_list):
         if parser.parse_network():
             # Initialise an instance of the gui.Gui() class
             app = wx.App()
+            #eventually get names, devices, network, monitors from parser
             data = getMockData2() #getMockData1()
             names = data[0]
             devices = data[1]
