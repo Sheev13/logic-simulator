@@ -59,14 +59,17 @@ class Scanner:
         self.names = names
         self.symbol_types = [self.PUNCTUATION, self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(5)
 
-        self.keywords = ["CIRCUIT", "DEVICES", "CONNECTIONS", "MONITOR"]
-        [self.CIRCUIT_ID, self.DEVICES_ID, self.CONNECTIONS_ID, self.MONITOR_ID] = self.names.lookup(self.keywords)
+        self.keywords = ["CIRCUIT", "DEVICES", "CONNECTIONS", "MONITOR",
+                         "id", "kind", "qual"]
+        [self.CIRCUIT_ID, self.DEVICES_ID, self.CONNECTIONS_ID,
+         self.MONITOR_ID, self.ID_KEYWORD_ID, self.KIND_KEYWORD_ID,
+         self.QUAL_KEYWORD_ID] = self.names.lookup(self.keywords)
 
         self.puncs = [":", "[", "]", "{", "}", ";", ",", "."] # could treat them each as own symbol type as in handout suggestion
         [self.COLON, self.OPEN_SQUARE, self.CLOSE_SQUARE, self.OPEN_CURLY, self.CLOSE_CURLY, self.SEMICOLON, 
             self.COMMA, self.DOT] = self.names.lookup(self.puncs)
 
-        self.current_char = ""
+        self.current_char = " " #start as a whitespace
 
     def _open_file(self, path):
         """Open and return the file specified by path."""
@@ -100,7 +103,7 @@ class Scanner:
 
     def _next_number(self):
         """Reads the file as necessary to return the next number as an int.
-        Assumes current_char at time of functionc all is numeric"""
+        Assumes current_char at time of function call is numeric"""
         n = ""
         while self.current_char.isdigit():
             n += self.current_char
@@ -140,6 +143,7 @@ class Scanner:
         # newline character
         elif self.current_char == "\n":
             self._next()
+            #TODO: i don't think we ever get here? new line = whitespace
 
         # invalid char
         else:
@@ -147,6 +151,7 @@ class Scanner:
             #TODO
             # throw error? just move on?
 
+        #print(self.names.get_name_string(sym.id))
         return sym
 
     def _get_error_line(self):

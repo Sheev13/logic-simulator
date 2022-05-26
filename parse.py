@@ -62,9 +62,11 @@ class Parser:
 
         self.symbol = self.scanner.get_symbol()
 
-        print(type(self.symbol), self.names.get_name_string(self.symbol.id))
+        #print(type(self.symbol), self.names.get_name_string(self.symbol.id))
 
-        if self.symbol.type == self.scanner.KEYWORD:
+        if self.symbol.type == self.scanner.KEYWORD: #is this not redundant?
+            # maybe for error reporting we can be specific and say a keyword
+            # is missing...?
             if self.symbol.id == self.scanner.DEVICES_ID:
                 # device_list has been found
                 self.parse_device_list()
@@ -89,32 +91,34 @@ class Parser:
 
         self.symbol = self.scanner.get_symbol()
 
-        if self.symbol.type != self.scanner.OPEN_SQUARE:
+        if self.symbol.id != self.scanner.OPEN_SQUARE:
             self.error("syntax", "Expected a '[' symbol")
 
         parsing_devices = True
+        first_device = True
         while parsing_devices:
-            parsing_devices = self.parse_device()
+            parsing_devices, first_device = self.parse_device(first_device)
 
         #self.symbol = self.scanner.get_symbol()
-        if self.symbol.type != self.scanner.CLOSE_SQAURE:
+        if self.symbol.id != self.scanner.CLOSE_SQUARE:
             self.error("syntax", "Expected a ']' symbol")
 
-        self.symbol.type = self.scanner.get_symbol()
-        if self.symbol != self.scanner.SEMICOLON:
+        self.symbol = self.scanner.get_symbol()
+        if self.symbol.id != self.scanner.SEMICOLON:
             self.error("syntax", "Expected a ';' symbol")
 
-    def parse_device(self):
+    def parse_device(self, first_device):
         print("parsing a device")
+        if first_device:
+            self.symbol = self.scanner.get_symbol()
 
-        self.symbol = self.scanner.get_symbol()
-        if self.symbol.type != self.scanner.OPEN_CURLY:
+        if self.symbol.id != self.scanner.OPEN_CURLY:
             self.error("syntax", "Expected a '{' symbol")
 
         self.symbol = self.scanner.get_symbol()
-        if self.symbol.type == self.scanner.ID_KEYWORD:
+        if self.symbol.id == self.scanner.ID_KEYWORD_ID:
             self.symbol = self.scanner.get_symbol()
-            if self.symbol.type == self.scanner.COLON:
+            if self.symbol.id == self.scanner.COLON:
                 # TODO: check this statement
                 # should it be "u provided a punctuation mark instead of a valid name"
                 # or maybe just "name *%^&*% is invalid"
@@ -134,18 +138,20 @@ class Parser:
             self.error("syntax", "Expected 'id'")
 
         self.symbol = self.scanner.get_symbol()
-        if self.symbol.type != self.scanner.SEMICOLON:
+        if self.symbol.id != self.scanner.SEMICOLON:
             self.error("syntax", "Expected ';'")
 
         self.symbol = self.scanner.get_symbol()
-        if self.symbol.type == self.scanner.KIND_KEYWORD:
+        if self.symbol.id == self.scanner.KIND_KEYWORD_ID:
             self.symbol = self.scanner.get_symbol()
-            if self.symbol.type == self.scanner.COLON:
+            if self.symbol.id == self.scanner.COLON:
                 self.symbol = self.scanner.get_symbol()
                 # TODO: this might be instead: is symbol.as_string in
                 #  allowed_devices_list?
-                if self.symbol.type == self.scanner.DEV_KIND:
-                    print("valid type of device")
+                if self.symbol.type == self.scanner.NAME:
+                    print(f"valid type of device, "
+                          f"{self.names.get_name_string(self.symbol.id)}")
+                    # I believe this tells us that the name is alphanum?
                     # dev_kind
                 else:
                     self.error("semantic", "Device type not supported")
@@ -155,18 +161,18 @@ class Parser:
             self.error("syntax", "Expected 'kind'")
 
         self.symbol = self.scanner.get_symbol()
-        if self.symbol.type != self.scanner.SEMICOLON:
+        if self.symbol.id != self.scanner.SEMICOLON:
             self.error("syntax", "Expected ';'")
 
         self.symbol = self.scanner.get_symbol()
-        if self.symbol.type == self.scanner.QUAL_KEYWORD:
+        if self.symbol.id == self.scanner.QUAL_KEYWORD_ID:
             self.symbol = self.scanner.get_symbol()
-            if self.symbol.type == self.scanner.COLON:
+            if self.symbol.id == self.scanner.COLON:
                 self.symbol = self.scanner.get_symbol()
-                # TODO: this might be instead: is symbol.as_string a valid qual?
-                if self.symbol.type == self.scanner.DEV_QUAL:
+                if self.symbol.type == self.scanner.NUMBER:
                     print("valid qualifier")
-                    # store for making device later
+                    # TODO: but are all numbers valid? i think devices takes
+                    #  care of this....
                     # qual = self.symbol
                 else:
                     self.error("semantic", "Unsupported qualifier input")
@@ -176,18 +182,18 @@ class Parser:
             self.error("syntax", "Expected 'qual'")
 
         self.symbol = self.scanner.get_symbol()
-        if self.symbol.type != self.scanner.SEMICOLON:
+        if self.symbol.id != self.scanner.SEMICOLON:
             self.error("syntax", "Expected ';'")
 
         # TODO: need to clarify the error recovery stuff.... not sure this
         #  code will work anymore :/
 
         self.symbol = self.scanner.get_symbol()
-        if self.symbol.type != self.scanner.CLOSE_CURLY:
+        if self.symbol.id != self.scanner.CLOSE_CURLY:
             self.error("syntax", "Expected a '}' symbol")
 
         self.symbol = self.scanner.get_symbol()
-        if self.symbol.type != self.scanner.SEMICOLON:
+        if self.symbol.id != self.scanner.SEMICOLON:
             self.error("syntax", "Expected ';'")
 
         if self.error_count == 0:
@@ -197,14 +203,15 @@ class Parser:
         # is it just when u go back to main function? probs
 
         self.symbol = self.scanner.get_symbol()
-        if self.symbol == self.scanner.OPEN_CURLY:
-            keep_parsing = True
-        elif self.symbol == self.scanner.CLOSE_SQAURE:
+        if self.symbol.id == self.scanner.OPEN_CURLY:
+            keep_parsing= True
+        elif self.symbol.id == self.scanner.CLOSE_SQUARE:
             keep_parsing = False
         else:
             self.error("syntax", "something")
 
-        return keep_parsing
+        first_device = False
+        return keep_parsing, first_device
 
 
 
@@ -214,4 +221,8 @@ class Parser:
         # at once
         self.error_count += 1
         if error_type == "syntax":
-            raise SyntaxError(message + f"received {self.names.get_name_string(self.symbol.id)}") 
+            raise SyntaxError(message + f" received"
+                                        f" {self.names.get_name_string(self.symbol.id)}")
+        elif error_type == "semantic":
+            raise ValueError(message + f" received "
+                                      f"{self.names.get_name_string(self.symbol.id)}")
