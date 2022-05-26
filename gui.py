@@ -273,7 +273,6 @@ class Gui(wx.Frame):
         self.browse = wx.Button(self, wx.ID_ANY, "Browse")
 
         switches = self.devices.find_devices(names.query("SWITCH"))
-
         if len(switches) > 0:
             self.switches_text = wx.StaticText(self, wx.ID_ANY,
                                     "Switches (toggle on/off):")
@@ -282,7 +281,6 @@ class Gui(wx.Frame):
             self.switches_text = wx.StaticText(self, wx.ID_ANY,
                                     "No switches in this circuit")
         self.switch_buttons = {}
-    
         for s in switches:
             name = self.names.get_name_string(s)
             state = self.devices.get_device(s).switch_state
@@ -290,19 +288,33 @@ class Gui(wx.Frame):
             if state == 0:
                 self.switch_buttons[name][0].SetBackgroundColour(red)
             else:
-                self.switch_buttons[name][0].SetBackgroundColour(green)
+                self.switch_buttons[name][0].SetBackgroundColour(lightblue)
             
+        self.devices_heading = wx.StaticText(self, wx.ID_ANY, "Devices:")
+        self.devices_heading.SetFont(subHeadingFont)
+        self.device_descs = []
+        gate_strings = ["AND", "OR", "NAND", "NOR", "XOR"]
+        for dev in self.devices.devices_list:
+            label = self.names.get_name_string(dev.device_id)
+            kind = self.names.get_name_string(dev.device_kind)
+            inputs = ""
+            if kind in gate_strings:
+                inputs = f", {str(len(dev.inputs.keys()))} inputs"
+            self.device_descs.append(f"{label}: {kind}{inputs}")
+
+        self.device_text = []
+        for d in self.device_descs:
+            self.device_text.append(wx.StaticText(self, wx.ID_ANY, d))
+
         self.monitors_text = wx.StaticText(self, wx.ID_ANY, "Monitors:")
         self.monitors_text.SetFont(subHeadingFont)
         self.monitor_input = wx.TextCtrl(self, wx.ID_ANY, "",
                                     style=wx.TE_PROCESS_ENTER)
         self.monitor_input.SetHint("Add new monitor")
         self.monitors_help_text = wx.StaticText(self, wx.ID_ANY,
-                                    "(click signal to remove)")
+                                    "(click signals below to remove)")
         self.clear_all_monitors = wx.Button(self, wx.ID_ANY, "Clear All")
-
         self.monitorButtons = {}
-        
         self.current_monitors = self.monitors.get_signal_names()[0]
         for curr in self.current_monitors:
             self.monitorButtons[curr] = wx.Button(self, wx.ID_ANY, curr)
@@ -312,17 +324,22 @@ class Gui(wx.Frame):
         self.cycles_text = wx.StaticText(self, wx.ID_ANY, "Cycles:")
         self.cycles_text.SetFont(subHeadingFont)
         self.spin_cycles = wx.SpinCtrl(self, wx.ID_ANY, "10")
+
         self.run_button = wx.Button(self, wx.ID_ANY, "Run")
         self.run_button.SetFont(wx.Font(go_font))
         self.run_button.SetBackgroundColour(darkgreen)
         self.run_button.SetForegroundColour(white)
+
         self.continue_button = wx.Button(self, wx.ID_ANY, "Continue")
         self.continue_button.SetFont(wx.Font(go_font))
         self.continue_button.SetBackgroundColour(cornflower)
         self.continue_button.SetForegroundColour(white)
+
+        commandLineFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL)
         self.command_line_input = wx.TextCtrl(self, wx.ID_ANY, "",
-                                    style=wx.TE_PROCESS_ENTER, size=(300, 25))
+                                    style=wx.TE_PROCESS_ENTER, size=(400, 25))
         self.command_line_input.SetHint("Command line input. See User Guide for help.")
+        self.command_line_input.SetFont(commandLineFont)
 
         # Bind events to widgets
         self.Bind(wx.EVT_MENU, self.on_menu)
@@ -345,6 +362,7 @@ class Gui(wx.Frame):
         # Sizers to be contained within side_sizer
         file_name_sizer = wx.BoxSizer(wx.HORIZONTAL)
         manual_settings_sizer = wx.BoxSizer(wx.VERTICAL)
+        devices_sizer = wx.FlexGridSizer(4)
         switch_buttons_sizer = wx.FlexGridSizer(4)
         monitors_sizer = wx.BoxSizer(wx.HORIZONTAL)
         monitors_help_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -368,7 +386,13 @@ class Gui(wx.Frame):
         command_line_sizer.Add(self.command_line_input, 1, wx.ALL, 5)
 
         manual_settings_sizer.Add(file_name_sizer, 1, wx.TOP, 5)
+        manual_settings_sizer.Add(self.devices_heading, 0, wx.ALL, 5)
+        
+        for device in self.device_text:
+            devices_sizer.Add(device, 0, wx.ALL, 5)
+        manual_settings_sizer.Add(devices_sizer, 0, wx.ALL, 5)
         manual_settings_sizer.Add(self.switches_text, 0, wx.ALL, 5)
+        
         manual_settings_sizer.Add(switch_buttons_sizer, 0, wx.ALL, 5)
         manual_settings_sizer.Add(monitors_sizer, 0, wx.TOP, 5)
         manual_settings_sizer.Add(monitors_help_sizer)
@@ -384,10 +408,10 @@ class Gui(wx.Frame):
             monitor_buttons_sizer.Add(mon, 1, wx.TOP, 5)
 
         monitors_sizer.Add(self.monitors_text, 1, wx.ALL, 5)
-        monitors_sizer.Add(self.monitor_input)
-
+        
+        monitors_help_sizer.Add(self.monitor_input, 0, wx.ALL, 5)
+        monitors_help_sizer.Add(self.clear_all_monitors, 0, wx.ALL, 5)
         monitors_help_sizer.Add(self.monitors_help_text, 0, wx.ALL, 10)
-        monitors_help_sizer.Add(self.clear_all_monitors, 0, wx.TOP, 5)
 
         cycles_sizer.Add(self.cycles_text, 1, wx.ALL, 5)
         cycles_sizer.Add(self.spin_cycles, 1, wx.ALL, 5)
@@ -428,7 +452,7 @@ class Gui(wx.Frame):
         self.setFileTitle(path)
         scanner = Scanner(path, None)
         parser = Parser(None, None, None, None, scanner)
-        #TODO parser should return names, devices, network,monitors
+        #TODO parser should return names, devices, network, monitors
         # if parser.parse_network():
         #     self.names = parser[0]
         #     self.devices = parser[1]
@@ -456,7 +480,7 @@ class Gui(wx.Frame):
             button.SetBackgroundColour(red)
             self.switch_buttons[switchName][1] = 0
         else:
-            button.SetBackgroundColour(green)
+            button.SetBackgroundColour(lightblue)
             self.switch_buttons[switchName][1] = 1
         newStatus = self.switch_buttons[switchName][1]
         self.devices.set_switch(switchId, newStatus)
@@ -514,7 +538,7 @@ class Gui(wx.Frame):
         if status == 0:
             button.SetBackgroundColour(red)
         else:
-            button.SetBackgroundColour(green)      
+            button.SetBackgroundColour(lightblue)      
         self.Layout()
 
     def on_command_line_add_monitor(self, deviceId, portId):
