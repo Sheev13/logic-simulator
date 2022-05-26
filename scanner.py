@@ -62,7 +62,7 @@ class Scanner:
         self.keywords = ["CIRCUIT", "DEVICES", "CONNECTIONS", "MONITOR"]
         [self.CIRCUIT_ID, self.DEVICES_ID, self.CONNECTIONS_ID, self.MONITOR_ID] = self.names.lookup(self.keywords)
 
-        self.puncs = [":", "[", "]", "{", "}", ";", ",", "."] # could treat them each as own symbol type
+        self.puncs = [":", "[", "]", "{", "}", ";", ",", "."] # could treat them each as own symbol type as in handout suggestion
         [self.COLON, self.OPEN_SQUARE, self.CLOSE_SQUARE, self.OPEN_CURLY, self.CLOSE_CURLY, self.SEMICOLON, 
             self.COMMA, self.DOT] = self.names.lookup(self.puncs)
 
@@ -110,7 +110,8 @@ class Scanner:
     def get_symbol(self):
         """Public function to translate the next sequence of characters into a symbol."""
         sym = Symbol()
-        self._next_non_ws()
+        if self.current_char.isspace():
+            self._next_non_ws()
 
         # name/keyword
         if self.current_char.isalpha(): 
@@ -141,8 +142,6 @@ class Scanner:
             self._next()
             #TODO
             # throw error? just move on?
-        
-        print("print information: ", sym.type)
 
         return sym
     
