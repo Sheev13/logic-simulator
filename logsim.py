@@ -23,6 +23,7 @@ from scanner import Scanner
 from parse import Parser
 from userint import UserInterface
 from gui import Gui
+from guimockdata import getMockData
 
 
 def main(arg_list):
@@ -77,6 +78,10 @@ def main(arg_list):
         if parser.parse_network():
             # Initialise an instance of the gui.Gui() class
             app = wx.App()
+            data = getMockData()
+            names = data[0]
+            devices = data[1]
+            network = data[2]
             gui = Gui("Logic Simulator", path, names, devices, network,
                       monitors)
             gui.Show(True)

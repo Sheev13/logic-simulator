@@ -152,7 +152,6 @@ class Network:
 
         else:  # first_port_id not a valid input or output port
             error_type = self.PORT_ABSENT
-
         return error_type
 
     def check_network(self):

@@ -24,11 +24,10 @@ from parse import Parser
 from userint import UserInterface
 from guicommandint import GuiCommandInterface
 
-switches = ["SW1", "SW2", "SW3", "SW4", "SW5", "SW6", "SW7", "SW8", "SW9"]
+# switches = ["SW1", "SW2", "SW3", "SW4", "SW5", "SW6", "SW7", "SW8", "SW9"]
 outputs = ["SW1", "SW2", "SW3", "SW4", "SW5", "SW6", "SW7", "SW8", "SW9", "G1", "G2", "F1.Q", "F1.QBAR"]
 current_monitors = ["SW1", "SW2", "SW3", "SW4", "SW5", "SW6", "SW7", "SW8", "SW9", "G1", "G2", "F1.Q", "F1.QBAR"]
 file_name_title = "example circuit"
-
 
 class MyGLCanvas(wxcanvas.GLCanvas):
     """Handle all drawing operations.
@@ -277,6 +276,8 @@ class Gui(wx.Frame):
         self.file_name.SetFont(wx.Font(18, wx.DECORATIVE, wx.SLANT, wx.BOLD))
         self.browse = wx.Button(self, wx.ID_ANY, "Browse")
 
+        switches = self.devices.find_devices(names.query("SWITCH"))
+
         if len(switches) > 0:
             self.switches_text = wx.StaticText(self, wx.ID_ANY,
                                     "Switches (toggle on/off):")
@@ -285,9 +286,16 @@ class Gui(wx.Frame):
             self.switches_text = wx.StaticText(self, wx.ID_ANY,
                                     "No switches in this circuit")
         self.switch_buttons = {}
-        for i in range(len(switches)):
-            self.switch_buttons[switches[i]]= [wx.Button(self, i, switches[i]), False]
-            self.switch_buttons[switches[i]][0].SetBackgroundColour(red)
+    
+        for s in switches:
+            name = self.names.get_name_string(s)
+            state = self.devices.get_device(s).switch_state
+            self.switch_buttons[name]= [wx.Button(self, s, name), state]
+            if state == 0:
+                self.switch_buttons[name][0].SetBackgroundColour(red)
+            else:
+                self.switch_buttons[name][0].SetBackgroundColour(green)
+            
 
         self.monitors_text = wx.StaticText(self, wx.ID_ANY, "Monitors:")
         self.monitors_text.SetFont(subHeadingFont)
@@ -403,7 +411,7 @@ class Gui(wx.Frame):
                             wildcard="TXT files (*.txt)|*.txt", style=wx.FD_OPEN+wx.FD_FILE_MUST_EXIST)
         if openFileDialog.ShowModal() == wx.ID_CANCEL:
            return
-        path = openFileDialog.GetPath()
+        self.path = openFileDialog.GetPath()
         label = os.path.basename(os.path.splitext(path)[0])
         if len(label) > 16:
             label = f"\"{label[0:13]}...\""
@@ -432,15 +440,19 @@ class Gui(wx.Frame):
     def on_switch_button(self, event):
         """Handle the event when the user clicks the switch button."""
         button = event.GetEventObject()
-        if self.switch_buttons[button.GetLabel()][1]:
+        switchName = button.GetLabel()
+        switchId = self.names.query(switchName)
+
+        if self.switch_buttons[switchName][1] == 1:
             button.SetBackgroundColour(red)
-            self.switch_buttons[button.GetLabel()][1] = False
-            status = "off"
+            self.switch_buttons[switchName][1] = 0
         else:
             button.SetBackgroundColour(green)
-            self.switch_buttons[button.GetLabel()][1] = True
-            status = "on"
-        text = f"{button.GetLabel()} turned {status}."
+            self.switch_buttons[switchName][1] = 1
+        newStatus = self.switch_buttons[switchName][1]
+        self.devices.set_switch(switchId, newStatus)
+        
+        text = f"{button.GetLabel()} turned {newStatus}."
         self.canvas.render(text)
 
     def destroyMonitor(self, monitor):
@@ -472,15 +484,11 @@ class Gui(wx.Frame):
         switchName = switch[0]
         status = switch[1]
         button = self.switch_buttons[switchName][0]
-
+        self.switch_buttons[switchName][1] = status
         if status == 0:
             button.SetBackgroundColour(red)
-            self.switch_buttons[switchName][1] = False
-            now = "off"
         else:
-            button.SetBackgroundColour(green)
-            self.switch_buttons[switchName][1] = True
-            now = "on"
+            button.SetBackgroundColour(green)      
         self.Layout()
 
     def on_command_line_add_monitor(self, monitorName):
