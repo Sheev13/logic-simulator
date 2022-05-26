@@ -62,7 +62,9 @@ class Parser:
         # For now just return True, so that userint and gui can run in the
         # skeleton code. When complete, should return False when there are
         # errors in the circuit definition file.
-
+        devices_done = False
+        connections_done = False
+        monitors_done = False
         self.symbol = self.scanner.get_symbol()
 
         #print(type(self.symbol), self.names.get_name_string(self.symbol.id))
@@ -74,20 +76,48 @@ class Parser:
                 # device_list has been found
                 self.parse_device_list()
                 devices_done = True
-            # etc etc for other 'lists'
+            else:
+                self.error("syntax", "no devices found")
+        else:
+            self.error("syntax", "no DEVICES keyword found")
 
+        self.symbol = self.scanner.get_symbol()
 
-        #TODO: deal with connections coming before devices...
+        if self.symbol.type == self.scanner.KEYWORD:
+            if self.symbol.id == self.scanner.CONNECTIONS_ID:
+                if not devices_done:
+                    self.error("syntax", "No devices found before connections")
+                self.parse_connection_list()  # TODO: PRIYANKA PLS <3
+                connections_done = True
 
+        if connections_done:
+            self.symbol = self.scanner.get_symbol()
+
+        if self.symbol.id == self.scanner.MONITOR_ID:
+            if not devices_done:
+                self.error("syntax", "no devices found, impossible to "
+                                     "monitor anything")
+                # I dont think we will ever get here...?
+                # note that don't have to have connections to monitor since
+                # devices automatically create outputs i believe
+
+            self.parse_monitor_list()  #TODO
+            monitors_done = True
+
+        if monitors_done:
+            self.symbol = self.scanner.get_symbol()
+
+        if self.symbol.type == self.scanner.EOF:
+            # TODO close file routine?
+            pass
+
+        print("Succesfully parsed entire definition file!")
 
         return True
 
 
     def parse_device_list(self):
-        # look for colon
         self.symbol = self.scanner.get_symbol()
-
-        # this assumes that get_symbol will remove whitespace
 
         if self.symbol.id != self.scanner.COLON:
             self.error("syntax", "Expected a ':' symbol")
@@ -102,7 +132,6 @@ class Parser:
         while parsing_devices:
             parsing_devices, first_device = self.parse_device(first_device)
 
-        #self.symbol = self.scanner.get_symbol()
         if self.symbol.id != self.scanner.CLOSE_SQUARE:
             self.error("syntax", "Expected a ']' symbol")
 
@@ -227,7 +256,11 @@ class Parser:
         first_device = False
         return keep_parsing, first_device
 
+    def parse_connection_list(self):
+        pass
 
+    def parse_monitor_list(self):
+        pass
 
     def error(self, error_type, message):
         # access to the offending symbol is via self.symbol
