@@ -174,3 +174,7 @@ class Monitors:
                 if signal == self.devices.BLANK:
                     print(" ", end="")
             print("\n", end="")
+
+    # def display_signals_gui(self):
+    #     """Display the signal trace(s) in the GUI."""
+        
