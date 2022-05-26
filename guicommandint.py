@@ -1,21 +1,20 @@
-"""Implement the interactive command line user interface.
+"""Implement the interactive GUI command interface.
 
 Used in the Logic Simulator project to enable the user to enter commands
-to run the simulation or adjust the network properties.
+to run the simulation in the GUI, or adjust the network properties.
 
 Classes:
 --------
-UserInterface - reads and parses user commands.
+GuiCommandInterface - reads and parses user commands.
 """
+import wx
 
-
-class UserInterface:
+class GuiCommandInterface:
     """Read and parse user commands.
 
     This class allows the user to enter certain commands.
     These commands enable the user to run or continue the simulation for a
-    number of cycles, set switches, add or zap monitors, show help, or quit
-    the program.
+    number of cycles, set switches, and add or zap monitors.
 
     Parameters
     -----------
@@ -28,8 +27,6 @@ class UserInterface:
     ---------------
     command_interface(self): Reads in the commands and calls the corresponding
                              functions.
-
-    get_line(self): Prints a prompt for the user and updates the user entry.
 
     read_command(self): Returns the first non-whitespace character.
 
@@ -64,50 +61,36 @@ class UserInterface:
 
     continue_command(self): Continues a previously run simulation.
     """
-
-    def __init__(self, names, devices, network, monitors):
+    
+    def __init__(self, line, names, devices, network, monitors):
         """Initialise variables."""
         self.names = names
         self.devices = devices
         self.monitors = monitors
         self.network = network
+        self.line = line
 
         self.cycles_completed = 0  # number of simulation cycles completed
 
         self.character = ""  # current character
-        self.line = ""  # current string entered by the user
         self.cursor = 0  # cursor position
 
     def command_interface(self):
         """Read the command entered and call the corresponding function."""
-        print("Logic Simulator: interactive command line user interface.\n"
-              "Enter 'h' for help.")
-        self.get_line()  # get the user entry
         command = self.read_command()  # read the first character
-        while command != "q":
-            if command == "h":
-                self.help_command()
-            elif command == "s":
-                self.switch_command()
-            elif command == "m":
-                self.monitor_command()
-            elif command == "z":
-                self.zap_command()
-            elif command == "r":
-                self.run_command()
-            elif command == "c":
-                self.continue_command()
-            else:
-                print("Invalid command. Enter 'h' for help.")
-            self.get_line()  # get the user entry
-            command = self.read_command()  # read the first character
-
-    def get_line(self):
-        """Print prompt for the user and update the user entry."""
-        self.cursor = 0
-        self.line = input("#: ")
-        while self.line == "":  # if the user enters a blank line
-            self.line = input("#: ")
+        if command == "s":
+            text, extra = self.switch_command()
+        elif command == "m":
+            text, extra = self.monitor_command()
+        elif command == "z":
+            text, extra = self.zap_command()
+        elif command == "r":
+            text, extra = self.run_command()
+        elif command == "c":
+            text, extra = self.continue_command()
+        else:
+            text, extra = "Invalid command. See User Guide for help.", None
+        return [command, text, extra, self.names, self.devices, self.network, self.monitors]
 
     def read_command(self):
         """Return the first non-whitespace character."""
@@ -198,27 +181,16 @@ class UserInterface:
 
         return number
 
-    def help_command(self):
-        """Print a list of valid commands."""
-        print("User commands:")
-        print("r N       - run the simulation for N cycles")
-        print("c N       - continue the simulation for N cycles")
-        print("s X N     - set switch X to N (0 or 1)")
-        print("m X       - set a monitor on signal X")
-        print("z X       - zap the monitor on signal X")
-        print("h         - help (this command)")
-        print("q         - quit the program")
-
     def switch_command(self):
         """Set the specified switch to the specified signal level."""
         switch_id = self.read_name()
+        switch_state = None
         if switch_id is not None:
             switch_state = self.read_number(0, 1)
             if switch_state is not None:
                 if self.devices.set_switch(switch_id, switch_state):
-                    print("Successfully set switch.")
-                else:
-                    print("Error! Invalid switch.")
+                    return "Successfully set switch.", [switch_id, switch_state]
+        return "Error! Invalid switch.", None
 
     def monitor_command(self):
         """Set the specified monitor."""
@@ -228,9 +200,8 @@ class UserInterface:
             monitor_error = self.monitors.make_monitor(device, port,
                                                        self.cycles_completed)
             if monitor_error == self.monitors.NO_ERROR:
-                print("Successfully made monitor.")
-            else:
-                print("Error! Could not make monitor.")
+                return "Successfully made monitor.", monitor
+        return "Error! Could not make monitor.", None
 
     def zap_command(self):
         """Remove the specified monitor."""
@@ -238,9 +209,8 @@ class UserInterface:
         if monitor is not None:
             [device, port] = monitor
             if self.monitors.remove_monitor(device, port):
-                print("Successfully zapped monitor")
-            else:
-                print("Error! Could not zap monitor.")
+                return "Successfully zapped monitor.", monitor
+        return "Error! Could not zap monitor.", None
 
     def run_network(self, cycles):
         """Run the network for the specified number of simulation cycles.
@@ -263,18 +233,20 @@ class UserInterface:
 
         if cycles is not None:  # if the number of cycles provided is valid
             self.monitors.reset_monitors()
-            print("".join(["Running for ", str(cycles), " cycles"]))
             self.devices.cold_startup()
             if self.run_network(cycles):
                 self.cycles_completed += cycles
+            return "".join(["Running for ", str(cycles), " cycles."]), cycles
+        return "Invalid number of cycles.", None
 
     def continue_command(self):
         """Continue a previously run simulation."""
         cycles = self.read_number(0, None)
         if cycles is not None:  # if the number of cycles provided is valid
             if self.cycles_completed == 0:
-                print("Error! Nothing to continue. Run first.")
+                return "Error! Nothing to continue. Run first.", None
             elif self.run_network(cycles):
                 self.cycles_completed += cycles
-                print(" ".join(["Continuing for", str(cycles), "cycles.",
-                                "Total:", str(self.cycles_completed)]))
+                return " ".join(["Continuing for", str(cycles), "cycles.",
+                                "Total:", str(self.cycles_completed)]), cycles
+        return "Error! Invalid number of cycles.", None
