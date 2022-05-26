@@ -9,21 +9,29 @@ from parse import Parser
 
 
 def getMockData():
+    """Get mock data for testing the GUI."""
     names = Names()
     devices = Devices(names)
 
     names.lookup(["SW1", "SW2", "SW3", "F1", "CLK1"])
-    devices.make_device(names.query("SW1"), devices.device_types[1], 0)
-    devices.make_device(names.query("SW2"), devices.device_types[1], 1)
-    devices.make_device(names.query("SW3"), devices.device_types[1], 0)
-    devices.make_device(names.query("F1"), devices.device_types[2])
-    devices.make_device(names.query("CLK1"), devices.device_types[0], 4)
 
-    network = Network(names, devices)
+    dNames = devices.names
+    devices.make_device(dNames.query("SW1"), devices.device_types[1], 0)
+    devices.make_device(dNames.query("SW2"), devices.device_types[1], 1)
+    devices.make_device(dNames.query("SW3"), devices.device_types[1], 0)
+    devices.make_device(dNames.query("F1"), devices.device_types[2])
+    devices.make_device(dNames.query("CLK1"), devices.device_types[0], 4)
 
-    network.make_connection(names.query("SW1"),names.query(None), names.query("F1"), names.query("SET"))
-    network.make_connection(names.query("SW2"),names.query(None), names.query("F1"), names.query("DATA"))
-    network.make_connection(names.query("CLK1"),names.query(None), names.query("F1"), names.query("CLK"))
-    network.make_connection(names.query("SW3"),names.query(None), names.query("F1"), names.query("CLEAR"))
+    network = Network(dNames, devices)
+    nNames = network.names
+    network.make_connection(nNames.query("SW1"),nNames.query(None), nNames.query("F1"), nNames.query("SET"))
+    network.make_connection(nNames.query("SW2"),nNames.query(None), nNames.query("F1"), nNames.query("DATA"))
+    network.make_connection(nNames.query("CLK1"),nNames.query(None), nNames.query("F1"), nNames.query("CLK"))
+    network.make_connection(nNames.query("SW3"),nNames.query(None), nNames.query("F1"), nNames.query("CLEAR"))
 
-    return names, devices, network
+    monitors = Monitors(nNames, devices, network)
+    mNames = monitors.names
+    monitors.make_monitor(mNames.query("F1"), mNames.query("Q"))
+    monitors.make_monitor(mNames.query("F1"), mNames.query("QBAR"))
+
+    return monitors.names, monitors.devices, monitors.network, monitors

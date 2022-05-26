@@ -24,11 +24,6 @@ from parse import Parser
 from userint import UserInterface
 from guicommandint import GuiCommandInterface
 
-# switches = ["SW1", "SW2", "SW3", "SW4", "SW5", "SW6", "SW7", "SW8", "SW9"]
-outputs = ["SW1", "SW2", "SW3", "SW4", "SW5", "SW6", "SW7", "SW8", "SW9", "G1", "G2", "F1.Q", "F1.QBAR"]
-current_monitors = ["SW1", "SW2", "SW3", "SW4", "SW5", "SW6", "SW7", "SW8", "SW9", "G1", "G2", "F1.Q", "F1.QBAR"]
-file_name_title = "example circuit"
-
 class MyGLCanvas(wxcanvas.GLCanvas):
     """Handle all drawing operations.
 
@@ -243,10 +238,10 @@ class Gui(wx.Frame):
         self.devices = devices
         self.monitors = monitors
         self.network = network
+        self.path = path
         
         """Initialise user interface."""
         self.userint = UserInterface(names, devices, network, monitors)
-        self.path = path
         self.help_string = help_string
 
         """Initialise widgets and layout."""
@@ -272,7 +267,8 @@ class Gui(wx.Frame):
         # Configure the widgets
         subHeadingFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD)
 
-        self.file_name = wx.StaticText(self, wx.ID_ANY, f"{file_name_title}")
+        self.file_name = wx.StaticText(self, wx.ID_ANY, f"")
+        self.setFileTitle(self.path)
         self.file_name.SetFont(wx.Font(18, wx.DECORATIVE, wx.SLANT, wx.BOLD))
         self.browse = wx.Button(self, wx.ID_ANY, "Browse")
 
@@ -296,16 +292,19 @@ class Gui(wx.Frame):
             else:
                 self.switch_buttons[name][0].SetBackgroundColour(green)
             
-
         self.monitors_text = wx.StaticText(self, wx.ID_ANY, "Monitors:")
         self.monitors_text.SetFont(subHeadingFont)
         self.monitor_input = wx.TextCtrl(self, wx.ID_ANY, "",
                                     style=wx.TE_PROCESS_ENTER)
         self.monitor_input.SetHint("Add new monitor")
         self.monitors_help_text = wx.StaticText(self, wx.ID_ANY,
-                                    "(click to remove)")
+                                    "(click signal to remove)")
+        self.clear_all_monitors = wx.Button(self, wx.ID_ANY, "Clear All")
+
         self.monitorButtons = {}
-        for curr in current_monitors:
+        
+        self.current_monitors = self.monitors.get_signal_names()[0]
+        for curr in self.current_monitors:
             self.monitorButtons[curr] = wx.Button(self, wx.ID_ANY, curr)
             self.monitorButtons[curr].SetBackgroundColour(lightblue)
 
@@ -337,6 +336,7 @@ class Gui(wx.Frame):
         self.continue_button.Bind(wx.EVT_BUTTON, self.on_continue_button)
         self.command_line_input.Bind(wx.EVT_TEXT_ENTER, self.on_command_line_input)
         self.monitor_input.Bind(wx.EVT_TEXT_ENTER, self.on_monitor_input)
+        self.clear_all_monitors.Bind(wx.EVT_BUTTON, self.on_clear_all_monitors_button)
 
         # Configure sizers for layout
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -347,6 +347,7 @@ class Gui(wx.Frame):
         manual_settings_sizer = wx.BoxSizer(wx.VERTICAL)
         switch_buttons_sizer = wx.FlexGridSizer(4)
         monitors_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        monitors_help_sizer = wx.BoxSizer(wx.HORIZONTAL)
         monitor_buttons_sizer = wx.FlexGridSizer(4)
         self.monitorButtonsSizer = monitor_buttons_sizer
         cycles_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -369,7 +370,8 @@ class Gui(wx.Frame):
         manual_settings_sizer.Add(file_name_sizer, 1, wx.TOP, 5)
         manual_settings_sizer.Add(self.switches_text, 0, wx.ALL, 5)
         manual_settings_sizer.Add(switch_buttons_sizer, 0, wx.ALL, 5)
-        manual_settings_sizer.Add(monitors_sizer)
+        manual_settings_sizer.Add(monitors_sizer, 0, wx.TOP, 5)
+        manual_settings_sizer.Add(monitors_help_sizer)
         manual_settings_sizer.Add(monitor_buttons_sizer, 0, wx.ALL, 5)
 
         file_name_sizer.Add(self.file_name, 1, wx.ALL, 5)
@@ -383,7 +385,9 @@ class Gui(wx.Frame):
 
         monitors_sizer.Add(self.monitors_text, 1, wx.ALL, 5)
         monitors_sizer.Add(self.monitor_input)
-        monitors_sizer.Add(self.monitors_help_text, 1, wx.ALL, 5)
+
+        monitors_help_sizer.Add(self.monitors_help_text, 0, wx.ALL, 10)
+        monitors_help_sizer.Add(self.clear_all_monitors, 0, wx.TOP, 5)
 
         cycles_sizer.Add(self.cycles_text, 1, wx.ALL, 5)
         cycles_sizer.Add(self.spin_cycles, 1, wx.ALL, 5)
@@ -394,6 +398,14 @@ class Gui(wx.Frame):
         self.SetSizer(main_sizer)
         self.Layout()
 
+    def setFileTitle(self, path):
+        """Display name of open file at top of screen."""
+        label = os.path.basename(os.path.splitext(path)[0])
+        if len(label) > 16:
+            label = f"\"{label[0:13]}...\""
+        self.file_name.SetLabel(label)
+        self.Layout()
+    
     def on_menu(self, event):
         """Handle the event when the user selects a menu item."""
         Id = event.GetId()
@@ -411,12 +423,9 @@ class Gui(wx.Frame):
                             wildcard="TXT files (*.txt)|*.txt", style=wx.FD_OPEN+wx.FD_FILE_MUST_EXIST)
         if openFileDialog.ShowModal() == wx.ID_CANCEL:
            return
-        self.path = openFileDialog.GetPath()
-        label = os.path.basename(os.path.splitext(path)[0])
-        if len(label) > 16:
-            label = f"\"{label[0:13]}...\""
-        self.file_name.SetLabel(label)
+        path = openFileDialog.GetPath()
         self.path = path
+        self.setFileTitle(path)
         scanner = Scanner(path, None)
         parser = Parser(None, None, None, None, scanner)
         #TODO parser should return names, devices, network,monitors
@@ -455,25 +464,42 @@ class Gui(wx.Frame):
         text = f"{button.GetLabel()} turned {newStatus}."
         self.canvas.render(text)
 
-    def destroyMonitor(self, monitor):
-        """Destroy monitor."""
-        if monitor is not None:
-            [device, port] = monitor
-            if self.monitors.remove_monitor(device, port):
-                return "Successfully zapped monitor."
-        return "Error! Could not zap monitor."
-
     def on_monitor_button(self, event):
         """Handle the event when the user clicks the monitor button."""
         button = event.GetEventObject()
         label = button.GetLabel()
+        text = self.destroyMonitor(label)
         button.Destroy()
-        current_monitors.remove(label)
-        #text = self.destroyMonitor(monitor)
-        text = f"Monitor {label} destroyed."
+        self.monitorButtons.pop(label)
         self.canvas.render(text)
         self.Layout()
 
+    def on_clear_all_monitors_button(self, event):
+        """Handle the event when the user clears all monitors."""   
+        for button in self.monitorButtons.values():
+            button.Destroy()
+              
+        for monitorName in self.monitors.get_signal_names()[0]:
+            commandint = GuiCommandInterface(monitorName, self.names, self.devices, self.network, self.monitors)
+            [deviceId, portId] = commandint.read_signal_name()
+            self.monitors.remove_monitor(deviceId, portId)
+            self.monitorButtons.pop(monitorName, "")
+        self.Layout()
+
+    def on_monitor_input(self, event):
+        """Handle the event when the user adds a monitor."""
+        name = self.monitor_input.GetValue().upper()
+        if self.isValidMonitor(name):
+            if self.isMonitoring(name):
+                text = f"Already monitoring {name}"
+            else:
+                text = self.makeMonitor(name)
+                self.addMonitorButton(name)
+        else:
+            text = "Invalid monitor"
+
+        self.canvas.render(text)
+    
     def on_continue_button(self, event):
         """Handle the event when the user clicks the continue button."""
         text = "Continue button pressed."
@@ -481,7 +507,7 @@ class Gui(wx.Frame):
 
     def on_command_line_set_switch(self, switch):
         """Change colour of switch button based on command line input."""
-        switchName = switch[0]
+        switchName = self.names.get_name_string(switch[0])
         status = switch[1]
         button = self.switch_buttons[switchName][0]
         self.switch_buttons[switchName][1] = status
@@ -491,23 +517,19 @@ class Gui(wx.Frame):
             button.SetBackgroundColour(green)      
         self.Layout()
 
-    def on_command_line_add_monitor(self, monitorName):
+    def on_command_line_add_monitor(self, deviceId, portId):
         """Add monitor button based on command line input."""
-        current_monitors.append(monitorName)
-        newButton = wx.Button(self, wx.ID_ANY, monitorName)
-        newButton.SetBackgroundColour(lightblue)
-        newButton.Bind(wx.EVT_BUTTON, self.on_monitor_button)
-        buttonSizer = self.monitorButtonsSizer
-        buttonSizer.Add(newButton, 1, wx.TOP, 5)
-        self.monitorButtons[monitorName] = newButton
-        self.Layout()
+        monitorName = self.getMonitorName(deviceId, portId)
+        self.makeMonitor(monitorName)
+        self.addMonitorButton(monitorName)
 
-    def on_command_line_zap_monitor(self, monitorName):
+    def on_command_line_zap_monitor(self, deviceId, portId):
         """Destroy monitor button based on command line input."""
+        monitorName = self.getMonitorName(deviceId, portId)
+        self.destroyMonitor(monitorName)
         button = self.monitorButtons[monitorName]
-        label = button.GetLabel()
         button.Destroy()
-        current_monitors.remove(label)
+        self.monitorButtons.pop(monitorName)
         self.Layout()
 
     def on_command_line_input(self, event):
@@ -520,11 +542,11 @@ class Gui(wx.Frame):
         extraInfo = action[2]
         if extraInfo is not None:
             if command == "s":
-                self.on_command_line_set_switch(extraInfo)
+                self.on_command_line_set_switch(extraInfo) #extraInfo = switch_state
             elif command == "m":
-                self.on_command_line_add_monitor(extraInfo)
+                self.on_command_line_add_monitor(extraInfo[0], extraInfo[1]) # extraInfo = [device_id, port_id]
             elif command == "z":
-                self.on_command_line_zap_monitor(extraInfo)
+                self.on_command_line_zap_monitor(extraInfo[0], extraInfo[1])
 
         self.canvas.render(text)
 
@@ -532,49 +554,53 @@ class Gui(wx.Frame):
         self.devices = action[4]
         self.network = action[5]
         self.monitors = action[6]
+            
+    def getMonitorName(self, deviceId, portId):
+        """Get name of monitor from device id and port id."""
+        deviceName = self.names.get_name_string(deviceId)
+        if portId is None:
+            monitorName = deviceName
+        else:
+            portName = self.names.get_name_string(portId)
+            monitorName = f"{deviceName}.{portName}"
+        return monitorName
+    
+    def makeMonitor(self, monitorName):
+        """Create a new monitoring point based on user selection."""
+        commandint = GuiCommandInterface(monitorName, self.names, self.devices, self.network, self.monitors)
+        [deviceId, portId] = commandint.read_signal_name()
+        monitor_error = self.monitors.make_monitor(deviceId, portId)
+        if monitor_error == self.monitors.NO_ERROR:
+            return "Successfully made monitor."
+        else:
+            return "Error! Could not make monitor."
         
-        
-    def makeMonitor(self, monitor):
-        """Create a new monitoring point based on user selection, and add to list of buttons."""
-        # if monitor is not None:
-        #     [device, port] = monitor
-        #     monitor_error = self.monitors.make_monitor(device, port,
-        #                                                self.cycles_completed)
-        #     if monitor_error == self.monitors.NO_ERROR:
-        #         text = "Successfully made monitor."
-        # else:
-        #     return "Error! Could not make monitor."
-        text = "Successfully made monitor."
-        current_monitors.append(monitor)
-        newButton = wx.Button(self, wx.ID_ANY, monitor)
+    def destroyMonitor(self, monitorName):
+        """Destroy monitor."""
+        commandint = GuiCommandInterface(monitorName, self.names, self.devices, self.network, self.monitors)
+        [deviceId, portId] = commandint.read_signal_name()
+        if self.monitors.remove_monitor(deviceId, portId):
+            return "Successfully zapped monitor."
+        return "Error! Could not zap monitor."
+
+    def isMonitoring(self, monitor):
+        """Return True if suggested monitor point is already being monitored."""
+        return monitor in self.monitors.get_signal_names()[0]
+
+    def isValidMonitor(self, monitor):
+        """Return True if suggested monitor point is a recognised output."""
+        signalNames = self.monitors.get_signal_names()
+        return monitor in signalNames[0] or monitor in signalNames[1]
+
+    def addMonitorButton(self, name):
+        """Add monitor button when monitor successfully created."""
+        newButton = wx.Button(self, wx.ID_ANY, name)
         newButton.SetBackgroundColour(lightblue)
         newButton.Bind(wx.EVT_BUTTON, self.on_monitor_button)
         buttonSizer = self.monitorButtonsSizer
         buttonSizer.Add(newButton, 1, wx.TOP, 5)
-        self.monitorButtons[monitor] = newButton
+        self.monitorButtons[name] = newButton
         self.Layout()
-        return text
-
-    def isMonitoring(self, monitor):
-        """Return True if suggested monitor point is already being monitored."""
-        return monitor in current_monitors
-
-    def isValidMonitor(self, monitor):
-        """Return True if suggested monitor point is a recognised output."""
-        return monitor in outputs
-
-    def on_monitor_input(self, event):
-        """Handle the event when the user adds a monitor."""
-        name = self.monitor_input.GetValue().upper()
-        if self.isValidMonitor(name):
-            if self.isMonitoring(name):
-                text = f"Already monitoring {name}"
-            else:
-                self.makeMonitor(name)    
-                text = "".join(["New monitor: ", name])
-        else:
-            text = "Invalid monitor"
-        self.canvas.render(text)
 
 paleyellow = wx.Colour(252, 251, 241)
 lightblue = wx.Colour(225, 239, 246)
