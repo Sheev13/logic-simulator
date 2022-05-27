@@ -261,12 +261,12 @@ class Parser:
         self.setNext()
 
         if self.symbol.id != self.scanner.COLON:
-            self.error("syntax", "Expected a ':' symbol")
+            self.error("syntax", "Expected a ':' symbol.")
 
         self.setNext()
 
         if self.symbol.id != self.scanner.OPEN_SQUARE:
-            self.error("syntax", "Expected a '[' symbol")
+            self.error("syntax", "Expected a '[' symbol.")
 
         parsing_connections = True
         self.setNext()
@@ -274,15 +274,15 @@ class Parser:
             parsing_connections = self.parse_connection()
 
         if self.symbol.id != self.scanner.CLOSE_SQUARE:
-            self.error("syntax", "Expected a ']' symbol")
+            self.error("syntax", "Expected a ']' symbol.")
 
         self.setNext()
         if self.symbol.id != self.scanner.SEMICOLON:
-            self.error("syntax", "Expected a ';' symbol")
+            self.error("syntax", "Expected a ';' symbol.")
 
     def parse_connection(self):
         """Parse a single connection."""
-        print("parsing a connection")
+        print("Parsing a connection.")
         leftOutputId, leftPortId, leftSignalName = self.parse_signal()
     
         if self.symbol.id == self.scanner.COLON:
@@ -293,17 +293,25 @@ class Parser:
             self.error("syntax", f"Expected ':' separating connection ends.")
 
         if self.symbol.id != self.scanner.SEMICOLON:
-            self.error("syntax", "Expected ';'")
+            self.error("syntax", "Expected ';'.")
 
         if self.error_count == 0:
-            print("no errors when parsing connection --> proceed to build")
+            print("No errors when parsing connection --> proceed to build.")
             error_type = self.network.make_connection(leftOutputId, leftPortId, rightOutputId, rightPortId)
 
             if error_type != self.network.NO_ERROR:
-                self.error("semantic", "something :///// will we ever get "
-                                       "here?")
+                if error_type == self.network.DEVICE_ABSENT:
+                    self.error("semantic", "One device absent.")
+                if error_type == self.network.INPUT_CONNECTED:
+                    self.error("semantic", f"Input {rightSignalName} is already connected.")
+                if error_type == self.network.INPUT_TO_INPUT:
+                    self.error("semantic", f"Both ports are inputs.")
+                if error_type == self.network.PORT_ABSENT:
+                    self.error("semantic", f"Right port id is invalid.")
+                if error_type == self.network.OUTPUT_TO_OUTPUT:
+                    self.error("semantic", f"Both ports are outputs.")
             else:
-                print(f"successfully built a connection from {leftSignalName} to {rightSignalName}")
+                print(f"Successfully built connection from {leftSignalName} to {rightSignalName}.")
 
         self.setNext()
 
@@ -343,7 +351,7 @@ class Parser:
                 portId = None
 
             else:
-                self.error("syntax", f"Expected port id or ':' separating connection ends")
+                self.error("syntax", f"Expected port id or ':' separating connection ends.")
 
         else:
             self.error("semantic", f"Output name {self.names.get_name_string(self.symbol.id)} is invalid.")
