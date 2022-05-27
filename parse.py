@@ -98,6 +98,8 @@ class Parser:
                 # I dont think we will ever get here...?
                 # note that don't have to have connections to monitor since
                 # devices automatically create outputs i believe
+                # You can add monitors in the GUI based on what devices 
+                # have been created! So no, monitors are not necessary
 
             self.parse_monitor_list()  #TODO
             monitors_done = True
@@ -236,8 +238,14 @@ class Parser:
                                                   device_kind_id,
                                                   device_qualifier)
             if error_type != self.devices.NO_ERROR:
-                self.error("semantic", "something :///// will we ever get "
-                                       "here?")
+                if error_type == self.devices.NO_QUALIFIER:    
+                    self.error("semantic", f"{device_kind_string} qualifier not present.")
+                elif error_type == self.devices.INVALID_QUALIFIER:    
+                    self.error("semantic", f"{device_kind_string} qualifier is invalid.")
+                elif error_type == self.devices.QUALIFIER_PRESENT:    
+                    self.error("semantic", f"Qualifier provided for {device_kind_string} when there should be none.")
+                elif error_type == self.devices.BAD_DEVICE:    
+                    self.error("semantic", f"Device kind {device_kind_string} not recognised.")
             else:
                 print(f"successfully built a device {device_name}-"
                       f"{device_kind_id}-{device_qualifier}")
@@ -302,13 +310,13 @@ class Parser:
             if error_type != self.network.NO_ERROR:
                 if error_type == self.network.DEVICE_ABSENT:
                     self.error("semantic", "One device absent.")
-                if error_type == self.network.INPUT_CONNECTED:
+                elif error_type == self.network.INPUT_CONNECTED:
                     self.error("semantic", f"Input {rightSignalName} is already connected.")
-                if error_type == self.network.INPUT_TO_INPUT:
+                elif error_type == self.network.INPUT_TO_INPUT:
                     self.error("semantic", f"Both ports are inputs.")
-                if error_type == self.network.PORT_ABSENT:
+                elif error_type == self.network.PORT_ABSENT:
                     self.error("semantic", f"Right port id is invalid.")
-                if error_type == self.network.OUTPUT_TO_OUTPUT:
+                elif error_type == self.network.OUTPUT_TO_OUTPUT:
                     self.error("semantic", f"Both ports are outputs.")
             else:
                 print(f"Successfully built connection from {leftSignalName} to {rightSignalName}.")
@@ -357,8 +365,7 @@ class Parser:
             self.error("semantic", f"Output name {self.names.get_name_string(self.symbol.id)} is invalid.")
 
         return outputId, portId, signalName
-        
-    
+
     def parse_monitor_list(self):
         """Parse list of monitors."""
         pass
