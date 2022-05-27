@@ -283,15 +283,12 @@ class Parser:
     def parse_connection(self):
         """Parse a single connection."""
         print("parsing a connection")
-        print("left before", self.strSymbol())
         leftOutputId, leftPortId, leftSignalName = self.parse_signal()
-        print("left after", self.strSymbol())
     
         if self.symbol.id == self.scanner.COLON:
             self.setNext()
-            print("right before", self.strSymbol())
             rightOutputId, rightPortId, rightSignalName = self.parse_signal()
-            print("right after", self.strSymbol())
+
         else:
             self.error("syntax", f"Expected ':' separating connection ends.")
 
@@ -307,9 +304,9 @@ class Parser:
                                        "here?")
             else:
                 print(f"successfully built a connection from {leftSignalName} to {rightSignalName}")
-        print("after success", self.strSymbol())
+
         self.setNext()
-        print("next name", self.strSymbol())
+
         if self.symbol.type == self.scanner.NAME:
             keep_parsing = True
 
@@ -338,12 +335,16 @@ class Parser:
                     signalName += self.names.get_name_string(self.symbol.id)
                     portId = self.symbol.id
                     self.setNext()
+
                 else:
                     self.error("semantic", f"Port {self.names.get_name_string(self.symbol.id)} is invalid.")
+
             elif self.symbol.id == self.scanner.COLON:
                 portId = None
+
             else:
                 self.error("syntax", f"Expected port id or ':' separating connection ends")
+
         else:
             self.error("semantic", f"Output name {self.names.get_name_string(self.symbol.id)} is invalid.")
 
@@ -358,11 +359,8 @@ class Parser:
         """Shift current symbol to next."""
         self.symbol = self.scanner.get_symbol()
 
-    def lookAhead(self):
-        """Look at next symbol, but do not set to current."""
-        return self.scanner.get_symbol()
-
     def strSymbol(self):
+        """For use in testing to more easily print symbol string."""
         return self.names.get_name_string(self.symbol.id)
     
     def error(self, error_type, message):
