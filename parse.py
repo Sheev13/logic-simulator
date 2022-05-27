@@ -63,7 +63,7 @@ class Parser:
         devices_done = False
         connections_done = False
         monitors_done = False
-        self.next()
+        self.setNext()
 
         #print(type(self.symbol), self.names.get_name_string(self.symbol.id))
 
@@ -79,7 +79,7 @@ class Parser:
         else:
             self.error("syntax", "no DEVICES keyword found")
 
-        self.next()
+        self.setNext()
 
         if self.symbol.type == self.scanner.KEYWORD:
             if self.symbol.id == self.scanner.CONNECTIONS_ID:
@@ -89,7 +89,7 @@ class Parser:
                 connections_done = True
 
         if connections_done:
-            self.next()
+            self.setNext()
 
         if self.symbol.id == self.scanner.MONITOR_ID:
             if not devices_done:
@@ -103,7 +103,7 @@ class Parser:
             monitors_done = True
 
         if monitors_done:
-            self.next()
+            self.setNext()
 
         if self.symbol.type == self.scanner.EOF:
             # TODO close file routine?
@@ -116,12 +116,12 @@ class Parser:
 
     def parse_device_list(self):
         """Parse list of devices."""
-        self.next()
+        self.setNext()
 
         if self.symbol.id != self.scanner.COLON:
             self.error("syntax", "Expected a ':' symbol")
 
-        self.next()
+        self.setNext()
 
         if self.symbol.id != self.scanner.OPEN_SQUARE:
             self.error("syntax", "Expected a '[' symbol")
@@ -134,7 +134,7 @@ class Parser:
         if self.symbol.id != self.scanner.CLOSE_SQUARE:
             self.error("syntax", "Expected a ']' symbol")
 
-        self.next()
+        self.setNext()
         if self.symbol.id != self.scanner.SEMICOLON:
             self.error("syntax", "Expected a ';' symbol")
 
@@ -142,19 +142,19 @@ class Parser:
         """Parse a single device."""
         print("parsing a device")
         if first_device:
-            self.next()
+            self.setNext()
 
         if self.symbol.id != self.scanner.OPEN_CURLY:
             self.error("syntax", "Expected a '{' symbol")
 
-        self.next()
+        self.setNext()
         if self.symbol.id == self.scanner.ID_KEYWORD_ID:
-            self.next()
+            self.setNext()
             if self.symbol.id == self.scanner.COLON:
                 # TODO: check this statement
                 # should it be "u provided a punctuation mark instead of a valid name"
                 # or maybe just "name *%^&*% is invalid"
-                self.next()
+                self.setNext()
                 if self.symbol.type == self.scanner.NAME:
                     print("valid name for a device")
                     # make note of the device name for the build later (if no errors)
@@ -169,15 +169,15 @@ class Parser:
         else:
             self.error("syntax", "Expected 'id'")
 
-        self.next()
+        self.setNext()
         if self.symbol.id != self.scanner.SEMICOLON:
             self.error("syntax", "Expected ';'")
 
-        self.next()
+        self.setNext()
         if self.symbol.id == self.scanner.KIND_KEYWORD_ID:
-            self.next()
+            self.setNext()
             if self.symbol.id == self.scanner.COLON:
-                self.next()
+                self.setNext()
                 if self.symbol.type == self.scanner.NAME:
                     # this only tells us its alphanum aka TODO still syntax?
                     device_kind_string = self.names.get_name_string(
@@ -192,16 +192,16 @@ class Parser:
         else:
             self.error("syntax", "Expected 'kind'")
 
-        self.next()
+        self.setNext()
         if self.symbol.id != self.scanner.SEMICOLON:
             self.error("syntax", "Expected ';'")
 
         if device_kind_id in self.expect_qualifier:
-            self.next()
+            self.setNext()
             if self.symbol.id == self.scanner.QUAL_KEYWORD_ID:
-                self.next()
+                self.setNext()
                 if self.symbol.id == self.scanner.COLON:
-                    self.next()
+                    self.setNext()
                     if self.symbol.type == self.scanner.NUMBER:
                         #print("valid qualifier")
                         device_qualifier = self.symbol.id
@@ -212,7 +212,7 @@ class Parser:
             else:
                 self.error("syntax", "Expected 'qual'")
 
-            self.next()
+            self.setNext()
             if self.symbol.id != self.scanner.SEMICOLON:
                 self.error("syntax", "Expected ';'")
         else:
@@ -222,17 +222,17 @@ class Parser:
         # TODO: need to clarify the error recovery stuff.... not sure this
         #  code will work anymore :/
 
-        self.next()
+        self.setNext()
         if self.symbol.id != self.scanner.CLOSE_CURLY:
             self.error("syntax", "Expected a '}' symbol")
 
-        self.next()
+        self.setNext()
         if self.symbol.id != self.scanner.SEMICOLON:
             self.error("syntax", "Expected ';'")
 
         if self.error_count == 0:
             print("no errors when parsing device --> proceed to build")
-            error_type = self.devices.make_device(device_name,
+            error_type = self.devices.make_device(self.names.query(device_name),
                                                   device_kind_id,
                                                   device_qualifier)
             if error_type != self.devices.NO_ERROR:
@@ -245,7 +245,7 @@ class Parser:
         #TODO: figure out how to detect errors after the end of parsing...?
         # is it just when u go back to main function? probs
 
-        self.next()
+        self.setNext()
         if self.symbol.id == self.scanner.OPEN_CURLY:
             keep_parsing = True
         elif self.symbol.id == self.scanner.CLOSE_SQUARE:
@@ -258,35 +258,40 @@ class Parser:
 
     def parse_connections_list(self):
         """Parse list of connections."""
-        self.next()
+        self.setNext()
 
         if self.symbol.id != self.scanner.COLON:
             self.error("syntax", "Expected a ':' symbol")
 
-        self.next()
+        self.setNext()
 
         if self.symbol.id != self.scanner.OPEN_SQUARE:
             self.error("syntax", "Expected a '[' symbol")
 
         parsing_connections = True
-
+        self.setNext()
         while parsing_connections:
             parsing_connections = self.parse_connection()
 
         if self.symbol.id != self.scanner.CLOSE_SQUARE:
             self.error("syntax", "Expected a ']' symbol")
 
-        self.next()
+        self.setNext()
         if self.symbol.id != self.scanner.SEMICOLON:
             self.error("syntax", "Expected a ';' symbol")
 
     def parse_connection(self):
         """Parse a single connection."""
         print("parsing a connection")
+        print("left before", self.strSymbol())
         leftOutputId, leftPortId, leftSignalName = self.parse_signal()
-
+        print("left after", self.strSymbol())
+    
         if self.symbol.id == self.scanner.COLON:
+            self.setNext()
+            print("right before", self.strSymbol())
             rightOutputId, rightPortId, rightSignalName = self.parse_signal()
+            print("right after", self.strSymbol())
         else:
             self.error("syntax", f"Expected ':' separating connection ends.")
 
@@ -302,13 +307,13 @@ class Parser:
                                        "here?")
             else:
                 print(f"successfully built a connection from {leftSignalName} to {rightSignalName}")
-        
-        self.next()
-
+        print("after success", self.strSymbol())
+        self.setNext()
+        print("next name", self.strSymbol())
         if self.symbol.type == self.scanner.NAME:
             keep_parsing = True
 
-        elif self.symbol.id == self.scanner.SEMICOLON:
+        elif self.symbol.id == self.scanner.CLOSE_SQUARE:
             keep_parsing = False
         
         else:
@@ -318,23 +323,21 @@ class Parser:
 
     def parse_signal(self):
         """Parse a signal name."""
-        print(device.inputs for device in self.devices.devices_list)
         signalName = ""
-        self.next()
 
         if self.symbol.type == self.scanner.NAME:
             signalName += self.names.get_name_string(self.symbol.id)
             outputId = self.symbol.id
-            self.next()
+            self.setNext()
 
             if self.symbol.id == self.scanner.DOT:
                 signalName += "."
-                self.next()
+                self.setNext()
 
                 if self.symbol.type == self.scanner.NAME:
                     signalName += self.names.get_name_string(self.symbol.id)
                     portId = self.symbol.id
-                    self.next()
+                    self.setNext()
                 else:
                     self.error("semantic", f"Port {self.names.get_name_string(self.symbol.id)} is invalid.")
             elif self.symbol.id == self.scanner.COLON:
@@ -343,7 +346,7 @@ class Parser:
                 self.error("syntax", f"Expected port id or ':' separating connection ends")
         else:
             self.error("semantic", f"Output name {self.names.get_name_string(self.symbol.id)} is invalid.")
-        print(signalName)
+
         return outputId, portId, signalName
         
     
@@ -351,9 +354,16 @@ class Parser:
         """Parse list of monitors."""
         pass
 
-    def next(self):
+    def setNext(self):
         """Shift current symbol to next."""
         self.symbol = self.scanner.get_symbol()
+
+    def lookAhead(self):
+        """Look at next symbol, but do not set to current."""
+        return self.scanner.get_symbol()
+
+    def strSymbol(self):
+        return self.names.get_name_string(self.symbol.id)
     
     def error(self, error_type, message):
         """Handle errors."""
