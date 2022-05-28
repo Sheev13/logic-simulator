@@ -281,6 +281,7 @@ class Gui(wx.Frame):
         self.userint = UserInterface(names, devices, network, monitors)
         self.help_string = help_string
         self.canvas_control_string = canvas_control_string
+        self.parse_error_string = parse_error_string
 
         """Initialise widgets and layout."""
         super().__init__(parent=None, title=title, size=(800, 600))
@@ -304,49 +305,21 @@ class Gui(wx.Frame):
         self.canvas = MyGLCanvas(self, devices, monitors, names)
 
         # Configure the widgets
-        subHeadingFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD)
-
+        self.subHeadingFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD)
         self.file_name = wx.StaticText(self, wx.ID_ANY, f"")
-        self.setFileTitle(self.path)
         self.file_name.SetFont(wx.Font(18, wx.DECORATIVE, wx.SLANT, wx.BOLD))
         self.browse = wx.Button(self, wx.ID_ANY, "Browse")
 
-        switches = self.devices.find_devices(names.query("SWITCH"))
-        if len(switches) > 0:
-            self.switches_text = wx.StaticText(self, wx.ID_ANY,
-                                    "Switches (toggle on/off):")
-            self.switches_text.SetFont(subHeadingFont)
-        else:
-            self.switches_text = wx.StaticText(self, wx.ID_ANY,
-                                    "No switches in this circuit")
+        self.switches_text = wx.StaticText(self, wx.ID_ANY, "")
+        self.switches_text.SetFont(self.subHeadingFont)
         self.switch_buttons = {}
-        for s in switches:
-            name = self.names.get_name_string(s)
-            state = self.devices.get_device(s).switch_state
-            self.switch_buttons[name]= [wx.Button(self, s, name), state]
-            if state == 0:
-                self.switch_buttons[name][0].SetBackgroundColour(red)
-            else:
-                self.switch_buttons[name][0].SetBackgroundColour(lightblue)
-            
+  
         self.devices_heading = wx.StaticText(self, wx.ID_ANY, "Devices:")
-        self.devices_heading.SetFont(subHeadingFont)
-        self.device_descs = []
-        gate_strings = ["AND", "OR", "NAND", "NOR", "XOR"]
-        for dev in self.devices.devices_list:
-            label = self.names.get_name_string(dev.device_id)
-            kind = self.names.get_name_string(dev.device_kind)
-            inputs = ""
-            if kind in gate_strings:
-                inputs = f", {str(len(dev.inputs.keys()))} inputs"
-            self.device_descs.append(f"{label}: {kind}{inputs}")
-
+        self.devices_heading.SetFont(self.subHeadingFont)
         self.device_text = []
-        for d in self.device_descs:
-            self.device_text.append(wx.StaticText(self, wx.ID_ANY, d))
 
         self.monitors_text = wx.StaticText(self, wx.ID_ANY, "Monitors:")
-        self.monitors_text.SetFont(subHeadingFont)
+        self.monitors_text.SetFont(self.subHeadingFont)
         self.monitor_input = wx.TextCtrl(self, wx.ID_ANY, "",
                                     style=wx.TE_PROCESS_ENTER)
         self.monitor_input.SetHint("Add new monitor")
@@ -354,14 +327,10 @@ class Gui(wx.Frame):
                                     "(click signals below to remove)")
         self.clear_all_monitors = wx.Button(self, wx.ID_ANY, "Clear All")
         self.monitorButtons = {}
-        self.current_monitors = self.monitors.get_signal_names()[0]
-        for curr in self.current_monitors:
-            self.monitorButtons[curr] = wx.Button(self, wx.ID_ANY, curr)
-            self.monitorButtons[curr].SetBackgroundColour(lightblue)
 
         go_font = wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD)
         self.cycles_text = wx.StaticText(self, wx.ID_ANY, "Cycles:")
-        self.cycles_text.SetFont(subHeadingFont)
+        self.cycles_text.SetFont(self.subHeadingFont)
         self.spin_cycles = wx.SpinCtrl(self, wx.ID_ANY, "10")
 
         self.run_button = wx.Button(self, wx.ID_ANY, "Run")
@@ -383,10 +352,6 @@ class Gui(wx.Frame):
         # Bind events to widgets
         self.Bind(wx.EVT_MENU, self.on_menu)
         self.browse.Bind(wx.EVT_BUTTON, self.on_browse)
-        for switch in [pair[0] for pair in self.switch_buttons.values()]:
-            switch.Bind(wx.EVT_BUTTON, self.on_switch_button)
-        for name in self.monitorButtons.keys():
-            self.monitorButtons[name].Bind(wx.EVT_BUTTON, self.on_monitor_button)
         self.spin_cycles.Bind(wx.EVT_SPINCTRL, self.on_spin_cycles)
         self.run_button.Bind(wx.EVT_BUTTON, self.on_run_button)
         self.continue_button.Bind(wx.EVT_BUTTON, self.on_continue_button)
@@ -401,12 +366,11 @@ class Gui(wx.Frame):
         # Sizers to be contained within side_sizer
         file_name_sizer = wx.BoxSizer(wx.HORIZONTAL)
         manual_settings_sizer = wx.BoxSizer(wx.VERTICAL)
-        devices_sizer = wx.FlexGridSizer(4)
-        switch_buttons_sizer = wx.FlexGridSizer(4)
+        self.devices_sizer = wx.FlexGridSizer(4)
+        self.switch_buttons_sizer = wx.FlexGridSizer(4)
         monitors_sizer = wx.BoxSizer(wx.HORIZONTAL)
         monitors_help_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        monitor_buttons_sizer = wx.FlexGridSizer(4)
-        self.monitorButtonsSizer = monitor_buttons_sizer
+        self.monitor_buttons_sizer = wx.FlexGridSizer(4)
         cycles_sizer = wx.BoxSizer(wx.HORIZONTAL)
         go_sizer = wx.BoxSizer(wx.HORIZONTAL)
         command_line_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -427,24 +391,16 @@ class Gui(wx.Frame):
         manual_settings_sizer.Add(file_name_sizer, 1, wx.TOP, 5)
         manual_settings_sizer.Add(self.devices_heading, 0, wx.ALL, 5)
         
-        for device in self.device_text:
-            devices_sizer.Add(device, 0, wx.ALL, 5)
-        manual_settings_sizer.Add(devices_sizer, 0, wx.ALL, 5)
+        manual_settings_sizer.Add(self.devices_sizer, 0, wx.ALL, 5)
         manual_settings_sizer.Add(self.switches_text, 0, wx.ALL, 5)
         
-        manual_settings_sizer.Add(switch_buttons_sizer, 0, wx.ALL, 5)
+        manual_settings_sizer.Add(self.switch_buttons_sizer, 0, wx.ALL, 5)
         manual_settings_sizer.Add(monitors_sizer, 0, wx.TOP, 5)
         manual_settings_sizer.Add(monitors_help_sizer)
-        manual_settings_sizer.Add(monitor_buttons_sizer, 0, wx.ALL, 5)
+        manual_settings_sizer.Add(self.monitor_buttons_sizer, 0, wx.ALL, 5)
 
         file_name_sizer.Add(self.file_name, 1, wx.ALL, 5)
         file_name_sizer.Add(self.browse, 0, wx.TOP, 6)
-
-        for switch in [pair[0] for pair in self.switch_buttons.values()]:
-            switch_buttons_sizer.Add(switch, 1, wx.TOP, 5)
-
-        for mon in self.monitorButtons.values():
-            monitor_buttons_sizer.Add(mon, 1, wx.TOP, 5)
 
         monitors_sizer.Add(self.monitors_text, 1, wx.ALL, 5)
         
@@ -457,6 +413,8 @@ class Gui(wx.Frame):
         go_sizer.Add(self.run_button, 1, wx.ALL, 5)
         go_sizer.Add(self.continue_button, 1, wx.ALL, 5)
         
+        self.updateNewCircuit(first=True)
+
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
         self.Layout()
@@ -489,22 +447,110 @@ class Gui(wx.Frame):
         if openFileDialog.ShowModal() == wx.ID_CANCEL:
            return
         path = openFileDialog.GetPath()
-        self.path = path
-        self.setFileTitle(path)
-        scanner = Scanner(path, None)
-        parser = Parser(None, None, None, None, scanner)
+        names = Names()
+        devices = Devices(names)
+        network = Network(names, devices)
+        monitors = Monitors(names, devices, network)
+        scanner = Scanner(path, names)
+        parser = Parser(names, devices, network, monitors, scanner)
+
         #TODO parser should return names, devices, network, monitors
-        # if parser.parse_network():
-        #     self.names = parser[0]
-        #     self.devices = parser[1]
-        #     self.network = parser[2]
-        #     self.monitors = parser[3]
-   
+        if parser.parse_network():
+            self.path = path
+            self.names = names
+            self.devices = devices
+            self.network = network
+            self.monitors = monitors
+            self.updateNewCircuit()
+        else:
+            wx.MessageBox(self.parse_error_string, "Unable to parse file.", wx.ICON_INFORMATION | wx.OK)
+
+
+    def updateNewCircuit(self, first=False):
+        """Configure widgets for new circuit and bind events."""
+        self.setFileTitle(self.path)
+        self.cycles_completed = 0
+
+        #find new switches
+        switches = self.devices.find_devices(self.names.query("SWITCH"))
+        if len(switches) > 0:
+            self.switches_text.SetLabel("Switches (toggle on/off):")
+        else:
+            self.switches_text.SetLabel("No switches in this circuit.")
+        
+        if not first:
+            #destroy current switch buttons
+            for switch in [pair[0] for pair in self.switch_buttons.values()]:
+                switch.Destroy()
+
+            #destroy current device list in sidebars
+            for text in self.device_text:
+                text.Destroy()
+
+            #destroy current monitor buttons
+            for monitor in self.monitorButtons.values():
+                monitor.Destroy()
+    
+        #add new switches
+        self.switch_buttons = {}
+        for s in switches:
+            name = self.names.get_name_string(s)
+            state = self.devices.get_device(s).switch_state
+            self.switch_buttons[name]= [wx.Button(self, s, name), state]
+            if state == 0:
+                self.switch_buttons[name][0].SetBackgroundColour(red)
+            else:
+                self.switch_buttons[name][0].SetBackgroundColour(lightblue)
+
+        #bind switch buttons to event
+        for switch in [pair[0] for pair in self.switch_buttons.values()]:
+            switch.Bind(wx.EVT_BUTTON, self.on_switch_button)
+
+        #add switches to sizer
+        for switch in [pair[0] for pair in self.switch_buttons.values()]:
+            self.switch_buttons_sizer.Add(switch, 1, wx.TOP, 5)
+            
+        #find new devices
+        self.device_descs = []
+        gate_strings = ["AND", "OR", "NAND", "NOR", "XOR"]
+        for dev in self.devices.devices_list:
+            label = self.names.get_name_string(dev.device_id)
+            kind = self.names.get_name_string(dev.device_kind)
+            inputs = ""
+            if kind in gate_strings:
+                inputs = f", {str(len(dev.inputs.keys()))} inputs"
+            self.device_descs.append(f"{label}: {kind}{inputs}")
+             
+        #add new devices to displayed list
+        self.device_text = []
+        for d in self.device_descs:
+            self.device_text.append(wx.StaticText(self, wx.ID_ANY, d))
+
+        #add new device list to sizer 
+        for device in self.device_text:
+            self.devices_sizer.Add(device, 0, wx.ALL, 5)
+
+        #add new monitor buttons
+        self.monitorButtons = {}
+        self.current_monitors = self.monitors.get_signal_names()[0]
+        for curr in self.current_monitors:
+            self.monitorButtons[curr] = wx.Button(self, wx.ID_ANY, curr)
+            self.monitorButtons[curr].SetBackgroundColour(lightblue)
+
+        #bind monitor buttons to event
+        for name in self.monitorButtons.keys():
+            self.monitorButtons[name].Bind(wx.EVT_BUTTON, self.on_monitor_button) 
+
+        #add new monitor buttons to sizer
+        for mon in self.monitorButtons.values():
+            self.monitor_buttons_sizer.Add(mon, 1, wx.TOP, 5)
+
+        self.Layout()
+
     def on_spin_cycles(self, event):
         """Handle the event when the user changes the number of cycles."""
         self.cycles_to_run = self.spin_cycles.GetValue()
         text = "".join(["Number of cycles: ", str(self.cycles_to_run)])
-        print(self.cycles_to_run)
         self.canvas.render(text)
 
     def on_run_button(self, event):
@@ -548,7 +594,6 @@ class Gui(wx.Frame):
         self.monitorButtons.pop(label)
         self.canvas.render(text)
         self.Layout()
-        print(self.monitors.get_signal_names())
 
     def on_clear_all_monitors_button(self, event):
         """Handle the event when the user clears all monitors."""   
@@ -564,7 +609,7 @@ class Gui(wx.Frame):
 
     def on_monitor_input(self, event):
         """Handle the event when the user adds a monitor."""
-        name = self.monitor_input.GetValue().upper()
+        name = self.monitor_input.GetValue()
         if self.isValidMonitor(name):
             if self.isMonitoring(name):
                 text = f"Already monitoring {name}"
@@ -573,7 +618,6 @@ class Gui(wx.Frame):
                 self.addMonitorButton(name)
         else:
             text = "Invalid monitor"
-        print(self.monitors.get_signal_names())
 
         self.canvas.render(text)
 
@@ -612,7 +656,6 @@ class Gui(wx.Frame):
         """Handle display of signals when run command issued via command line."""
         self.cycles_completed += cycles
 
-
     def on_command_line_set_switch(self, switch):
         """Change colour of switch button based on command line input."""
         switchName = self.names.get_name_string(switch[0])
@@ -627,7 +670,6 @@ class Gui(wx.Frame):
 
     def on_command_line_add_monitor(self, deviceId, portId):
         """Add monitor button based on command line input."""
-        print(self.monitors.get_signal_names())
         monitorName = self.getMonitorName(deviceId, portId)
         self.addMonitorButton(monitorName)
 
@@ -637,7 +679,6 @@ class Gui(wx.Frame):
         button = self.monitorButtons[monitorName]
         button.Destroy()
         self.monitorButtons.pop(monitorName)
-        print(self.monitors.get_signal_names())
         self.Layout()
 
     def getMonitorName(self, deviceId, portId):
@@ -678,7 +719,7 @@ class Gui(wx.Frame):
         newButton = wx.Button(self, wx.ID_ANY, name)
         newButton.SetBackgroundColour(lightblue)
         newButton.Bind(wx.EVT_BUTTON, self.on_monitor_button)
-        buttonSizer = self.monitorButtonsSizer
+        buttonSizer = self.monitor_buttons_sizer
         buttonSizer.Add(newButton, 1, wx.TOP, 5)
         self.monitorButtons[name] = newButton
         self.Layout()
@@ -708,3 +749,5 @@ canvas_control_string = "Signals on the canvas can be manipulated to better view
                             "\n \nScroll in to zoom in" \
                             "\n \nScroll out to zoom out" \
                             "\n \nClick and hold, then move the mouse to drag the signals around the space"
+
+parse_error_string = "Unable to parse file. Old file will still be loaded."

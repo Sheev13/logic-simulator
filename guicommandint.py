@@ -134,7 +134,7 @@ class GuiCommandInterface:
         if name_string is None:
             return None
         else:
-            name_id = self.names.query(name_string.upper())
+            name_id = self.names.query(name_string)
         if name_id is None:
             print("Error! Unknown name.")
         return name_id
