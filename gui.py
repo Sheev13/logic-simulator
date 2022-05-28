@@ -137,9 +137,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glColor3f(rgb[0], rgb[1], rgb[2])
         GL.glBegin(GL.GL_LINE_STRIP)
         i = 1
-
-        print(len(X), len(Y))
-
         while i<len(X):
             if Y[i] == axis:
                 GL.glColor3f(1, 1, 1)
@@ -187,7 +184,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.init_gl()
             self.init = True
 
-        text = "Welcome to the Logic Simulator! See Help Menu to get started."
+        text = "Welcome to the Logic Simulator! See User Guide for canvas controls and a guide to command line input."
         self.render(text)
 
     def on_size(self, event):
@@ -310,10 +307,10 @@ class Gui(wx.Frame):
 
         # Canvas for drawing signals
         self.scrollable = wx.ScrolledCanvas(self, wx.ID_ANY)
+        self.scrollable.SetVirtualSize(500,500)
         self.scrollable.ShowScrollbars(wx.SHOW_SB_ALWAYS,wx.SHOW_SB_DEFAULT)
         self.scrollable.SetScrollbars(20, 20, 15, 10)
-        self.canvas = MyGLCanvas(self.scrollable, wx.Size(900,700), devices, monitors, names)
-
+        self.canvas = MyGLCanvas(self.scrollable, wx.Size(1500,700), devices, monitors, names)
         # Configure the widgets
         self.subHeadingFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD)
         self.file_name = wx.StaticText(self, wx.ID_ANY, f"", size=wx.Size(300, 30))
@@ -378,19 +375,19 @@ class Gui(wx.Frame):
         manual_settings_sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.devices_sizer = wx.FlexGridSizer(4)
-        self.devices_window = wx.ScrolledWindow(self, -1, wx.DefaultPosition, wx.Size(375, 75), wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
+        self.devices_window = wx.ScrolledWindow(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(375, 75), wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
         self.devices_window.SetSizer(self.devices_sizer)
         self.devices_window.SetScrollRate(10, 10)
         self.devices_window.SetAutoLayout(True)
 
         self.switch_buttons_sizer = wx.FlexGridSizer(4)
-        self.switch_window = wx.ScrolledWindow(self, -1, wx.DefaultPosition, wx.Size(375, 60), wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
+        self.switch_window = wx.ScrolledWindow(self,wx.ID_ANY, wx.DefaultPosition, wx.Size(375, 60), wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
         self.switch_window.SetSizer(self.switch_buttons_sizer)
         self.switch_window.SetScrollRate(10, 10)
         self.switch_window.SetAutoLayout(True)
 
         self.monitor_buttons_sizer = wx.FlexGridSizer(4)
-        self.monitors_window = wx.ScrolledWindow(self, -1, wx.DefaultPosition, wx.Size(375, 60), wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
+        self.monitors_window = wx.ScrolledWindow(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(375, 60), wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
         self.monitors_window.SetSizer(self.monitor_buttons_sizer)
         self.monitors_window.SetScrollRate(10, 10)
         self.monitors_window.SetAutoLayout(True)
@@ -446,8 +443,8 @@ class Gui(wx.Frame):
     def setFileTitle(self, path):
         """Display name of open file at top of screen."""
         label = os.path.basename(os.path.splitext(path)[0])
-        if len(label) > 16:
-            label = f"\"{label[0:13]}...\""
+        if len(label) > 22:
+            label = f"\"{label[0:20]}...\""
         self.file_name.SetLabel(label)
         self.Layout()
     
@@ -477,8 +474,6 @@ class Gui(wx.Frame):
         monitors = Monitors(names, devices, network)
         scanner = Scanner(path, names)
         parser = Parser(names, devices, network, monitors, scanner)
-
-        #TODO parser should return names, devices, network, monitors
         if parser.parse_network():
             self.path = path
             self.names = names
@@ -790,9 +785,8 @@ help_string = "Enter command line inputs in the bottom left of the interface.\n"
                             "\n \nz X\nStop monitoring X"
 
 canvas_control_string = "Signals on the canvas can be manipulated to better view them.\n" \
-                            "\nPossible controls:" \
-                            "\n \nScroll in to zoom in" \
-                            "\n \nScroll out to zoom out" \
-                            "\n \nClick and hold, then move the mouse to drag the signals around the space"
+                            "\n Scroll in to zoom in" \
+                            "\n \nScroll out to zoom out - this may be useful if you have many monitors" \
+                            "\n \nClick and hold to drag the signals around the space"
 
 parse_error_string = "Unable to parse file. Old file will remain loaded."
