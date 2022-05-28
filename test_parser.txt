@@ -9,3 +9,7 @@ DEVICES: [
 
 CONNECTIONS: [
 ];
+
+MONITOR: [
+    G1; A;
+];

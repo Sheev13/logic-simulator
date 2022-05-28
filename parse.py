@@ -101,7 +101,7 @@ class Parser:
                 # You can add monitors in the GUI based on what devices 
                 # have been created! So no, monitors are not necessary
 
-            self.parse_monitor_list()  #TODO
+            self.parse_monitor_list()
             monitors_done = True
 
         if monitors_done:
@@ -364,8 +364,11 @@ class Parser:
             elif self.symbol.id == self.scanner.COLON:
                 portId = None
 
+            elif self.symbol.id == self.scanner.SEMICOLON:
+                portId = None
+
             else:
-                self.error("syntax", f"Expected port id or ':' separating connection ends.")
+                self.error("syntax", f"Expected port id, ':' separating connection ends, or ';' for end of monitor.")
 
         else:
             self.error("semantic", f"Output name {self.names.get_name_string(self.symbol.id)} is invalid.")
@@ -374,7 +377,69 @@ class Parser:
 
     def parse_monitor_list(self):
         """Parse list of monitors."""
-        pass
+        self.setNext()
+
+        if self.symbol.id != self.scanner.COLON:
+            self.error("syntax", "Expected a ':' symbol.")
+
+        self.setNext()
+
+        if self.symbol.id != self.scanner.OPEN_SQUARE:
+            self.error("syntax", "Expected a '[' symbol.")
+
+        parsing_monitors = True
+        self.setNext()
+
+        while parsing_monitors:
+            if self.symbol.id == self.scanner.CLOSE_SQUARE:
+                #allow for no monitors
+                print("No monitors present.")
+                parsing_monitors = False
+                break
+            else:
+                parsing_monitors = self.parse_monitor()
+
+        if self.symbol.id != self.scanner.CLOSE_SQUARE:
+            self.error("syntax", "Expected a ']' symbol.")
+
+        self.setNext()
+        if self.symbol.id != self.scanner.SEMICOLON:
+            self.error("syntax", "Expected a ';' symbol.")
+
+    def parse_monitor(self):
+        """Parse a single monitor."""
+        print("Parsing a monitor.")
+        deviceId, portId, signalName = self.parse_signal()
+    
+        if self.symbol.id != self.scanner.SEMICOLON:
+            self.error("syntax", "Expected ';'.")
+
+        if self.error_count == 0:
+            print("No errors when parsing monitor --> proceed to build.")
+            error_type = self.monitors.make_monitor(deviceId, portId)
+
+            if error_type != self.monitors.NO_ERROR:
+                if error_type == self.monitors.DEVICE_ABSENT:
+                    self.error("semantic", "Device you are trying to monitor is absent.")
+                elif error_type == self.monitors.NOT_OUTPUT:
+                    self.error("semantic", f"{signalName} is not an output.")
+                elif error_type == self.monitors.MONITOR_PRESENT:
+                    self.error("semantic", f"Already monitoring {signalName}.")
+            else:
+                print(f"Successfully built monitor {signalName}.")
+
+        self.setNext()
+
+        if self.symbol.type == self.scanner.NAME:
+            keep_parsing = True
+
+        elif self.symbol.id == self.scanner.CLOSE_SQUARE:
+            keep_parsing = False
+        
+        else:
+            self.error("syntax", "something")
+
+        return keep_parsing
 
     def setNext(self):
         """Shift current symbol to next."""
