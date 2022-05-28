@@ -179,6 +179,7 @@ class Monitors:
         """Display the signal trace(s) in the GUI."""
         margin = self.get_margin()
         signalData = {}
+        
         for device_id, output_id in self.monitors_dictionary:
             monitor_name = self.devices.get_signal_name(device_id, output_id)
             kind = self.devices.get_device(device_id).device_kind
@@ -187,9 +188,7 @@ class Monitors:
             desc = monitor_name + (margin - name_length) * " " + ": "
             xcoords = []
             ycoords = []
-
             x = 0
-            y = 0
 
             for signal in signal_list:
                 xcoords.extend([x, x+20])
@@ -204,6 +203,7 @@ class Monitors:
                 if signal == self.devices.BLANK:
                     ycoords.extend([0, 0])
                 x = xcoords[-1]
-                y = ycoords[-1]
+
             signalData[monitor_name] = [desc, xcoords, ycoords, kind]
-        return signalData   
+
+        return signalData

@@ -115,10 +115,11 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         for monitor in signalData.keys():
             desc, X, Y, device_kind = signalData[monitor]
             if len(X)>0:
-                X = [20+x for x in X]
+                margin = len(desc)*6
                 Y = [y+shift for y in Y]  
+                X = [x+margin+10 for x in X]
                 rgb = self.traceColour(device_kind)
-                self.render_text(desc, X[0]-20, ylow+12)
+                self.render_text(desc, X[0]-margin, ylow+12)
                 self.drawTrace(X, Y, ylow, rgb)
                 shift += 100
                 ylow += 100
