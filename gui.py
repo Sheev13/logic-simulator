@@ -173,7 +173,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         if self.names.get_name_string(device_kind) == "SWITCH":
             return [1, 0, 1]
         if self.names.get_name_string(device_kind) == "DTYPE":
-            return [1, 1, 0]
+            return [1, 0, 0]
         else:
             return [0, 0, 0]
 
@@ -612,7 +612,7 @@ class Gui(wx.Frame):
         self.monitorButtons = {}
         self.current_monitors = self.monitors.get_signal_names()[0]
         for curr in self.current_monitors:
-            currId = self.names.query(curr)
+            currId = self.names.lookup([curr])[0]
             self.monitorButtons[curr] = wx.Button(
                 self.monitors_window, currId, curr
             )
@@ -843,7 +843,7 @@ class Gui(wx.Frame):
     def addMonitorButton(self, name):
         """Add monitor button when monitor successfully created."""
         shortName = self.shorten(name)
-        id = self.names.query(name)
+        id = self.names.lookup([name])[0]
         newButton = wx.Button(self.monitors_window, id, shortName)
         newButton.SetBackgroundColour(lightblue)
         newButton.Bind(wx.EVT_BUTTON, self.on_monitor_button)
