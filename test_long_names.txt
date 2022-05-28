@@ -5,6 +5,7 @@ DEVICES: [
 {id: bbbbbbbbbb; kind: NOR; qual: 2;};
 {id: G2; kind: AND; qual: 2;};
 {id: G3; kind: OR; qual: 2;};
+{id: CLK1; kind: CLOCK; qual: 2;};
 ];
 
 CONNECTIONS: [

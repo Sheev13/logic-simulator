@@ -532,7 +532,8 @@ class Gui(wx.Frame):
         #add new devices to displayed list
         self.device_text = []
         for d in self.device_descs:
-            self.device_text.append(wx.StaticText(self.devices_window, wx.ID_ANY, d))
+            desc = wx.StaticText(self.devices_window, wx.ID_ANY, d)
+            self.device_text.append(desc)
 
         #add new device list to sizer 
         for device in self.device_text:
