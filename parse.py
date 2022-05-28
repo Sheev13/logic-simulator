@@ -279,7 +279,13 @@ class Parser:
         parsing_connections = True
         self.setNext()
         while parsing_connections:
-            parsing_connections = self.parse_connection()
+            if self.symbol.id == self.scanner.CLOSE_SQUARE:
+                #allow for no connections
+                print("No connections present.")
+                parsing_connections = False
+                break
+            else:
+                parsing_connections = self.parse_connection()
 
         if self.symbol.id != self.scanner.CLOSE_SQUARE:
             self.error("syntax", "Expected a ']' symbol.")
