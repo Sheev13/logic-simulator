@@ -1,0 +1,7 @@
+DEVICES: [
+{id: CLK1; kind: CLOCK; qual: 4;};
+];
+
+CONNECTIONS: [
+]
+;

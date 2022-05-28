@@ -522,10 +522,12 @@ class Gui(wx.Frame):
         for dev in self.devices.devices_list:
             label = self.shorten(self.names.get_name_string(dev.device_id))
             kind = self.names.get_name_string(dev.device_kind)
-            inputs = ""
+            extra = ""
             if kind in gate_strings:
-                inputs = f", {str(len(dev.inputs.keys()))} inputs"
-            self.device_descs.append(f"{label}: {kind}{inputs}")
+                extra = f", {str(len(dev.inputs.keys()))} inputs"
+            if kind == "CLOCK":
+                extra = f", half-period {dev.clock_half_period}"
+            self.device_descs.append(f"{label}: {kind}{extra}")
              
         #add new devices to displayed list
         self.device_text = []
@@ -540,7 +542,8 @@ class Gui(wx.Frame):
         self.monitorButtons = {}
         self.current_monitors = self.monitors.get_signal_names()[0]
         for curr in self.current_monitors:
-            self.monitorButtons[curr] = wx.Button(self.monitors_window, wx.ID_ANY, curr)
+            currId = self.names.query(curr)
+            self.monitorButtons[curr] = wx.Button(self.monitors_window, currId, curr)
             self.monitorButtons[curr].SetBackgroundColour(lightblue)
 
         #bind monitor buttons to event
@@ -729,7 +732,8 @@ class Gui(wx.Frame):
     def addMonitorButton(self, name):
         """Add monitor button when monitor successfully created."""
         shortName = self.shorten(name)
-        newButton = wx.Button(self.monitors_window, wx.ID_ANY, shortName)
+        id = self.names.query(name)
+        newButton = wx.Button(self.monitors_window, id, shortName)
         newButton.SetBackgroundColour(lightblue)
         newButton.Bind(wx.EVT_BUTTON, self.on_monitor_button)
         newButton.SetToolTip(name)
