@@ -43,7 +43,7 @@ class Monitors:
 
     get_margin(self): Returns the length of the longest monitor's name.
 
-    display_signals_console(self): Displays signal trace(s) in the text console.
+    display_signals_console(self): Displays signal trace(s) in text console.
     """
 
     def __init__(self, names, devices, network):
@@ -179,7 +179,7 @@ class Monitors:
         """Display the signal trace(s) in the GUI."""
         margin = self.get_margin()
         signalData = {}
-        
+
         for device_id, output_id in self.monitors_dictionary:
             monitor_name = self.devices.get_signal_name(device_id, output_id)
             kind = self.devices.get_device(device_id).device_kind
@@ -192,7 +192,7 @@ class Monitors:
 
             for signal in signal_list:
                 xcoords.extend([x, x+20])
-                if signal == self.devices.HIGH: 
+                if signal == self.devices.HIGH:
                     ycoords.extend([high, high])
                 if signal == self.devices.LOW:
                     ycoords.extend([low, low])
