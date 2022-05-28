@@ -520,7 +520,7 @@ class Gui(wx.Frame):
         self.device_descs = []
         gate_strings = ["AND", "OR", "NAND", "NOR", "XOR"]
         for dev in self.devices.devices_list:
-            label = self.names.get_name_string(dev.device_id)
+            label = self.shorten(self.names.get_name_string(dev.device_id))
             kind = self.names.get_name_string(dev.device_kind)
             inputs = ""
             if kind in gate_strings:
@@ -739,7 +739,7 @@ class Gui(wx.Frame):
 
     def shorten(self, name):
         """Get shortened name for button label."""
-        if len(name)>10:
+        if len(name)>8:
             return f"'{name[0:7]}...'"
         else:
             return name
@@ -770,4 +770,4 @@ canvas_control_string = "Signals on the canvas can be manipulated to better view
                             "\n \nScroll out to zoom out" \
                             "\n \nClick and hold, then move the mouse to drag the signals around the space"
 
-parse_error_string = "Unable to parse file. Old file will still be loaded."
+parse_error_string = "Unable to parse file. Old file will remain loaded."
