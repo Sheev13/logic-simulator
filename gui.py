@@ -24,12 +24,13 @@ from parse import Parser
 from userint import UserInterface
 from guicommandint import GuiCommandInterface
 
+
 class MyGLCanvas(wxcanvas.GLCanvas):
     """Handle all drawing operations.
 
     This class contains functions for drawing onto the canvas. It
     also contains handlers for events relating to the canvas.
-    
+
     Parameters
     ----------
     parent: parent window.
@@ -109,22 +110,22 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         top = 675
         self.render_text(text, 10, top)
 
-        #Draw signal traces
+        # Draw signal traces
         low = 5
         high = 25
         signalData = self.monitors.display_signals_gui(high=high, low=low)
         axis = top-45
         for monitor in signalData.keys():
             desc, X, Y, device_kind = signalData[monitor]
-            if len(X)>0:
+            if len(X) > 0:
                 margin = len(desc)*6
                 Y = [axis+y for y in Y]
                 X = [x+margin+10 for x in X]
                 rgb = self.traceColour(device_kind)
-                self.render_text(desc, X[0]-margin,axis+12)
+                self.render_text(desc, X[0]-margin, axis+12)
                 self.drawTrace(X, Y, axis, rgb)
                 axis -= 100
-            
+
         # We have been drawing to the back buffer, flush the graphics pipeline
         # and swap the back buffer to the front
         GL.glFlush()
@@ -137,14 +138,14 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glColor3f(rgb[0], rgb[1], rgb[2])
         GL.glBegin(GL.GL_LINE_STRIP)
         i = 1
-        while i<len(X):
+        while i < len(X):
             if Y[i] == axis:
                 GL.glColor3f(1, 1, 1)
                 GL.glVertex2f(X[i-1], Y[i-1])
                 GL.glVertex2f(X[i], Y[i])
                 GL.glColor3f(rgb[0], rgb[1], rgb[2])
             else:
-                if i>1 and Y[i-2] == axis:
+                if i > 1 and Y[i-2] == axis:
                     GL.glColor3f(1, 1, 1)
                     GL.glVertex2f(X[i-1], Y[i-1])
                     GL.glColor3f(rgb[0], rgb[1], rgb[2])
@@ -184,7 +185,9 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.init_gl()
             self.init = True
 
-        text = "Welcome to the Logic Simulator! See User Guide for canvas controls and a guide to command line input."
+        text = "Welcome to the Logic Simulator! " \
+            "See User Guide for canvas controls "\
+            "and a guide to command line input."
         self.render(text)
 
     def on_size(self, event):
@@ -261,14 +264,14 @@ class Gui(wx.Frame):
     --------------
     on_menu(self, event): Event handler for the file menu.
 
-    on_spin_cycles(self, event): Event handler for when the user changes the number of cycles.
+    on_spin_cycles(self, event): Handle event when user changes cycles.
 
     on_run_button(self, event): Event handler for when the user clicks the run
                                 button.
 
-    on_command_line_input(self, event): Event handler for when the user enters a command.
+    on_command_line_input(self, event): Handle user commands.
 
-    on_monitor_input(self, event): Event handler for when the user adds a monitor.
+    on_monitor_input(self, event): Handle event when user adds a monitor.
     """
 
     def __init__(self, title, path, names, devices, network, monitors):
@@ -279,7 +282,7 @@ class Gui(wx.Frame):
         self.network = network
         self.cycles_completed = 0
         self.cycles_to_run = 10
-        
+
         """Initialise user interface."""
         self.path = path
         self.userint = UserInterface(names, devices, network, monitors)
@@ -307,31 +310,37 @@ class Gui(wx.Frame):
 
         # Canvas for drawing signals
         self.scrollable = wx.ScrolledCanvas(self, wx.ID_ANY)
-        self.scrollable.SetVirtualSize(500,500)
-        self.scrollable.ShowScrollbars(wx.SHOW_SB_ALWAYS,wx.SHOW_SB_DEFAULT)
+        self.scrollable.SetVirtualSize(500, 500)
+        self.scrollable.ShowScrollbars(wx.SHOW_SB_ALWAYS, wx.SHOW_SB_DEFAULT)
         self.scrollable.SetScrollbars(20, 20, 15, 10)
-        self.canvas = MyGLCanvas(self.scrollable, wx.Size(1500,700), devices, monitors, names)
+        self.canvas = MyGLCanvas(
+            self.scrollable, wx.Size(1500, 700), devices, monitors, names
+        )
         # Configure the widgets
         self.subHeadingFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD)
-        self.file_name = wx.StaticText(self, wx.ID_ANY, f"", size=wx.Size(300, 30))
+        self.file_name = wx.StaticText(
+            self, wx.ID_ANY, f"", size=wx.Size(300, 30)
+        )
         self.file_name.SetFont(wx.Font(18, wx.DECORATIVE, wx.SLANT, wx.BOLD))
         self.browse = wx.Button(self, wx.ID_ANY, "Browse")
 
         self.switches_text = wx.StaticText(self, wx.ID_ANY, "")
         self.switches_text.SetFont(self.subHeadingFont)
         self.switch_buttons = {}
-  
+
         self.devices_heading = wx.StaticText(self, wx.ID_ANY, "Devices:")
         self.devices_heading.SetFont(self.subHeadingFont)
         self.device_text = []
 
         self.monitors_text = wx.StaticText(self, wx.ID_ANY, "Monitors:")
         self.monitors_text.SetFont(self.subHeadingFont)
-        self.monitor_input = wx.TextCtrl(self, wx.ID_ANY, "",
-                                    style=wx.TE_PROCESS_ENTER)
+        self.monitor_input = wx.TextCtrl(
+            self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER
+        )
         self.monitor_input.SetHint("Add new monitor")
-        self.monitors_help_text = wx.StaticText(self, wx.ID_ANY,
-                                    "(click signals below to remove)")
+        self.monitors_help_text = wx.StaticText(
+            self, wx.ID_ANY, "(click signals below to remove)"
+        )
         self.clear_all_monitors = wx.Button(self, wx.ID_ANY, "Clear All")
         self.monitorButtons = {}
 
@@ -351,9 +360,12 @@ class Gui(wx.Frame):
         self.continue_button.SetForegroundColour(white)
 
         commandLineFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL)
-        self.command_line_input = wx.TextCtrl(self, wx.ID_ANY, "",
-                                    style=wx.TE_PROCESS_ENTER, size=(400, 25))
-        self.command_line_input.SetHint("Command line input. See User Guide for help.")
+        self.command_line_input = wx.TextCtrl(
+            self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER, size=(400, 25)
+        )
+        self.command_line_input.SetHint(
+            "Command line input. See User Guide for help."
+        )
         self.command_line_input.SetFont(commandLineFont)
 
         # Bind events to widgets
@@ -362,9 +374,14 @@ class Gui(wx.Frame):
         self.spin_cycles.Bind(wx.EVT_SPINCTRL, self.on_spin_cycles)
         self.run_button.Bind(wx.EVT_BUTTON, self.on_run_button)
         self.continue_button.Bind(wx.EVT_BUTTON, self.on_continue_button)
-        self.command_line_input.Bind(wx.EVT_TEXT_ENTER, self.on_command_line_input)
         self.monitor_input.Bind(wx.EVT_TEXT_ENTER, self.on_monitor_input)
-        self.clear_all_monitors.Bind(wx.EVT_BUTTON, self.on_clear_all_monitors_button)
+        self.command_line_input.Bind(
+            wx.EVT_TEXT_ENTER,
+            self.on_command_line_input
+        )
+        self.clear_all_monitors.Bind(
+            wx.EVT_BUTTON, self.on_clear_all_monitors_button
+        )
 
         # Configure sizers for layout
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -375,23 +392,41 @@ class Gui(wx.Frame):
         manual_settings_sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.devices_sizer = wx.FlexGridSizer(4)
-        self.devices_window = wx.ScrolledWindow(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(375, 75), wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
+        self.devices_window = wx.ScrolledWindow(
+            self,
+            wx.ID_ANY,
+            wx.DefaultPosition,
+            wx.Size(375, 75),
+            wx.SUNKEN_BORDER | wx.HSCROLL | wx.VSCROLL
+        )
         self.devices_window.SetSizer(self.devices_sizer)
         self.devices_window.SetScrollRate(10, 10)
         self.devices_window.SetAutoLayout(True)
 
         self.switch_buttons_sizer = wx.FlexGridSizer(4)
-        self.switch_window = wx.ScrolledWindow(self,wx.ID_ANY, wx.DefaultPosition, wx.Size(375, 60), wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
+        self.switch_window = wx.ScrolledWindow(
+            self,
+            wx.ID_ANY,
+            wx.DefaultPosition,
+            wx.Size(375, 60),
+            wx.SUNKEN_BORDER | wx.HSCROLL | wx.VSCROLL
+        )
         self.switch_window.SetSizer(self.switch_buttons_sizer)
         self.switch_window.SetScrollRate(10, 10)
         self.switch_window.SetAutoLayout(True)
 
         self.monitor_buttons_sizer = wx.FlexGridSizer(4)
-        self.monitors_window = wx.ScrolledWindow(self, wx.ID_ANY, wx.DefaultPosition, wx.Size(375, 60), wx.SUNKEN_BORDER|wx.HSCROLL|wx.VSCROLL)
+        self.monitors_window = wx.ScrolledWindow(
+            self,
+            wx.ID_ANY,
+            wx.DefaultPosition,
+            wx.Size(375, 60),
+            wx.SUNKEN_BORDER | wx.HSCROLL | wx.VSCROLL
+        )
         self.monitors_window.SetSizer(self.monitor_buttons_sizer)
         self.monitors_window.SetScrollRate(10, 10)
         self.monitors_window.SetAutoLayout(True)
-        
+
         monitors_sizer = wx.BoxSizer(wx.HORIZONTAL)
         monitors_help_sizer = wx.BoxSizer(wx.HORIZONTAL)
         cycles_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -407,8 +442,8 @@ class Gui(wx.Frame):
         side_sizer.Add(cycles_sizer, 0, wx.LEFT, 5)
         side_sizer.Add(go_sizer, 0, wx.LEFT, 5)
         side_sizer.Add(command_line_sizer, 0, wx.LEFT, 5)
-        
-        #Add widgets to smaller sizers
+
+        # add widgets to smaller sizers
         command_line_sizer.Add(self.command_line_input, 1, wx.ALL, 5)
 
         manual_settings_sizer.Add(file_name_sizer, 1, wx.TOP, 5)
@@ -424,7 +459,7 @@ class Gui(wx.Frame):
         file_name_sizer.Add(self.browse, 0, wx.TOP, 6)
 
         monitors_sizer.Add(self.monitors_text, 1, wx.ALL, 5)
-        
+
         monitors_help_sizer.Add(self.monitor_input, 0, wx.ALL, 5)
         monitors_help_sizer.Add(self.clear_all_monitors, 0, wx.ALL, 5)
         monitors_help_sizer.Add(self.monitors_help_text, 0, wx.ALL, 10)
@@ -433,7 +468,7 @@ class Gui(wx.Frame):
         cycles_sizer.Add(self.spin_cycles, 1, wx.ALL, 5)
         go_sizer.Add(self.run_button, 1, wx.ALL, 5)
         go_sizer.Add(self.continue_button, 1, wx.ALL, 5)
-        
+
         self.updateNewCircuit(first=True)
 
         self.SetSizeHints(600, 600)
@@ -447,7 +482,7 @@ class Gui(wx.Frame):
             label = f"\"{label[0:20]}...\""
         self.file_name.SetLabel(label)
         self.Layout()
-    
+
     def on_menu(self, event):
         """Handle the event when the user selects a menu item."""
         Id = event.GetId()
@@ -457,16 +492,27 @@ class Gui(wx.Frame):
             wx.MessageBox("Logic Simulator\nCreated by pp490\n2022",
                           "About Logsim", wx.ICON_INFORMATION | wx.OK)
         if Id == wx.ID_HELP_COMMANDS:
-            wx.MessageBox(self.help_string, "Command Line Guide", wx.ICON_INFORMATION | wx.OK)
+            wx.MessageBox(
+                self.help_string,
+                "Command Line Guide",
+                wx.ICON_INFORMATION | wx.OK
+            )
         if Id == wx.ID_CONTEXT_HELP:
-            wx.MessageBox(self.canvas_control_string, "Canvas Controls", wx.ICON_INFORMATION | wx.OK)
+            wx.MessageBox(
+                self.canvas_control_string,
+                "Canvas Controls",
+                wx.ICON_INFORMATION | wx.OK
+            )
 
     def on_browse(self, event):
         """Handle the event when user wants to find circuit definition file."""
-        openFileDialog= wx.FileDialog(self, "Open txt file", "", "", 
-                            wildcard="TXT files (*.txt)|*.txt", style=wx.FD_OPEN+wx.FD_FILE_MUST_EXIST)
+        openFileDialog = wx.FileDialog(
+            self, "Open txt file", "", "",
+            wildcard="TXT files (*.txt)|*.txt",
+            style=wx.FD_OPEN+wx.FD_FILE_MUST_EXIST
+        )
         if openFileDialog.ShowModal() == wx.ID_CANCEL:
-           return
+            return
         path = openFileDialog.GetPath()
         names = Names()
         devices = Devices(names)
@@ -482,56 +528,64 @@ class Gui(wx.Frame):
             self.monitors = monitors
             self.updateNewCircuit()
         else:
-            wx.MessageBox(self.parse_error_string, "Unable to parse file.", wx.ICON_INFORMATION | wx.OK)
-
+            wx.MessageBox(
+                self.parse_error_string,
+                "Unable to parse file.",
+                wx.ICON_INFORMATION | wx.OK
+            )
 
     def updateNewCircuit(self, first=False):
         """Configure widgets for new circuit and bind events."""
         self.setFileTitle(self.path)
         self.cycles_completed = 0
 
-        #find new switches
+        # find new switches
         switches = self.devices.find_devices(self.names.query("SWITCH"))
         if len(switches) > 0:
             self.switches_text.SetLabel("Switches (toggle on/off):")
         else:
             self.switches_text.SetLabel("No switches in this circuit.")
-        
+
         if not first:
-            #destroy current switch buttons
+            # destroy current switch buttons
             for switch in [pair[0] for pair in self.switch_buttons.values()]:
                 switch.Destroy()
 
-            #destroy current device list in sidebars
+            # destroy current device list in sidebars
             for text in self.device_text:
                 text.Destroy()
 
-            #destroy current monitor buttons
+            # destroy current monitor buttons
             for monitor in self.monitorButtons.values():
                 monitor.Destroy()
-    
-        #add new switches
+
+        # add new switches
         self.switch_buttons = {}
         for s in switches:
             name = self.names.get_name_string(s)
             state = self.devices.get_device(s).switch_state
             shortName = self.shorten(name)
-            self.switch_buttons[name]= [wx.Button(self.switch_window, s, shortName), state]
+            self.switch_buttons[name] = [
+                wx.Button(self.switch_window, s, shortName),
+                state
+            ]
             self.switch_buttons[name][0].SetToolTip(name)
             if state == 0:
                 self.switch_buttons[name][0].SetBackgroundColour(red)
             else:
                 self.switch_buttons[name][0].SetBackgroundColour(lightblue)
 
-        #bind switch buttons to event
+        # bind switch buttons to event
         for switch in [pair[0] for pair in self.switch_buttons.values()]:
             switch.Bind(wx.EVT_BUTTON, self.on_switch_button)
 
-        #add switches to sizer
+        # add switches to sizer
         for switch in [pair[0] for pair in self.switch_buttons.values()]:
-            self.switch_buttons_sizer.Add(switch, 1, wx.TOP+wx.LEFT+wx.RIGHT, 5)
-            
-        #find new devices
+            self.switch_buttons_sizer.Add(
+                switch, 1, wx.TOP+wx.LEFT+wx.RIGHT, 5
+            )
+
+        # find new devices
         self.device_descs = []
         gate_strings = ["AND", "OR", "NAND", "NOR", "XOR"]
         for dev in self.devices.devices_list:
@@ -543,30 +597,34 @@ class Gui(wx.Frame):
             if kind == "CLOCK":
                 extra = f", half-period {dev.clock_half_period}"
             self.device_descs.append(f"{label}: {kind}{extra}")
-             
-        #add new devices to displayed list
+
+        # add new devices to displayed list
         self.device_text = []
         for d in self.device_descs:
             desc = wx.StaticText(self.devices_window, wx.ID_ANY, d)
             self.device_text.append(desc)
 
-        #add new device list to sizer 
+        # add new device list to sizer
         for device in self.device_text:
             self.devices_sizer.Add(device, 0, wx.ALL, 5)
 
-        #add new monitor buttons
+        # add new monitor buttons
         self.monitorButtons = {}
         self.current_monitors = self.monitors.get_signal_names()[0]
         for curr in self.current_monitors:
             currId = self.names.query(curr)
-            self.monitorButtons[curr] = wx.Button(self.monitors_window, currId, curr)
+            self.monitorButtons[curr] = wx.Button(
+                self.monitors_window, currId, curr
+            )
             self.monitorButtons[curr].SetBackgroundColour(lightblue)
 
-        #bind monitor buttons to event
+        # bind monitor buttons to event
         for name in self.monitorButtons.keys():
-            self.monitorButtons[name].Bind(wx.EVT_BUTTON, self.on_monitor_button) 
+            self.monitorButtons[name].Bind(
+                wx.EVT_BUTTON, self.on_monitor_button
+            )
 
-        #add new monitor buttons to sizer
+        # add new monitor buttons to sizer
         for mon in self.monitorButtons.values():
             self.monitor_buttons_sizer.Add(mon, 1, wx.TOP+wx.RIGHT+wx.LEFT, 5)
 
@@ -586,14 +644,27 @@ class Gui(wx.Frame):
 
     def on_run_button(self, event):
         """Handle the event when the user clicks the run button."""
-        int = GuiCommandInterface(f"{self.cycles_to_run}", self.names, self.devices, self.network, self.monitors)
+        int = GuiCommandInterface(
+            f"{self.cycles_to_run}",
+            self.names,
+            self.devices,
+            self.network,
+            self.monitors
+        )
         text, cycles = int.run_command()
         self.cycles_completed = cycles
         self.canvas.render(text)
 
     def on_continue_button(self, event):
         """Handle the event when the user clicks the continue button."""
-        int = GuiCommandInterface(f"{self.cycles_to_run}", self.names, self.devices, self.network, self.monitors, cycles_completed = self.cycles_completed)
+        int = GuiCommandInterface(
+            f"{self.cycles_to_run}",
+            self.names,
+            self.devices,
+            self.network,
+            self.monitors,
+            cycles_completed=self.cycles_completed
+        )
         text, cycles = int.continue_command()
         self.cycles_completed += cycles
         self.canvas.render(text)
@@ -612,7 +683,7 @@ class Gui(wx.Frame):
             self.switch_buttons[switchName][1] = 1
         newStatus = self.switch_buttons[switchName][1]
         self.devices.set_switch(switchId, newStatus)
-        
+
         text = f"{switchName} turned {newStatus}."
         self.canvas.render(text)
 
@@ -627,12 +698,18 @@ class Gui(wx.Frame):
         self.Layout()
 
     def on_clear_all_monitors_button(self, event):
-        """Handle the event when the user clears all monitors."""   
+        """Handle the event when the user clears all monitors."""
         for button in self.monitorButtons.values():
             button.Destroy()
-              
+
         for monitorName in self.monitors.get_signal_names()[0]:
-            commandint = GuiCommandInterface(monitorName, self.names, self.devices, self.network, self.monitors)
+            commandint = GuiCommandInterface(
+                monitorName,
+                self.names,
+                self.devices,
+                self.network,
+                self.monitors
+            )
             [deviceId, portId] = commandint.read_signal_name()
             self.monitors.remove_monitor(deviceId, portId)
             self.monitorButtons.pop(monitorName, "")
@@ -655,7 +732,14 @@ class Gui(wx.Frame):
     def on_command_line_input(self, event):
         """Handle the event when the user enters command line text."""
         line = self.command_line_input.GetValue()
-        commandint = GuiCommandInterface(line, self.names, self.devices, self.network, self.monitors, self.cycles_completed)
+        commandint = GuiCommandInterface(
+            line,
+            self.names,
+            self.devices,
+            self.network,
+            self.monitors,
+            self.cycles_completed
+        )
         action = commandint.command_interface()
         command = action[0]
         text = action[1]
@@ -664,27 +748,34 @@ class Gui(wx.Frame):
         self.devices = action[4]
         self.network = action[5]
         self.monitors = action[6]
-            
+
         if extraInfo is not None:
             if command == "s":
-                self.on_command_line_set_switch(extraInfo) #extraInfo = switch_state
+                # extraInfo = switch_state
+                self.on_command_line_set_switch(extraInfo)
             elif command == "m":
-                self.on_command_line_add_monitor(extraInfo[1][0], extraInfo[1][1]) # extraInfo = monitors, [device_id, port_id]
+                # extraInfo = monitors, [device_id, port_id]
+                self.on_command_line_add_monitor(
+                    extraInfo[1][0], extraInfo[1][1]
+                )
             elif command == "z":
-                self.on_command_line_zap_monitor(extraInfo[1][0], extraInfo[1][1]) # extraInfo = monitors, [device_id, port_id]
+                # extraInfo = monitors, [device_id, port_id]
+                self.on_command_line_zap_monitor(
+                    extraInfo[1][0], extraInfo[1][1]
+                )
             elif command == "r":
-                self.on_command_line_run(extraInfo) #extraInfo = number of cycles
+                self.on_command_line_run(extraInfo)  # extraInfo = cycles
             elif command == "c":
-                self.on_command_line_continue(extraInfo) #extraInfo = number of cycles
+                self.on_command_line_cont(extraInfo)  # extraInfo = cycles
 
         self.canvas.render(text)
 
     def on_command_line_run(self, cycles):
-        """Handle display of signals when run command issued via command line."""
+        """Handle signal display when run command issued via command line."""
         self.cycles_completed = cycles
-    
-    def on_command_line_continue(self, cycles):
-        """Handle display of signals when run command issued via command line."""
+
+    def on_command_line_cont(self, cycles):
+        """Handle signal display when run command issued via command line."""
         self.cycles_completed += cycles
 
     def on_command_line_set_switch(self, switch):
@@ -696,7 +787,7 @@ class Gui(wx.Frame):
         if status == 0:
             button.SetBackgroundColour(red)
         else:
-            button.SetBackgroundColour(lightblue)      
+            button.SetBackgroundColour(lightblue)
         self.Layout()
 
     def on_command_line_add_monitor(self, deviceId, portId):
@@ -721,23 +812,27 @@ class Gui(wx.Frame):
             portName = self.names.get_name_string(portId)
             monitorName = f"{deviceName}.{portName}"
         return monitorName
-    
+
     def makeMonitor(self, monitorName):
         """Create a new monitoring point based on user selection."""
-        commandint = GuiCommandInterface(monitorName, self.names, self.devices, self.network, self.monitors)
+        commandint = GuiCommandInterface(
+            monitorName, self.names, self.devices, self.network, self.monitors
+        )
         text, [self.monitors, monitor] = commandint.monitor_command()
         self.canvas.render(text)
         return text
-        
+
     def destroyMonitor(self, monitorName):
         """Destroy monitor."""
-        commandint = GuiCommandInterface(monitorName, self.names, self.devices, self.network, self.monitors)
+        commandint = GuiCommandInterface(
+            monitorName, self.names, self.devices, self.network, self.monitors
+        )
         text, [self.monitors, monitor] = commandint.zap_command()
         self.canvas.render(text)
         return text
 
     def isMonitoring(self, monitor):
-        """Return True if suggested monitor point is already being monitored."""
+        """Return True if monitor point is already being monitored."""
         return monitor in self.monitors.get_signal_names()[0]
 
     def isValidMonitor(self, monitor):
@@ -753,16 +848,19 @@ class Gui(wx.Frame):
         newButton.SetBackgroundColour(lightblue)
         newButton.Bind(wx.EVT_BUTTON, self.on_monitor_button)
         newButton.SetToolTip(name)
-        self.monitor_buttons_sizer.Add(newButton, 1, wx.TOP+wx.RIGHT+wx.LEFT, 5)
+        self.monitor_buttons_sizer.Add(
+            newButton, 1, wx.TOP+wx.RIGHT+wx.LEFT, 5
+        )
         self.monitorButtons[name] = newButton
         self.Layout()
 
     def shorten(self, name):
         """Get shortened name for button label."""
-        if len(name)>8:
+        if len(name) > 8:
             return f"'{name[0:7]}...'"
         else:
             return name
+
 
 paleyellow = wx.Colour(252, 251, 241)
 lightblue = wx.Colour(225, 239, 246)
@@ -772,21 +870,24 @@ darkgreen = wx.Colour(76, 129, 73)
 cornflower = wx.Colour(145, 143, 214)
 white = wx.Colour(255, 255, 255)
 
-signalColour = {
+help_string = "Enter command line inputs in the bottom left of " \
+                        "the interface.\n" \
+                        "\nPossible commands:" \
+                        "\n \nr N\nRun simulator for N cycles" \
+                        "\n \nc N\nContinue running simulation "\
+                        "for N cycles" \
+                        "\n \ns X N\nSet switch X to N (0 or 1)" \
+                        "\n \nm X\nStart monitoring output signal X" \
+                        "\n \nz X\nStop monitoring X"
 
-}
-
-help_string = "Enter command line inputs in the bottom left of the interface.\n" \
-                            "\nPossible commands:" \
-                            "\n \nr N\nRun simulator for N cycles" \
-                            "\n \nc N\nContinue running simulation for N cycles" \
-                            "\n \ns X N\nSet switch X to N (0 or 1)" \
-                            "\n \nm X\nStart monitoring output signal X" \
-                            "\n \nz X\nStop monitoring X"
-
-canvas_control_string = "Signals on the canvas can be manipulated to better view them.\n" \
+canvas_control_string = "Signals on the canvas can be manipulated to " \
+                            "better view them.\n" \
                             "\n Scroll in to zoom in" \
-                            "\n \nScroll out to zoom out - this may be useful if you have many monitors" \
-                            "\n \nClick and hold to drag the signals around the space"
+                            "\n \n" \
+                            "Scroll out to zoom out - this may " \
+                            "be useful if you have many monitors" \
+                            "\n \n" \
+                            "Click and hold to drag the signals "\
+                            "around the space"
 
 parse_error_string = "Unable to parse file. Old file will remain loaded."
