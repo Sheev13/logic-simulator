@@ -106,43 +106,63 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         # Draw specified text at position (10, 10)
-        self.render_text(text, 10, 10)
+        top = 675
+        self.render_text(text, 10, top)
 
         #Draw signal traces
-        signalData = self.monitors.display_signals_gui()
-        shift = 0
-        ylow = 45
+        low = 5
+        high = 25
+        signalData = self.monitors.display_signals_gui(high=high, low=low)
+        axis = top-45
         for monitor in signalData.keys():
             desc, X, Y, device_kind = signalData[monitor]
             if len(X)>0:
                 margin = len(desc)*6
-                Y = [y+shift for y in Y]  
+                Y = [axis+y for y in Y]
                 X = [x+margin+10 for x in X]
                 rgb = self.traceColour(device_kind)
-                self.render_text(desc, X[0]-margin, ylow+12)
-                self.drawTrace(X, Y, ylow, rgb)
-                shift += 100
-                ylow += 100
+                self.render_text(desc, X[0]-margin,axis+12)
+                self.drawTrace(X, Y, axis, rgb)
+                axis -= 100
             
         # We have been drawing to the back buffer, flush the graphics pipeline
         # and swap the back buffer to the front
         GL.glFlush()
         self.SwapBuffers()
 
-    def drawTrace(self, X, Y, ylow, rgb):
+    def drawTrace(self, X, Y, axis, rgb):
         """Draw a signal trace."""
+        # Draw trace
+        GL.glShadeModel(GL.GL_FLAT)
+        GL.glColor3f(rgb[0], rgb[1], rgb[2])
+        GL.glBegin(GL.GL_LINE_STRIP)
+        i = 1
+
+        print(len(X), len(Y))
+
+        while i<len(X):
+            if Y[i] == axis:
+                GL.glColor3f(1, 1, 1)
+                GL.glVertex2f(X[i-1], Y[i-1])
+                GL.glVertex2f(X[i], Y[i])
+                GL.glColor3f(rgb[0], rgb[1], rgb[2])
+            else:
+                if i>1 and Y[i-2] == axis:
+                    GL.glColor3f(1, 1, 1)
+                    GL.glVertex2f(X[i-1], Y[i-1])
+                    GL.glColor3f(rgb[0], rgb[1], rgb[2])
+                    GL.glVertex2f(X[i], Y[i])
+                else:
+                    GL.glVertex2f(X[i-1], Y[i-1])
+                    GL.glVertex2f(X[i], Y[i])
+            i += 2
+        GL.glEnd()
+
         # Insert x axis
         GL.glColor3f(0, 0, 0)  # x axis is black
         GL.glBegin(GL.GL_LINE_STRIP)
         for i in range(len(X)):
-            GL.glVertex2f(X[i], ylow)
-        GL.glEnd()
-
-        # Draw trace
-        GL.glColor3f(rgb[0], rgb[1], rgb[2])
-        GL.glBegin(GL.GL_LINE_STRIP)
-        for i in range(len(X)):
-            GL.glVertex2f(X[i], Y[i])
+            GL.glVertex2f(X[i], axis)
         GL.glEnd()
 
     def traceColour(self, device_kind):

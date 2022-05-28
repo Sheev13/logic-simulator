@@ -28,3 +28,5 @@ CONNECTIONS: [
     G2: G3.I2;
 ]
 ;
+
+MONITOR: [A; ];
