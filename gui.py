@@ -500,7 +500,9 @@ class Gui(wx.Frame):
         for s in switches:
             name = self.names.get_name_string(s)
             state = self.devices.get_device(s).switch_state
-            self.switch_buttons[name]= [wx.Button(self.switch_window, s, name), state]
+            shortName = self.shorten(name)
+            self.switch_buttons[name]= [wx.Button(self.switch_window, s, shortName), state]
+            self.switch_buttons[name][0].SetToolTip(name)
             if state == 0:
                 self.switch_buttons[name][0].SetBackgroundColour(red)
             else:
@@ -580,8 +582,8 @@ class Gui(wx.Frame):
     def on_switch_button(self, event):
         """Handle the event when the user clicks the switch button."""
         button = event.GetEventObject()
-        switchName = button.GetLabel()
-        switchId = self.names.query(switchName)
+        switchId = button.GetId()
+        switchName = self.names.get_name_string(switchId)
 
         if self.switch_buttons[switchName][1] == 1:
             button.SetBackgroundColour(red)
@@ -592,16 +594,16 @@ class Gui(wx.Frame):
         newStatus = self.switch_buttons[switchName][1]
         self.devices.set_switch(switchId, newStatus)
         
-        text = f"{button.GetLabel()} turned {newStatus}."
+        text = f"{switchName} turned {newStatus}."
         self.canvas.render(text)
 
     def on_monitor_button(self, event):
         """Handle the event when the user clicks the monitor button."""
         button = event.GetEventObject()
-        label = button.GetLabel()
-        text = self.destroyMonitor(label)
+        monitorName = self.names.get_name_string(button.GetId())
+        text = self.destroyMonitor(monitorName)
         button.Destroy()
-        self.monitorButtons.pop(label)
+        self.monitorButtons.pop(monitorName)
         self.canvas.render(text)
         self.Layout()
 
@@ -726,12 +728,21 @@ class Gui(wx.Frame):
 
     def addMonitorButton(self, name):
         """Add monitor button when monitor successfully created."""
-        newButton = wx.Button(self.monitors_window, wx.ID_ANY, name)
+        shortName = self.shorten(name)
+        newButton = wx.Button(self.monitors_window, wx.ID_ANY, shortName)
         newButton.SetBackgroundColour(lightblue)
         newButton.Bind(wx.EVT_BUTTON, self.on_monitor_button)
+        newButton.SetToolTip(name)
         self.monitor_buttons_sizer.Add(newButton, 1, wx.TOP+wx.RIGHT+wx.LEFT, 5)
         self.monitorButtons[name] = newButton
         self.Layout()
+
+    def shorten(self, name):
+        """Get shortened name for button label."""
+        if len(name)>10:
+            return f"'{name[0:7]}...'"
+        else:
+            return name
 
 paleyellow = wx.Colour(252, 251, 241)
 lightblue = wx.Colour(225, 239, 246)
