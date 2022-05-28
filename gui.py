@@ -295,7 +295,7 @@ class Gui(wx.Frame):
 
         # Configure the widgets
         self.subHeadingFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD)
-        self.file_name = wx.StaticText(self, wx.ID_ANY, f"")
+        self.file_name = wx.StaticText(self, wx.ID_ANY, f"", size=wx.Size(300, 30))
         self.file_name.SetFont(wx.Font(18, wx.DECORATIVE, wx.SLANT, wx.BOLD))
         self.browse = wx.Button(self, wx.ID_ANY, "Browse")
 
