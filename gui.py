@@ -548,6 +548,12 @@ class Gui(wx.Frame):
         for mon in self.monitorButtons.values():
             self.monitor_buttons_sizer.Add(mon, 1, wx.TOP+wx.RIGHT+wx.LEFT, 5)
 
+        text = "New circuit loaded."
+
+        self.canvas.monitors = self.monitors
+        self.canvas.devices = self.devices
+        self.canvas.names = self.names
+        self.canvas.render(text)
         self.Layout()
 
     def on_spin_cycles(self, event):
