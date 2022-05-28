@@ -663,7 +663,7 @@ class Gui(wx.Frame):
             self.devices,
             self.network,
             self.monitors,
-            cycles_completed=self.cycles_completed
+            complete=self.cycles_completed
         )
         text, cycles = int.continue_command()
         self.cycles_completed += cycles
@@ -738,7 +738,7 @@ class Gui(wx.Frame):
             self.devices,
             self.network,
             self.monitors,
-            self.cycles_completed
+            complete=self.cycles_completed
         )
         action = commandint.command_interface()
         command = action[0]
