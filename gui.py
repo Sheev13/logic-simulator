@@ -330,7 +330,7 @@ class Gui(wx.Frame):
 
         self.devices_heading = wx.StaticText(self, wx.ID_ANY, "Devices:")
         self.devices_heading.SetFont(self.subHeadingFont)
-        self.device_text = []
+        self.device_buttons = []
 
         self.monitors_text = wx.StaticText(self, wx.ID_ANY, "Monitors:")
         self.monitors_text.SetFont(self.subHeadingFont)
@@ -396,7 +396,7 @@ class Gui(wx.Frame):
             self,
             wx.ID_ANY,
             wx.DefaultPosition,
-            wx.Size(375, 75),
+            wx.Size(375, 120),
             wx.SUNKEN_BORDER | wx.HSCROLL | wx.VSCROLL
         )
         self.devices_window.SetSizer(self.devices_sizer)
@@ -430,7 +430,6 @@ class Gui(wx.Frame):
         monitors_sizer = wx.BoxSizer(wx.HORIZONTAL)
         monitors_help_sizer = wx.BoxSizer(wx.HORIZONTAL)
         cycles_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        go_sizer = wx.BoxSizer(wx.HORIZONTAL)
         command_line_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         # Add side_sizer and canvas to main_sizer
@@ -440,7 +439,6 @@ class Gui(wx.Frame):
         # Add sizers to side_sizer
         side_sizer.Add(manual_settings_sizer, 1, wx.ALL, 5)
         side_sizer.Add(cycles_sizer, 0, wx.LEFT, 5)
-        side_sizer.Add(go_sizer, 0, wx.LEFT, 5)
         side_sizer.Add(command_line_sizer, 0, wx.LEFT, 5)
 
         # add widgets to smaller sizers
@@ -464,10 +462,10 @@ class Gui(wx.Frame):
         monitors_help_sizer.Add(self.clear_all_monitors, 0, wx.ALL, 5)
         monitors_help_sizer.Add(self.monitors_help_text, 0, wx.ALL, 10)
 
-        cycles_sizer.Add(self.cycles_text, 1, wx.ALL, 5)
-        cycles_sizer.Add(self.spin_cycles, 1, wx.ALL, 5)
-        go_sizer.Add(self.run_button, 1, wx.ALL, 5)
-        go_sizer.Add(self.continue_button, 1, wx.ALL, 5)
+        cycles_sizer.Add(self.cycles_text, 0, wx.TOP, 10)
+        cycles_sizer.Add(self.spin_cycles, 0, wx.LEFT+wx.TOP, 10)
+        cycles_sizer.Add(self.run_button, 1, wx.ALL, 5)
+        cycles_sizer.Add(self.continue_button, 1, wx.ALL, 5)
 
         self.updateNewCircuit(first=True)
 
@@ -552,8 +550,8 @@ class Gui(wx.Frame):
                 switch.Destroy()
 
             # destroy current device list in sidebars
-            for text in self.device_text:
-                text.Destroy()
+            for button in self.device_buttons:
+                button.Destroy()
 
             # destroy current monitor buttons
             for monitor in self.monitorButtons.values():
@@ -587,25 +585,44 @@ class Gui(wx.Frame):
 
         # find new devices
         self.device_descs = []
-        gate_strings = ["AND", "OR", "NAND", "NOR", "XOR"]
-        for dev in self.devices.devices_list:
-            label = self.shorten(self.names.get_name_string(dev.device_id))
-            kind = self.names.get_name_string(dev.device_kind)
-            extra = ""
-            if kind in gate_strings:
-                extra = f", {str(len(dev.inputs.keys()))} inputs"
-            if kind == "CLOCK":
-                extra = f", half-period {dev.clock_half_period}"
-            self.device_descs.append(f"{label}: {kind}{extra}")
+        for gate_type in self.devices.gate_types:
+            gates = self.devices.find_devices(gate_type)
+            for gateId in gates:
+                gate = self.devices.get_device(gateId)
+                label = self.shorten(self.names.get_name_string(gate.device_id))
+                extra = f": {str(len(gate.inputs.keys()))} inputs"
+                self.device_descs.append([gateId, label, extra])
+            
+        for dev_type in self.devices.device_types:
+            other_devices = self.devices.find_devices(dev_type)
+            for id in other_devices:
+                d = self.devices.get_device(id)
+                label = self.shorten(self.names.get_name_string(d.device_id))
+                kind = self.names.get_name_string(d.device_kind)
+                extra = ""
+                if kind == "CLOCK":
+                    extra = f": half-period {d.clock_half_period}"
+                self.device_descs.append([id, label, extra])
 
         # add new devices to displayed list
-        self.device_text = []
+        self.device_buttons = []
         for d in self.device_descs:
-            desc = wx.StaticText(self.devices_window, wx.ID_ANY, d)
-            self.device_text.append(desc)
+            print(d)
+            [id, label, extra] = d
+            device_button = wx.Button(
+                self.devices_window, id, self.shorten(f"{label}{extra}")
+            )
+            kindId = self.devices.get_device(id).device_kind
+            kindLabel = self.names.get_name_string(kindId)
+            device_button.SetToolTip(f"{label}, {kindLabel}{extra}")
+            
+            device_button.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
+            device_button.SetBackgroundColour(self.getDeviceColour(kindId))
+            device_button.SetForegroundColour(white)
+            self.device_buttons.append(device_button)
 
         # add new device list to sizer
-        for device in self.device_text:
+        for device in self.device_buttons:
             self.devices_sizer.Add(device, 0, wx.ALL, 5)
 
         # add new monitor buttons
@@ -857,18 +874,37 @@ class Gui(wx.Frame):
     def shorten(self, name):
         """Get shortened name for button label."""
         if len(name) > 8:
-            return f"'{name[0:7]}...'"
+            return f"'{name[0:6]}...'"
         else:
             return name
+
+    def getDeviceColour(self, kind):
+        if kind in self.devices.gate_types:
+            return blue
+        elif self.names.get_name_string(kind) == "CLOCK":
+            return darkgreen
+        elif self.names.get_name_string(kind) == "DTYPE":
+            return darkred
+        elif self.names.get_name_string(kind) == "SWITCH":
+            return darkpink
+        else:
+            return white
 
 
 paleyellow = wx.Colour(252, 251, 241)
 lightblue = wx.Colour(225, 239, 246)
 green = wx.Colour(208, 245, 206)
 red = wx.Colour(244, 204, 199)
-darkgreen = wx.Colour(76, 129, 73)
+darkgreen = wx.Colour(0, 100, 0)
 cornflower = wx.Colour(145, 143, 214)
 white = wx.Colour(255, 255, 255)
+brightgreen = wx.Colour(40, 100, 0)
+darkpink = wx.Colour(170, 51, 106)
+blue = wx.Colour(0, 0, 139)
+darkred = wx.Colour(139, 0, 0)
+
+
+
 
 help_string = "Enter command line inputs in the bottom left of " \
                         "the interface.\n" \
