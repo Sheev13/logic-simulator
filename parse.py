@@ -43,17 +43,7 @@ class Parser:
         self.error_count = 0
 
         self.symbol = None
-        # given by scanner
-        # symbol object which has properties:
-        # type (eg. keyword), id (names table thing)
-        # symbol line number, symbol position
-        # also string representation of the symbol?
-        # symbol.as_string ? something like
 
-        self.expect_qualifier = [self.devices.AND, self.devices.NAND,
-                                 self.devices.OR, self.devices.NOR,
-                                 self.devices.CLOCK, self.devices.SWITCH]
-        # if the symb.type is one of these, we need qualifier...
 
     def parse_network(self):
         """Parse the circuit definition file."""
@@ -64,205 +54,330 @@ class Parser:
         connections_done = False
         monitors_done = False
         self.setNext()
-
-        #print(type(self.symbol), self.names.get_name_string(self.symbol.id))
-
-        if self.symbol.type == self.scanner.KEYWORD: #is this not redundant?
-            # maybe for error reporting we can be specific and say a keyword
-            # is missing...?
+        while True:
             if self.symbol.id == self.scanner.DEVICES_ID:
-                # device_list has been found
-                self.parse_device_list()
+                success = self.parse_device_list()
                 devices_done = True
+
+            elif self.symbol.id == self.scanner.CONNECTIONS_ID:
+                if devices_done:
+                    success = self.parse_connections_list()
+                else:
+                    self.error("can't parse connections if not done devices",
+                               [self.scanner.DEVICES_ID])
+                    # error recovery should look for devices
+                    # maybe user put devices after connections accidentally?
+                    # TODO: confirm this error recovery strategy
+            elif self.symbol.id == self.scanner.MONITOR_ID:
+                if devices_done:
+                    success = self.parse_monitor_list()
+                else:
+                    self.error("can't parse monitors if not done devices",
+                               [self.scanner.DEVICES_ID])
+            elif self.symbol.id == self.scanner.EOF:
+                print("reached end of file!")
+                # TODO: close file routine?
+                break
             else:
-                self.error("syntax", "no devices found")
+                self.error("not DEVICES, CONNECTIONS, MONITORS nor EOF",
+                           [self.scanner.DEVICES_ID,
+                            self.scanner.CONNECTIONS_ID,
+                            self.scanner.MONITOR_ID,
+                            self.scanner.EOF
+                            ])
+                # TODO: !!!!!! what if they put eg. DEVICES twice! will it
+                #  still work?
+
+
+
+        #hopefully we will always reach EOF symbol...
+
+        print("Done the definition file")
+        if self.error_count == 0:
+            return True
         else:
-            self.error("syntax", "no DEVICES keyword found")
+            return False
 
-        self.setNext()
-
-        if self.symbol.type == self.scanner.KEYWORD:
-            if self.symbol.id == self.scanner.CONNECTIONS_ID:
-                if not devices_done:
-                    self.error("syntax", "No devices found before connections")
-                self.parse_connections_list()  # TODO: PRIYANKA PLS <3
-                connections_done = True
-
-        if connections_done:
-            self.setNext()
-
-        if self.symbol.id == self.scanner.MONITOR_ID:
-            if not devices_done:
-                self.error("syntax", "no devices found, impossible to "
-                                     "monitor anything")
-                # I dont think we will ever get here...?
-                # note that don't have to have connections to monitor since
-                # devices automatically create outputs i believe
-                # You can add monitors in the GUI based on what devices 
-                # have been created! So no, monitors are not necessary
-
-            self.parse_monitor_list()
-            monitors_done = True
-
-        if monitors_done:
-            self.setNext()
-
-        if self.symbol.type == self.scanner.EOF:
-            # TODO close file routine?
-            pass
-
-        print("Succesfully parsed entire definition file!")
-
-        return True
 
 
     def parse_device_list(self):
         """Parse list of devices."""
         self.setNext()
+        while True:
+            if self.symbol.id != self.scanner.OPEN_SQUARE:
+                self.error("expected [", [self.scanner.CONNECTIONS_ID,
+                                          self.scanner.MONITOR_ID])  # but
+                # it could also be end of file????? here/only devices
+                break
 
-        if self.symbol.id != self.scanner.COLON:
-            self.error("syntax", "Expected a ':' symbol")
-
-        self.setNext()
-
-        if self.symbol.id != self.scanner.OPEN_SQUARE:
-            self.error("syntax", "Expected a '[' symbol")
-
-        parsing_devices = True
-        first_device = True
-        while parsing_devices:
-            parsing_devices, first_device = self.parse_device(first_device)
-
-        if self.symbol.id != self.scanner.CLOSE_SQUARE:
-            self.error("syntax", "Expected a ']' symbol")
-
-        self.setNext()
-        if self.symbol.id != self.scanner.SEMICOLON:
-            self.error("syntax", "Expected a ';' symbol")
-
-    def parse_device(self, first_device):
-        """Parse a single device."""
-        print("parsing a device")
-        if first_device:
             self.setNext()
+            parsing_devices = True
+            while parsing_devices:
+                missing_semi_colon = self.parse_device(self.error_count)
+                # TODO: still need to check if there is an unique issue with
+                #  missing semi-colon
+                if missing_semi_colon:
+                    print("missed semi colon at end of device definition, "
+                          "will end up skipping the device after")
+                    continue
 
-        if self.symbol.id != self.scanner.OPEN_CURLY:
-            self.error("syntax", "Expected a '{' symbol")
 
-        self.setNext()
-        if self.symbol.id == self.scanner.ID_KEYWORD_ID:
-            self.setNext()
-            if self.symbol.id == self.scanner.COLON:
-                # TODO: check this statement
-                # should it be "u provided a punctuation mark instead of a valid name"
-                # or maybe just "name *%^&*% is invalid"
-                self.setNext()
-                if self.symbol.type == self.scanner.NAME:
-                    print("valid name for a device")
-                    # make note of the device name for the build later (if no errors)
-                    device_name = self.names.get_name_string(self.symbol.id)
-                    #is this device id?? i think so? :/ the userdefined one
+                if self.symbol.id == self.scanner.OPEN_CURLY:
+                    parsing_devices = True
+                elif self.symbol.id == self.scanner.CLOSE_SQUARE:
+                    parsing_devices = False
                 else:
-                    self.error("semantic",
-                               "device name provided is invalid/eg. not "
-                               "alnum")
-            else:
-                self.error("syntax", "Expected ':' delimiter")
-        else:
-            self.error("syntax", "Expected 'id'")
+                    # TODO: what if it is neither of those???
+                    # is this when there is an error at the end of device
+                    # lists?
+                    print("sort this problem out")
 
-        self.setNext()
-        if self.symbol.id != self.scanner.SEMICOLON:
-            self.error("syntax", "Expected ';'")
-
-        self.setNext()
-        if self.symbol.id == self.scanner.KIND_KEYWORD_ID:
-            self.setNext()
-            if self.symbol.id == self.scanner.COLON:
-                self.setNext()
-                if self.symbol.type == self.scanner.NAME:
-                    # this only tells us its alphanum aka TODO still syntax?
-                    device_kind_string = self.names.get_name_string(
-                        self.symbol.id)
-                    [device_kind_id] = self.devices.names.lookup(
-                        [device_kind_string])
-
-                else:
-                    self.error("semantic", "Device type not supported")
-            else:
-                self.error("syntax", "Expected ':' delimiter")
-        else:
-            self.error("syntax", "Expected 'kind'")
-
-        self.setNext()
-        if self.symbol.id != self.scanner.SEMICOLON:
-            self.error("syntax", "Expected ';'")
-
-        if device_kind_id in self.expect_qualifier:
-            self.setNext()
-            if self.symbol.id == self.scanner.QUAL_KEYWORD_ID:
-                self.setNext()
-                if self.symbol.id == self.scanner.COLON:
-                    self.setNext()
-                    if self.symbol.type == self.scanner.NUMBER:
-                        #print("valid qualifier")
-                        device_qualifier = self.symbol.id
-                    else:
-                        self.error("semantic", "Unsupported qualifier input")
-                else:
-                    self.error("syntax", "Expected ':' delimiter")
-            else:
-                self.error("syntax", "Expected 'qual'")
+            # no longer parsing devices
+            if self.symbol.id != self.scanner.CLOSE_SQUARE:
+                self.error("expected ]", [self.scanner.CONNECTIONS_ID,
+                                          self.scanner.MONITOR_ID])
+                break
 
             self.setNext()
             if self.symbol.id != self.scanner.SEMICOLON:
-                self.error("syntax", "Expected ';'")
-        else:
-            device_qualifier = None
+                self.error("expected ;", [self.scanner.MONITOR_ID])
+                # TODO: not sure if it's connections/monitors
+                break
 
-
-        # TODO: need to clarify the error recovery stuff.... not sure this
-        #  code will work anymore :/
-
-        self.setNext()
-        if self.symbol.id != self.scanner.CLOSE_CURLY:
-            self.error("syntax", "Expected a '}' symbol")
-
-        self.setNext()
-        if self.symbol.id != self.scanner.SEMICOLON:
-            self.error("syntax", "Expected ';'")
-
-        if self.error_count == 0:
-            print("no errors when parsing device --> proceed to build")
-            error_type = self.devices.make_device(self.names.query(device_name),
-                                                  device_kind_id,
-                                                  device_qualifier)
-            if error_type != self.devices.NO_ERROR:
-                if error_type == self.devices.NO_QUALIFIER:    
-                    self.error("semantic", f"{device_kind_string} qualifier not present.")
-                elif error_type == self.devices.INVALID_QUALIFIER:    
-                    self.error("semantic", f"{device_kind_string} qualifier is invalid.")
-                elif error_type == self.devices.QUALIFIER_PRESENT:    
-                    self.error("semantic", f"Qualifier provided for {device_kind_string} when there should be none.")
-                elif error_type == self.devices.BAD_DEVICE:    
-                    self.error("semantic", f"Device kind {device_kind_string} not recognised.")
+            # TODO: tidy up the logic below here
+            # I mean it has to be 0 surely?
+            # i think maybe residue errors?
+            if self.error_count == 0:
+                print("successfully parsed a device list!")
+                self.setNext()  #to sync with error recovery
+                return True
             else:
-                print(f"successfully built a device {device_name}-"
-                      f"{device_kind_id}-{device_qualifier}")
+                print(f"found {self.error_count} error(s)")
+                break
 
-        #TODO: figure out how to detect errors after the end of parsing...?
-        # is it just when u go back to main function? probs
+        #i think we need a self.next here somewhere...
 
-        self.setNext()
-        if self.symbol.id == self.scanner.OPEN_CURLY:
-            keep_parsing = True
-        elif self.symbol.id == self.scanner.CLOSE_SQUARE:
-            keep_parsing = False
-        else:
-            self.error("syntax", "something")
+        # only get here if there is an error with the 'outer' device list
+        # wrapper
+        print("did not manage to parse the device list perfectly")
+        # wish this could be more informative.......
+        # maybe thats for self.error / scanner
+        # what is the point of this code below huhh/???
+        if self.error_count != 0:
+            return False
 
-        first_device = False
-        return keep_parsing, first_device
+
+
+    def parse_device(self, previous_errors):
+        """Parse a single device."""
+        missing_device_semi_colon = False
+        while True:
+            if self.symbol.id != self.scanner.OPEN_CURLY:
+                self.error("expected {",
+                           [self.scanner.OPEN_CURLY,
+                            self.scanner.CLOSE_CURLY])
+                # TODO: this is where the error of searching expected
+                #  linearly crops up i believeeeee ... see onennote
+                break
+
+            self.setNext()
+            missing_semi_colon, device_name = self.parse_device_id()
+
+            if missing_semi_colon:
+                print("missed a semi colon in device id, will skip to next "
+                      "device")
+                break
+
+            missing_semi_colon, device_kind_string, device_kind_id = \
+                self.parse_device_kind()
+
+            if missing_semi_colon:
+                print("missed a semi colon in device kind, will skip to next "
+                      "device")
+                break
+
+            if self.symbol.id == self.scanner.QUAL_KEYWORD_ID:
+                missing_semi_colon, device_qual = self.parse_device_qual()
+                if missing_semi_colon:
+                    print(
+                        "missed a semi colon in device qual, will skip to "
+                        "next device")
+                    break
+            else:
+                device_qual = None
+
+            if self.symbol.id != self.scanner.CLOSE_CURLY:
+                self.error("expected }",
+                           [self.scanner.OPEN_CURLY,
+                            self.scanner.CLOSE_CURLY]
+                           )
+                break
+
+            self.setNext()
+            if self.symbol.id != self.scanner.SEMICOLON:
+                self.error("expected ;",
+                           [self.scanner.OPEN_CURLY,
+                            self.scanner.CLOSE_SQUARE]
+                           )
+                missing_device_semi_colon = True
+                break
+
+            # if we get here we have done a whole device!
+            if self.error_count - previous_errors == 0:
+                print(f"syntactically parsed the device: "
+                      f"{device_name}-{device_kind_string}-{device_qual}")
+
+                error_type = self.devices.make_device(
+                    self.names.query(device_name),
+                    device_kind_id,
+                    device_qual)
+                if error_type != self.devices.NO_ERROR:
+                    if error_type == self.devices.NO_QUALIFIER:
+                        self.semantic_error(f"{device_kind_string} qualifier not present.")
+                    elif error_type == self.devices.INVALID_QUALIFIER:
+                        self.semantic_error(f"{device_kind_string} qualifier is invalid.")
+                    elif error_type == self.devices.QUALIFIER_PRESENT:
+                        self.semantic_error( f"Qualifier provided for {device_kind_string} when there should be none.")
+                    elif error_type == self.devices.BAD_DEVICE:
+                        self.semantic_error(f"Device kind {device_kind_string} not recognised.")
+                else:
+                    print(f"semantically parsed & built the device:"
+                          f" {device_name}-"
+                          f"{device_kind_string}-{device_qual}")
+
+
+                # this is here so that error recover + normal operation are
+                # in sync
+                self.setNext()
+                break
+            else:
+                print(f"did not syntactically parse the device: "
+                      f"{device_name}-{device_kind_string}-{device_qual}")
+                print("no attempts to build/check semantics will occur")
+                self.setNext()
+                break
+
+        return missing_device_semi_colon
+
+
+    def parse_device_id(self):
+        missing_semi_colon = False
+        device_name = None
+        while True:
+            if self.symbol.id != self.scanner.ID_KEYWORD_ID:
+                self.error("expected id keyword here", [self.scanner.KIND_KEYWORD_ID])
+                break
+
+            self.setNext()
+            if self.symbol.id != self.scanner.COLON:
+                self.error("expected : here", [self.scanner.KIND_KEYWORD_ID])
+                break
+
+            self.setNext()
+            if self.symbol.type != self.scanner.NAME:
+                # name provided is syntactically incorrect for a name
+                # (according to our EBNF file)
+                self.error("bad name provided syntacicatlly", [self.scanner.KIND_KEYWORD_ID])
+                break
+            else:
+                device_name = self.strSymbol()
+
+            self.setNext()
+            if self.symbol.id != self.scanner.SEMICOLON:
+                self.error("missing semicolon", [self.scanner.OPEN_CURLY])
+                missing_semi_colon = True
+                break
+
+            self.setNext()
+            break
+
+        return missing_semi_colon, device_name
+
+    def parse_device_kind(self):
+        missing_semi_colon = False
+        device_kind_string = None  # are these going to cause issues later
+        device_kind_id = None   # when creating devices for semantic errors?
+
+        while True:
+            if self.symbol.id != self.scanner.KIND_KEYWORD_ID:
+                self.error("expected kind keyword here",
+                           [self.scanner.QUAL_KEYWORD_ID,
+                            self.scanner.CLOSE_CURLY])
+                # TODO: can tidy up if the expected list is defined as
+                #  an entity before the while loop
+                break
+
+            self.setNext()
+            if self.symbol.id != self.scanner.COLON:
+                self.error("expected : here",
+                           [self.scanner.QUAL_KEYWORD_ID,
+                            self.scanner.CLOSE_CURLY]
+                           )
+                break
+
+            self.setNext()
+            if self.symbol.type != self.scanner.NAME:
+                self.error("bad type provided syntactically",
+                           [self.scanner.QUAL_KEYWORD_ID,
+                            self.scanner.CLOSE_CURLY])
+                break
+            else:
+                device_kind_string = self.strSymbol()
+                [device_kind_id] = self.devices.names.lookup([device_kind_string])
+
+            self.setNext()
+            if self.symbol.id != self.scanner.SEMICOLON:
+                self.error("missing semicolon", [self.scanner.OPEN_CURLY])
+                # TODO: should we not also be expecting a close square....?
+                #  :/ in case its the last device which has the error?
+
+                missing_semi_colon = True
+                break
+
+            self.setNext()
+            break
+
+        return missing_semi_colon, device_kind_string, device_kind_id
+
+    def parse_device_qual(self):
+        missing_semi_colon = False
+        device_qual = None
+        while True:
+            if self.symbol.id != self.scanner.QUAL_KEYWORD_ID:
+                self.error("expected qual keyword here",
+                           [self.scanner.CLOSE_CURLY])
+                break
+
+            self.setNext()
+            if self.symbol.id != self.scanner.COLON:
+                self.error("expected : here",
+                           [self.scanner.CLOSE_CURLY])
+                break
+
+            self.setNext()
+            if self.symbol.type != self.scanner.NUMBER:
+                self.error("unsupported qualifier input",
+                           [self.scanner.CLOSE_CURLY])
+                break
+            else:
+                device_qual = self.symbol.id
+                # i think the id is simply the number?
+
+            self.setNext()
+            if self.symbol.id != self.scanner.SEMICOLON:
+                self.error("missing semicolon", [self.scanner.OPEN_CURLY])
+                # TODO: should we not also be expecting a close square....?
+                #  :/ in case its the last device which has the error?
+
+                missing_semi_colon = True
+                break
+
+            self.setNext()
+            break
+
+        return missing_semi_colon, device_qual
+
+
 
     def parse_connections_list(self):
         """Parse list of connections."""
@@ -448,16 +563,32 @@ class Parser:
     def strSymbol(self):
         """For use in testing to more easily print symbol string."""
         return self.names.get_name_string(self.symbol.id)
-    
-    def error(self, error_type, message):
-        """Handle errors."""
-        # access to the offending symbol is via self.symbol
-        # still a bit confused about error recovery / show all syntax errors
-        # at once
+
+    def error(self, msg, expect_next_list):
+        end_of_file = False
+        recovered = False
+        print(f"ERROR at index TBD!!: " + msg +
+              f", received {self.strSymbol()}")
         self.error_count += 1
-        if error_type == "syntax":
-            raise SyntaxError(message + f" received"
-                                        f" {self.names.get_name_string(self.symbol.id)}")
-        elif error_type == "semantic":
-            raise ValueError(message + f" received "
-                                      f"{self.names.get_name_string(self.symbol.id)}")
+
+        while True:
+            while self.symbol.id != self.scanner.SEMICOLON:
+                self.setNext()
+            # found a semi colon, now need to check if the expected element
+            # is next
+            try:
+                self.setNext()
+            except IndexError:
+                print("reached end of file!")
+                end_of_file = True
+                break
+
+            if self.symbol.id in expect_next_list:
+                # found the character we want to keep parsing, therefore we
+                # resume in the parsing
+                break
+
+
+    def semantic_error(self, msg):
+        print("SEMANTIC ERROR: "+ msg)
+        # no error recovery stuff here? :0
