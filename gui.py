@@ -23,8 +23,9 @@ from parse import Parser
 
 from userint import UserInterface
 from guicommandint import GuiCommandInterface
-
 from gui_utils import *
+
+import numpy as np
 
 
 class MyGLCanvas(wxcanvas.GLCanvas):
@@ -167,8 +168,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             GL.glVertex2f(X[i], axis)
         GL.glEnd()
 
-        self.render_text("0", X[0]-2, axis-14)
-        self.render_text(f"{len(X)/2}", X[i]-2, axis-14)
+        t = 0
+        while t < len(X):
+            self.render_text(str(int(t/2)), X[t]-4, axis-14)
+            t += 4
 
     def traceColour(self, device_kind):
         """Colour code trace based on device kind."""
@@ -297,6 +300,7 @@ class Gui(wx.Frame):
         self.help_string = help_string
         self.canvas_control_string = canvas_control_string
         self.parse_error_string = parse_error_string
+        self.click = wx.Cursor(wx.Image("click.png"))
 
         """Initialise widgets and layout."""
         super().__init__(parent=None, title=title, size=(800, 600))
@@ -358,6 +362,7 @@ class Gui(wx.Frame):
         self.spin_cycles = wx.SpinCtrl(self, wx.ID_ANY, "10")
 
         self.run_button = wx.Button(self, wx.ID_ANY, "Run")
+        self.run_button.SetCursor(self.click)
         self.run_button.SetFont(wx.Font(go_font))
         self.run_button.SetBackgroundColour(darkgreen)
         self.run_button.SetForegroundColour(white)
@@ -366,6 +371,7 @@ class Gui(wx.Frame):
         self.continue_button.SetFont(wx.Font(go_font))
         self.continue_button.SetBackgroundColour(cornflower)
         self.continue_button.SetForegroundColour(white)
+        self.continue_button.SetCursor(self.click)
 
         commandLineFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL)
         self.command_line_input = wx.TextCtrl(
@@ -571,15 +577,14 @@ class Gui(wx.Frame):
             name = self.names.get_name_string(s)
             state = self.devices.get_device(s).switch_state
             shortName = self.shorten(name)
-            self.switch_buttons[name] = [
-                wx.Button(self.switch_window, s, shortName),
-                state
-            ]
-            self.switch_buttons[name][0].SetToolTip(name)
+            button = wx.Button(self.switch_window, s, shortName)
+            button.SetToolTip(name)
+            button.SetCursor(self.click)
             if state == 0:
-                self.switch_buttons[name][0].SetBackgroundColour(red)
+                button.SetBackgroundColour(red)
             else:
-                self.switch_buttons[name][0].SetBackgroundColour(lightblue)
+                button.SetBackgroundColour(lightblue)
+            self.switch_buttons[name] = [button, state]
 
         # bind switch buttons to event
         for switch in [pair[0] for pair in self.switch_buttons.values()]:
@@ -622,6 +627,8 @@ class Gui(wx.Frame):
             device_button = wx.Button(
                 self.devices_window, id, self.shorten(f"{label}{extra}")
             )
+            c = wx.Cursor(wx.Image('info.png'))
+            device_button.SetCursor(c)
             kindId = self.devices.get_device(id).device_kind
             kindLabel = self.names.get_name_string(kindId)
             device_button.SetToolTip(f"{label}, {kindLabel}{extra}")
@@ -640,10 +647,12 @@ class Gui(wx.Frame):
         self.current_monitors = self.monitors.get_signal_names()[0]
         for curr in self.current_monitors:
             currId = self.names.lookup([curr])[0]
-            self.monitorButtons[curr] = wx.Button(
+            button = wx.Button(
                 self.monitors_window, currId, curr
             )
-            self.monitorButtons[curr].SetBackgroundColour(lightblue)
+            button.SetBackgroundColour(lightblue)
+            button.SetCursor(self.click)
+            self.monitorButtons[curr] = button
 
         # bind monitor buttons to event
         for name in self.monitorButtons.keys():
@@ -875,6 +884,7 @@ class Gui(wx.Frame):
         newButton.SetBackgroundColour(lightblue)
         newButton.Bind(wx.EVT_BUTTON, self.on_monitor_button)
         newButton.SetToolTip(name)
+        newButton.SetCursor(self.click)
         self.monitor_buttons_sizer.Add(
             newButton, 1, wx.TOP+wx.RIGHT+wx.LEFT, 5
         )
