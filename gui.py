@@ -329,12 +329,16 @@ class Gui(wx.Frame):
             self.scrollable, wx.Size(1500, 700), devices, monitors, names
         )
         # Configure the widgets
-        self.subHeadingFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD)
+        self.subHeadingFont = wx.Font(wx.FontInfo(12).FaceName("Rockwell"))
         self.file_name = wx.StaticText(
             self, wx.ID_ANY, f"", size=wx.Size(300, 30)
         )
-        self.file_name.SetFont(wx.Font(18, wx.DECORATIVE, wx.SLANT, wx.BOLD))
+        fileFont = wx.Font(wx.FontInfo(18).FaceName("Rockwell").Bold())
+        helpFont = wx.Font(wx.FontInfo(10).FaceName("Rockwell"))
+        self.file_name.SetFont(fileFont)
         self.browse = wx.Button(self, wx.ID_ANY, "Browse")
+        self.browse.SetFont(helpFont)
+        self.browse.SetCursor(self.click)
 
         self.switches_text = wx.StaticText(self, wx.ID_ANY, "")
         self.switches_text.SetFont(self.subHeadingFont)
@@ -353,10 +357,13 @@ class Gui(wx.Frame):
         self.monitors_help_text = wx.StaticText(
             self, wx.ID_ANY, "(click signals below to remove)"
         )
+        self.monitors_help_text.SetFont(helpFont)
         self.clear_all_monitors = wx.Button(self, wx.ID_ANY, "Clear All")
+        self.clear_all_monitors.SetCursor(self.click)
+        self.clear_all_monitors.SetFont(helpFont)
         self.monitorButtons = {}
 
-        go_font = wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD)
+        go_font = wx.Font(wx.FontInfo(14).FaceName("Rockwell"))
         self.cycles_text = wx.StaticText(self, wx.ID_ANY, "Cycles:")
         self.cycles_text.SetFont(self.subHeadingFont)
         self.spin_cycles = wx.SpinCtrl(self, wx.ID_ANY, "10")
@@ -501,8 +508,10 @@ class Gui(wx.Frame):
         if Id == wx.ID_EXIT:
             self.Close(True)
         if Id == wx.ID_ABOUT:
-            wx.MessageBox("Logic Simulator\nCreated by pp490\n2022",
-                          "About Logsim", wx.ICON_INFORMATION | wx.OK)
+            wx.MessageBox(
+                "Logic Simulator\nCreated by pp490, tnr22, jt741\n2022",
+                "About Logsim", wx.ICON_INFORMATION | wx.OK
+            )
         if Id == wx.ID_HELP_COMMANDS:
             wx.MessageBox(
                 self.help_string,
