@@ -110,6 +110,33 @@ class Scanner:
             self._next()
         return int(n)
 
+    def _skip_comment(self):
+        """Advances the file object reader pointer to the first character 
+        after the current comment. Assumes current character is either # or /
+        Open comments denoted by / , closed comments by #...# """
+
+        end = False
+
+        if self.current_char == "#":
+            self._next()
+            while self.current_char != "#":
+                if self.current_char == "":
+                    end = True
+                    break
+                self.next()
+            if not end:
+                self.next()
+        
+        elif self.current_char == "/":
+            self._next()
+            while self.current_char != "\n":
+                if self.current_char == "":
+                    end = True
+                    break
+                self._next()
+            if not end:
+                self._next()
+
     def get_symbol(self):
         """Public function to translate the next sequence of characters into a symbol."""
         sym = Symbol()
@@ -135,6 +162,10 @@ class Scanner:
             sym.type = self.PUNCTUATION
             sym.id = self.names.query(self.current_char)
             self._next()
+
+        # comment
+        elif self.current_char in ["#", "/"]:
+            self._skip_comment()
 
         # end of file
         elif self.current_char == "":
