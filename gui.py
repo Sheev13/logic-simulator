@@ -24,6 +24,8 @@ from parse import Parser
 from userint import UserInterface
 from guicommandint import GuiCommandInterface
 
+from gui_utils import *
+
 
 class MyGLCanvas(wxcanvas.GLCanvas):
     """Handle all drawing operations.
@@ -156,12 +158,17 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             i += 2
         GL.glEnd()
 
-        # Insert x axis
+        # Draw x axis
         GL.glColor3f(0, 0, 0)  # x axis is black
         GL.glBegin(GL.GL_LINE_STRIP)
         for i in range(len(X)):
             GL.glVertex2f(X[i], axis)
+            GL.glVertex2f(X[i], axis-3)
+            GL.glVertex2f(X[i], axis)
         GL.glEnd()
+
+        self.render_text("0", X[0]-2, axis-14)
+        self.render_text(f"{len(X)/2}", X[i]-2, axis-14)
 
     def traceColour(self, device_kind):
         """Colour code trace based on device kind."""
@@ -236,11 +243,12 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         else:
             self.Refresh()  # triggers the paint event
 
-    def render_text(self, text, x_pos, y_pos):
+    def render_text(
+        self, text, x_pos, y_pos, font=GLUT.GLUT_BITMAP_HELVETICA_12
+    ):
         """Handle text drawing operations."""
         GL.glColor3f(0.0, 0.0, 0.0)  # text is black
         GL.glRasterPos2f(x_pos, y_pos)
-        font = GLUT.GLUT_BITMAP_HELVETICA_12
 
         for character in text:
             if character == '\n':
@@ -589,10 +597,12 @@ class Gui(wx.Frame):
             gates = self.devices.find_devices(gate_type)
             for gateId in gates:
                 gate = self.devices.get_device(gateId)
-                label = self.shorten(self.names.get_name_string(gate.device_id))
+                label = self.shorten(
+                    self.names.get_name_string(gate.device_id)
+                )
                 extra = f": {str(len(gate.inputs.keys()))} inputs"
                 self.device_descs.append([gateId, label, extra])
-            
+
         for dev_type in self.devices.device_types:
             other_devices = self.devices.find_devices(dev_type)
             for id in other_devices:
@@ -615,7 +625,7 @@ class Gui(wx.Frame):
             kindId = self.devices.get_device(id).device_kind
             kindLabel = self.names.get_name_string(kindId)
             device_button.SetToolTip(f"{label}, {kindLabel}{extra}")
-            
+
             device_button.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
             device_button.SetBackgroundColour(self.getDeviceColour(kindId))
             device_button.SetForegroundColour(white)
@@ -879,6 +889,7 @@ class Gui(wx.Frame):
             return name
 
     def getDeviceColour(self, kind):
+        """Colour code device button."""
         if kind in self.devices.gate_types:
             return blue
         elif self.names.get_name_string(kind) == "CLOCK":
@@ -889,41 +900,3 @@ class Gui(wx.Frame):
             return darkpink
         else:
             return white
-
-
-paleyellow = wx.Colour(252, 251, 241)
-lightblue = wx.Colour(225, 239, 246)
-green = wx.Colour(208, 245, 206)
-red = wx.Colour(244, 204, 199)
-darkgreen = wx.Colour(0, 100, 0)
-cornflower = wx.Colour(145, 143, 214)
-white = wx.Colour(255, 255, 255)
-brightgreen = wx.Colour(40, 100, 0)
-darkpink = wx.Colour(170, 51, 106)
-blue = wx.Colour(0, 0, 139)
-darkred = wx.Colour(139, 0, 0)
-
-
-
-
-help_string = "Enter command line inputs in the bottom left of " \
-                        "the interface.\n" \
-                        "\nPossible commands:" \
-                        "\n \nr N\nRun simulator for N cycles" \
-                        "\n \nc N\nContinue running simulation "\
-                        "for N cycles" \
-                        "\n \ns X N\nSet switch X to N (0 or 1)" \
-                        "\n \nm X\nStart monitoring output signal X" \
-                        "\n \nz X\nStop monitoring X"
-
-canvas_control_string = "Signals on the canvas can be manipulated to " \
-                            "better view them.\n" \
-                            "\n Scroll in to zoom in" \
-                            "\n \n" \
-                            "Scroll out to zoom out - this may " \
-                            "be useful if you have many monitors" \
-                            "\n \n" \
-                            "Click and hold to drag the signals "\
-                            "around the space"
-
-parse_error_string = "Unable to parse file. Old file will remain loaded."
