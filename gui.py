@@ -489,7 +489,6 @@ class Gui(wx.Frame):
         cycles_sizer.Add(self.continue_button, 1, wx.ALL, 5)
 
         self.updateNewCircuit(first=True)
-
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
         self.Layout()
@@ -554,6 +553,7 @@ class Gui(wx.Frame):
                 "Unable to parse file.",
                 wx.ICON_INFORMATION | wx.OK
             )
+        self.Layout()
 
     def updateNewCircuit(self, first=False):
         """Configure widgets for new circuit and bind events."""
@@ -631,7 +631,6 @@ class Gui(wx.Frame):
         # add new devices to displayed list
         self.device_buttons = []
         for d in self.device_descs:
-            print(d)
             [id, label, extra] = d
             device_button = wx.Button(
                 self.devices_window, id, self.shorten(f"{label}{extra}")
