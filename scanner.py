@@ -177,11 +177,6 @@ class Scanner:
         elif self.current_char == "":
             sym.type = self.EOF
 
-        # newline character
-        elif self.current_char == "\n":
-            self._next()
-            # TODO: i don't think we ever get here? new line = whitespace
-
         # invalid char
         else:
             self._next()
