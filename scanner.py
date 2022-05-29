@@ -207,8 +207,9 @@ class Scanner:
         errorline = self._get_error_line()
         caratline = " "*(error_pos - linestart) + "^"
         message = errorline + "\n" + caratline
-        print(message)
 
         # return file object pointers to prior settings
         self.linestart = linestart
         self.f.seek(file_pos)
+
+        return message
