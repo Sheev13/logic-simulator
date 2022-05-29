@@ -53,7 +53,6 @@ class Parser:
         monitors_done = False
         self.setNext()
         while True:
-            print("curr", self.strSymbol(), self.symbol.id)
             if self.symbol.id == self.scanner.DEVICES_ID:
                 success = self.parse_devices_list()
                 devices_done = True
@@ -72,7 +71,6 @@ class Parser:
                     # TODO: confirm this error recovery strategy
 
             elif self.symbol.id == self.scanner.MONITOR_ID:
-                print("hit")
                 if devices_done:
                     success = self.parse_monitor_list()
                     monitors_done = True
@@ -123,6 +121,8 @@ class Parser:
                 if missing_semicolon:
                     print("missed semi colon at end of device definition, "
                           "will end up skipping the device after")
+                    if self.end_of_file:
+                        break
                     continue
 
                 if self.symbol.id == self.scanner.OPEN_CURLY:
@@ -167,6 +167,7 @@ class Parser:
         # maybe thats for self.error / scanner
         # what is the point of this code below huhh/???
         if self.error_count != 0:
+            print(f"found {self.error_count} error(s)")
             return False
 
     def parse_device(self, previous_errors):
@@ -400,6 +401,8 @@ class Parser:
                 if missing_semicolon:
                     print("missed semi colon at end of connection definition, "
                           "will end up skipping the connection after")
+                    if self.end_of_file:
+                        break
                     if self.symbol.id == self.scanner.MONITOR_ID:
                         break
                     continue
@@ -438,7 +441,6 @@ class Parser:
             else:
                 print(f"found {self.error_count} error(s)")
                 break
-
         if self.symbol.id != self.scanner.MONITOR_ID:
             self.setNext()
         # only get here if there is an error with the 'outer' device list
@@ -448,6 +450,7 @@ class Parser:
         # maybe thats for self.error / scanner
         # what is the point of this code below huhh/???
         if self.error_count != 0:
+            print(f"found {self.error_count} error(s)")
             return False
 
     def parse_connection(self, previous_errors):
@@ -552,6 +555,9 @@ class Parser:
                 if missing_semicolon:
                     print("missed semi colon at end of monitor, "
                           "will end up skipping the monitor after")
+                    print("currently monitor", self.strSymbol())
+                    if self.end_of_file:
+                        break
                     continue
 
                 if self.symbol.type == self.scanner.NAME:
@@ -580,7 +586,7 @@ class Parser:
                 self.setNext()  #to sync with error recovery
                 return True
             else:
-                print(f"found {self.error_count} error(s)")
+                print(f"Number of errors: {self.error_count}")
                 break
 
         self.setNext()
@@ -591,6 +597,7 @@ class Parser:
         # maybe thats for self.error / scanner
         # what is the point of this code below huhh/???
         if self.error_count != 0:
+            print(f"found {self.error_count} error(s)")
             return False
 
 
@@ -651,6 +658,10 @@ class Parser:
         while True:
             while self.symbol.id != self.scanner.SEMICOLON:
                 self.setNext()
+                if self.symbol.type == self.scanner.EOF:
+                    print("reached end of file!")
+                    self.end_of_file = True
+                    break
             # found a semi colon, now need to check if the expected element
             # is next
             self.setNext()
@@ -664,7 +675,6 @@ class Parser:
                 break
 
     def eof(self):
-        print("jessye", self.strSymbol())
         return self.symbol.type == self.scanner.EOF
     
     def semantic_error(self, msg):
