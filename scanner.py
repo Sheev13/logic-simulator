@@ -13,7 +13,6 @@ import pathlib
 
 
 class Symbol:
-
     """Encapsulate a symbol and store its properties.
 
     Parameters
@@ -34,7 +33,6 @@ class Symbol:
 
 
 class Scanner:
-
     """Read circuit definition file and translate the characters into symbols.
 
     Once supplied with the path to a valid definition file, the scanner
@@ -57,7 +55,8 @@ class Scanner:
         """Open specified file and initialise reserved words and IDs."""
         self.f = self._open_file(path)
         self.names = names
-        self.symbol_types = [self.PUNCTUATION, self.KEYWORD, self.NUMBER, self.NAME, self.EOF] = range(5)
+        self.symbol_types = [self.PUNCTUATION, self.KEYWORD,
+            self.NUMBER, self.NAME, self.EOF] = range(5)
 
         self.keywords = ["CIRCUIT", "DEVICES", "CONNECTIONS", "MONITOR",
                          "id", "kind", "qual"]
@@ -65,11 +64,12 @@ class Scanner:
          self.MONITOR_ID, self.ID_KEYWORD_ID, self.KIND_KEYWORD_ID,
          self.QUAL_KEYWORD_ID] = self.names.lookup(self.keywords)
 
-        self.puncs = [":", "[", "]", "{", "}", ";", ",", "."] # could treat them each as own symbol type as in handout suggestion
-        [self.COLON, self.OPEN_SQUARE, self.CLOSE_SQUARE, self.OPEN_CURLY, self.CLOSE_CURLY, self.SEMICOLON, 
-            self.COMMA, self.DOT] = self.names.lookup(self.puncs)
+        self.puncs = [":", "[", "]", "{", "}", ";", ",", "."]
+        [self.COLON, self.OPEN_SQUARE, self.CLOSE_SQUARE, self.OPEN_CURLY,
+            self.CLOSE_CURLY, self.SEMICOLON, self.COMMA,
+            self.DOT] = self.names.lookup(self.puncs)
 
-        self.current_char = " " #start as a whitespace
+        self.current_char = " "  # start as a whitespace
 
     def _open_file(self, path):
         """Open and return the file specified by path."""
@@ -78,23 +78,26 @@ class Scanner:
         try:
             return open(path)
         except FileNotFoundError:
-            print("File '", path, "' either does not exist or is not in '", directory, "'", sep='')
+            print("File '", path, "' either does not exist or is not in '",
+                directory, "'", sep='')
             sys.exit()
 
     def _next(self):
-        """Reads the next character in the definition file"""
+        """Read the next character in the definition file."""
         self.current_char = self.f.read(1)
         return self.current_char
 
     def _next_non_ws(self):
-        """Reads the next non-whitespace character in the definition file"""
+        """Read the next non-whitespace character in the definition file."""
         while self._next().isspace():
-            pass # keep looping
+            pass  # keep looping
         return self.current_char
-    
+
     def _next_name(self):
-        """Reads the file as necessary to return the next name string.
-        Assumes current_char at time of function call is alphabetic"""
+        """Read the file as necessary to return the next name string.
+
+        Assumes current_char at time of function call is alphabetic
+        """
         name = ""
         while self.current_char.isalnum():
             name += self.current_char
@@ -102,8 +105,10 @@ class Scanner:
         return name
 
     def _next_number(self):
-        """Reads the file as necessary to return the next number as an int.
-        Assumes current_char at time of function call is numeric"""
+        """Read the file as necessary to return the next number as an int.
+
+        Assumes current_char at time of function call is numeric
+        """
         n = ""
         while self.current_char.isdigit():
             n += self.current_char
@@ -111,10 +116,11 @@ class Scanner:
         return int(n)
 
     def _skip_comment(self):
-        """Advances the file object reader pointer to the first character 
-        after the current comment. Assumes current character is either # or /
-        Open comments denoted by / , closed comments by #...# """
+        """Advance the file object reader pointer to after the current comment.
 
+        Assumes current character is either # or /.
+        Open comments denoted by / , closed comments by #...#
+        """
         end = False
 
         if self.current_char == "#":
@@ -126,7 +132,7 @@ class Scanner:
                 self.next()
             if not end:
                 self.next()
-        
+
         elif self.current_char == "/":
             self._next()
             while self.current_char != "\n":
@@ -138,13 +144,13 @@ class Scanner:
                 self._next()
 
     def get_symbol(self):
-        """Public function to translate the next sequence of characters into a symbol."""
+        """Translate the next sequence of characters into a symbol."""
         sym = Symbol()
         if self.current_char.isspace():
             self._next_non_ws()
 
         # name/keyword
-        if self.current_char.isalpha(): 
+        if self.current_char.isalpha():
             name_string = self._next_name()
             if name_string in self.keywords:
                 sym.type = self.KEYWORD
@@ -174,24 +180,22 @@ class Scanner:
         # newline character
         elif self.current_char == "\n":
             self._next()
-            #TODO: i don't think we ever get here? new line = whitespace
+            # TODO: i don't think we ever get here? new line = whitespace
 
         # invalid char
         else:
             self._next()
-            #TODO
+            # TODO
             # throw error? just move on?
 
-        #print(self.names.get_name_string(sym.id))
         return sym
 
     def _get_error_line(self):
-        """returns erroneous line as a string"""
+        """Return erroneous line as a string."""
         pass
-        #TODO
-    
+        # TODO
+
     def show_error(self):
-        """Public function that prints current input line and a carrot on the 
-        line below at erroneous location"""
+        """Print current input line with carat pointing to error location."""
         print("there is an error here I think")
-        #TODO
+        # TODO
