@@ -28,7 +28,8 @@ class Symbol:
         """Initialise symbol properties."""
         self.type = None
         self.id = None
-        self.pos = 0
+        self.pos = None
+        self.line = None
 
 
 class Scanner:
@@ -54,6 +55,7 @@ class Scanner:
         """Open specified file and initialise reserved words and IDs."""
         self.f = self._open_file(path)
         self.linestart = 0
+        self.prev_linestart = 0
         self.linecount = 1
         self.names = names
         self.symbol_types = [self.PUNCTUATION, self.KEYWORD,
@@ -86,6 +88,7 @@ class Scanner:
     def _next(self):
         """Read the next character in the definition file."""
         if self.current_char == "\n":
+            self.prev_linestart = self.linestart
             self.linestart = self.f.tell() + 1
             self.linecount += 1
         self.current_char = self.f.read(1)
@@ -104,6 +107,7 @@ class Scanner:
         """
         name = ""
         symb.pos = self.f.tell()
+        symb.line = self.linecount
         while self.current_char.isalnum():
             name += self.current_char
             self._next()
@@ -116,6 +120,7 @@ class Scanner:
         """
         n = ""
         symb.pos = self.f.tell()
+        symb.line = self.linecount
         while self.current_char.isdigit():
             n += self.current_char
             self._next()
@@ -180,6 +185,7 @@ class Scanner:
         # punctuation
         elif self.current_char in self.puncs:
             sym.pos = self.f.tell()
+            sym.line = self.linecount
             sym.type = self.PUNCTUATION
             sym.id = self.names.query(self.current_char)
             self._next()
@@ -187,18 +193,23 @@ class Scanner:
         # end of file
         elif self.current_char == "":
             sym.pos = self.f.tell()
+            sym.line = self.linecount
             sym.type = self.EOF
 
         # invalid character
         else:
             sym.type = self.INVALID_CHAR
+            sym.pos = self.f.tell()
+            sym.line = self.linecount
             self._next()
 
+        print("this symbol pos ", sym.pos)
         return sym
 
     def _get_error_line(self):
         """Return erroneous line as a string."""
         line = ""
+        self._next()
         while self.current_char not in ["\n", ""]:
             line += self.current_char
             self._next()
@@ -208,15 +219,30 @@ class Scanner:
         """Print current input line with carat pointing to error location."""
         file_pos = self.f.tell()
         error_pos = symbol.pos
+        error_line_num = symbol.line
         linestart = self.linestart
+        prev_linestart = self.prev_linestart
+        col = 0
 
-        self.f.seek(linestart)
-        errorline = self._get_error_line()
-        caratline = " "*(error_pos - linestart) + "^"
-        message = errorline + "\n" + caratline
+        if error_pos == linestart:
+            self.f.seek(prev_linestart - 1)
+            errorline = self._get_error_line()
+            caratline = " "*len(errorline) + "^"
+            message = errorline + "\n" + caratline
+            error_line_num -= 1
+            col = len(errorline)
+        else:
+            self.f.seek(linestart - 1)
+            errorline = self._get_error_line()
+            print("error_pos ", error_pos)
+            print("linestart ", linestart)
+            caratline = " "*(error_pos - linestart) + "^"
+            message = errorline + "\n" + caratline
+            col = error_pos - linestart
 
         # return file object pointers to prior settings
         self.linestart = linestart
+        self.prev_linestart = prev_linestart
         self.f.seek(file_pos)
 
-        return message, self.linecount, error_pos - linestart
+        return message, error_line_num, col

@@ -13,5 +13,3 @@ CONNECTIONS [
     C: G2.I1;
     G1: G2.I2
 ];
-
-
