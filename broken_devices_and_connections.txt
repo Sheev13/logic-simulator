@@ -1,17 +1,17 @@
 DEVICES [
 {id: A; kind: SWITCH; qual: 0;};
-{id: B; kind: SWITCH; qual: 1;};
-{id: C; kind: SWITCH; qual: 1;};
+{id B; kind: SWITCH; qual: 1;};
+{id: C; hello: SWITCH; qual: 1;};
 {id: G1; kind: NOR; qual: 2;};
-{id: G2; kind: AND; qual: 2;};
+{id: G2; kind: AND; qual: 2;;
 {id: G3; kind: OR; qual: 2;};
 ];
 
 CONNECTIONS [
-    A: G1.I1;
-    B G1.I2;
+    A: G1.I;
+    B: G1.I2;
     C: G2.I1;
-    G1: G2.I2
+    G1 G2.I2;
 ];
 
 

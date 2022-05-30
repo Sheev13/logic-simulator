@@ -40,6 +40,7 @@ class Parser:
         self.scanner = scanner
 
         self.error_count = 0
+        self.end_of_file = False
 
         self.symbol = None
 
@@ -72,7 +73,7 @@ class Parser:
 
             elif self.symbol.id == self.scanner.MONITOR_ID:
                 if devices_done:
-                    success = self.parse_monitor_list()
+                    success = self.parse_monitors_list()
                     monitors_done = True
                 else:
                     self.error("can't parse monitors if not done devices",
@@ -136,7 +137,7 @@ class Parser:
                     print("sort this problem out")
 
             # no longer parsing devices
-            if self.symbol.id != self.scanner.CLOSE_SQUARE:
+            if self.symbol.id != self.scanner.CLOSE_SQUARE and self.symbol.type != self.scanner.EOF:
                 self.error("expected ]", [self.scanner.CONNECTIONS_ID,
                                           self.scanner.MONITOR_ID])
                 break
@@ -172,6 +173,7 @@ class Parser:
 
     def parse_device(self, previous_errors):
         """Parse a single device."""
+        print("Parsing a single device.")
         missing_device_semicolon = False
         while True:
             if self.symbol.id != self.scanner.OPEN_CURLY:
@@ -383,8 +385,10 @@ class Parser:
         """Parse list of connections."""
         self.setNext()
         while True:
+            if self.end_of_file:
+                break
             if self.symbol.id != self.scanner.OPEN_SQUARE:
-                self.error("expected [", [self.scanner.MONITOR_ID])
+                self.error("expected [", [self.scanner.MONITOR_ID, self.scanner.EOF])
                 # it could also be end of file, connections not necessary
                 break
             self.setNext()
@@ -424,14 +428,14 @@ class Parser:
                 break
             
             # no longer parsing connections
-            if self.symbol.id != self.scanner.CLOSE_SQUARE:
-                self.error("expected ]", [self.scanner.MONITOR_ID])
+            if self.symbol.id != self.scanner.CLOSE_SQUARE and self.symbol.type != self.scanner.EOF:
+                self.error("expected ]", [self.scanner.MONITOR_ID, self.scanner.EOF])
                 break
 
             self.setNext()
             
             if self.symbol.id != self.scanner.SEMICOLON:
-                self.error("expected ;", [self.scanner.MONITOR_ID])
+                self.error("expected ;", [self.scanner.MONITOR_ID, self.scanner.EOF])
                 break
 
             if self.error_count == 0:
@@ -441,20 +445,19 @@ class Parser:
             else:
                 print(f"found {self.error_count} error(s)")
                 break
+
         if self.symbol.id != self.scanner.MONITOR_ID:
             self.setNext()
-        # only get here if there is an error with the 'outer' device list
-        # wrapper
+
         print("did not manage to parse the connections list perfectly")
-        # wish this could be more informative.......
-        # maybe thats for self.error / scanner
-        # what is the point of this code below huhh/???
+
         if self.error_count != 0:
             print(f"found {self.error_count} error(s)")
             return False
 
     def parse_connection(self, previous_errors):
         """Parse a single connection."""
+        print("Parsing a single connection.")
         missing_signal_end_marker = False
         while True:
             missing_signal_end_marker, leftOutputId, leftPortId, leftSignalName = self.parse_signal()
@@ -463,6 +466,7 @@ class Parser:
                       "connection")
                 break
             self.setNext()
+
             missing_signal_end_marker, rightOutputId, rightPortId, rightSignalName = self.parse_signal()
             if missing_signal_end_marker:
                 break
@@ -484,7 +488,7 @@ class Parser:
                         self.semantic_error(f"Both ports are outputs.")
                 else:
                     print(f"Successfully built connection from {leftSignalName} to {rightSignalName}.")
-
+        
                 self.setNext()
                 break
 
@@ -500,7 +504,7 @@ class Parser:
         """Parse a signal name."""
         missing_end_marker = False
         signalName = ""
-        outputId = None
+        deviceId = None
         portId = None
 
         while True:
@@ -509,7 +513,7 @@ class Parser:
                 break
 
             signalName += self.names.get_name_string(self.symbol.id)
-            outputId = self.symbol.id
+            deviceId = self.symbol.id
             self.setNext()
 
             if self.symbol.id == self.scanner.DOT:
@@ -529,17 +533,18 @@ class Parser:
                 break
 
             break
-        return missing_end_marker, outputId, portId, signalName
 
-    def parse_monitor_list(self):
+        return missing_end_marker, deviceId, portId, signalName
+
+    def parse_monitors_list(self):
         """Parse list of monitors."""
         self.setNext()
         while True:
             if self.end_of_file:
                 break
             if self.symbol.id != self.scanner.OPEN_SQUARE:
-                self.error("expected [", [self.scanner.EOF])
-                # it could also be end of file, connections not necessary
+                self.error("expected [", [self.scanner.CONNECTIONS_ID, self.scanner.EOF])
+                # it could also be end of file, monitors not necessary
                 break
             self.setNext()
 
@@ -550,13 +555,15 @@ class Parser:
                     break
 
                 missing_semicolon = self.parse_monitor(self.error_count)
+
                 # TODO: still need to check if there is an unique issue with
                     #  missing semi-colon
                 if missing_semicolon:
                     print("missed semi colon at end of monitor, "
                           "will end up skipping the monitor after")
-                    print("currently monitor", self.strSymbol())
                     if self.end_of_file:
+                        break
+                    if self.symbol.id == self.scanner.CONNECTIONS_ID:
                         break
                     continue
 
@@ -564,21 +571,27 @@ class Parser:
                     parsing_monitors = True
                 elif self.symbol.id == self.scanner.CLOSE_SQUARE:
                     parsing_monitors = False
+                elif self.symbol.id == self.scanner.CONNECTIONS_ID:
+                    parsing_monitors = False
+                    break
                 else:
                     # TODO: what if it is neither of those???
                     # is this when there is an error at the end of connection
                     # lists?
                     print("sort this problem out")
 
+            if self.symbol.id == self.scanner.CONNECTIONS_ID:
+                break
+
             # no longer parsing monitors
-            if self.symbol.id != self.scanner.CLOSE_SQUARE:
-                self.error("expected ]", [self.scanner.EOF])
+            if self.symbol.id != self.scanner.CLOSE_SQUARE and self.symbol.type != self.scanner.EOF:
+                self.error("expected ]", [self.scanner.CONNECTIONS_ID, self.scanner.EOF])
                 break
 
             self.setNext()
 
             if self.symbol.id != self.scanner.SEMICOLON:
-                self.error("expected ;", [self.scanner.EOF])
+                self.error("expected ;", [self.scanner.EOF, self.scanner.CONNECTIONS_ID])
                 break
 
             if self.error_count == 0:
@@ -589,17 +602,14 @@ class Parser:
                 print(f"Number of errors: {self.error_count}")
                 break
 
-        self.setNext()
-        # only get here if there is an error with the 'outer' device list
-        # wrapper
+        if self.symbol.id != self.scanner.CONNECTIONS_ID:
+            self.setNext()
+
         print("did not manage to parse the monitor list perfectly")
-        # wish this could be more informative.......
-        # maybe thats for self.error / scanner
-        # what is the point of this code below huhh/???
+
         if self.error_count != 0:
             print(f"found {self.error_count} error(s)")
             return False
-
 
     def parse_monitor(self, previous_errors):
         """Parse a single monitor."""
@@ -626,8 +636,6 @@ class Parser:
                         self.error("semantic", f"Already monitoring {signalName}.")
                 else:
                     print(f"Successfully built monitor {signalName}.")
-
-                self.setNext()
                 break
 
             else:
@@ -635,7 +643,6 @@ class Parser:
                 print("No attempts to build/check semantics will occur.")
                 self.setNext()
                 break
-        
         return missing_semicolon
 
     def setNext(self):

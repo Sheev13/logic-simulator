@@ -58,7 +58,7 @@ class Scanner:
         self.symbol_types = [self.PUNCTUATION, self.KEYWORD,
             self.NUMBER, self.NAME, self.EOF, self.INVALID_CHAR] = range(6)
 
-        self.keywords = ["CIRCUIT", "DEVICES", "CONNECTIONS", "MONITOR",
+        self.keywords = ["CIRCUIT", "DEVICES", "CONNECTIONS", "MONITORS",
                          "id", "kind", "qual"]
         [self.CIRCUIT_ID, self.DEVICES_ID, self.CONNECTIONS_ID,
          self.MONITOR_ID, self.ID_KEYWORD_ID, self.KIND_KEYWORD_ID,
