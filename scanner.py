@@ -54,6 +54,7 @@ class Scanner:
         """Open specified file and initialise reserved words and IDs."""
         self.f = self._open_file(path)
         self.linestart = 0
+        self.linecount = 1
         self.names = names
         self.symbol_types = [self.PUNCTUATION, self.KEYWORD,
             self.NUMBER, self.NAME, self.EOF, self.INVALID_CHAR] = range(6)
@@ -86,6 +87,7 @@ class Scanner:
         """Read the next character in the definition file."""
         if self.current_char == "\n":
             self.linestart = self.f.tell() + 1
+            self.linecount += 1
         self.current_char = self.f.read(1)
         return self.current_char
 
@@ -217,4 +219,4 @@ class Scanner:
         self.linestart = linestart
         self.f.seek(file_pos)
 
-        return message
+        return message, self.linecount, error_pos - linestart
