@@ -1,0 +1,11 @@
+DEVICES [
+{id: A; kind: SWITCH; qual: 0;};
+{id: B; kind: SWITCH; qual: 1;};
+{id: C; kind: SWITCH; qual: 1;};
+{id: G1; kind: NOR; qual: 2;};
+{id: G2; kind: AND; qual: 2;};
+{id: G3; kind: OR; qual: 2;};
+{id: G4; kind: NAND; qual: 2;};
+{id: D1; kind: DTYPE;};
+{id: CLK1; kind: CLOCK; qual: 4;};
+];
