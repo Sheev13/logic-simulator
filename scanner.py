@@ -130,13 +130,12 @@ class Scanner:
         if self.current_char == "#":
             self._next()
             while self.current_char != "#":
-                print(self.current_char)
                 if self.current_char == "":
                     end = True
                     break
                 self._next()
             if not end:
-                self._next_non_ws()
+                self._next()
 
         elif self.current_char == "/":
             self._next()
@@ -147,12 +146,20 @@ class Scanner:
                 self._next()
             if not end:
                 self._next()
+        
+        if self.current_char.isspace():
+            self._next_non_ws()
 
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
         sym = Symbol()
+
         if self.current_char.isspace():
             self._next_non_ws()
+
+        # comment
+        if self.current_char in ["#", "/"]:
+            self._skip_comment()
 
         # name/keyword
         if self.current_char.isalpha():
@@ -174,10 +181,6 @@ class Scanner:
             sym.type = self.PUNCTUATION
             sym.id = self.names.query(self.current_char)
             self._next()
-
-        # comment
-        elif self.current_char in ["#", "/"]:
-            self._skip_comment()
 
         # end of file
         elif self.current_char == "":

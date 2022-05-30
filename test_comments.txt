@@ -1,5 +1,5 @@
 DEVICES [
-{id: A; kind: SWITCH; qual: 0;}; #test comment#
+{id: A; kind: SWITCH; qual: 0;};  #hello#
 {id: B; kind: SWITCH; qual: 1;};
 {id: C; kind: SWITCH; qual: 1;};
 {id: G1; kind: NOR; qual: 2;};
