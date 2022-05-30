@@ -130,12 +130,13 @@ class Scanner:
         if self.current_char == "#":
             self._next()
             while self.current_char != "#":
+                print(self.current_char)
                 if self.current_char == "":
                     end = True
                     break
                 self._next()
             if not end:
-                self._next()
+                self._next_non_ws()
 
         elif self.current_char == "/":
             self._next()

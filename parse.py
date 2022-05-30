@@ -134,6 +134,7 @@ class Parser:
                     # TODO: what if it is neither of those???
                     # is this when there is an error at the end of device
                     # lists?
+                    print("device list problem", self.strSymbol())
                     print("sort this problem out")
 
             # no longer parsing devices
@@ -658,7 +659,7 @@ class Parser:
 
     def error(self, msg, expect_next_list):
         self.end_of_file = False
-        #print(self.scanner.show_error(self.symbol))
+        print(self.scanner.show_error(self.symbol))
         print(f"ERROR at index TBD!!: " + msg +
               f", received {self.strSymbol()}")
         self.error_count += 1
