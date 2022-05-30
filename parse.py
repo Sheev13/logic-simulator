@@ -513,7 +513,8 @@ class Parser:
 
                 if error_type != self.network.NO_ERROR:
                     if error_type == self.network.DEVICE_ABSENT:
-                        self.semantic_error("One device absent.")
+                        self.semantic_error("Either left or right device is "
+                                            "absent")
                     elif error_type == self.network.INPUT_CONNECTED:
                         self.semantic_error(f"Input {rightSignalName} is already connected.")
                     elif error_type == self.network.INPUT_TO_INPUT:
