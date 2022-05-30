@@ -676,10 +676,10 @@ class Parser:
 
     def error(self, msg, expect_next_list):
         self.end_of_file = False
-        # carat_msg, line_num, col_num = self.scanner.show_error(self.symbol)
-        # print(f"ERROR on line {line_num} index {col_num}: " + msg +
-        #       f", received {self.strSymbol()}")
-        # print(carat_msg)
+        carat_msg, line_num, col_num = self.scanner.show_error(self.symbol)
+        print(f"ERROR on line {line_num} index {col_num}: " + msg +
+              f", received {self.strSymbol()}")
+        print(carat_msg)
         self.error_count += 1
         while True:
             while self.symbol.id != self.scanner.SEMICOLON:

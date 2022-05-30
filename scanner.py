@@ -216,7 +216,9 @@ class Scanner:
 
     def show_error(self, symbol):
         """Print current input line with carat pointing to error location."""
+        char = self.current_char
         file_pos = self.f.tell()
+        linecount = self.linecount
         error_pos = symbol.pos
         error_line_num = symbol.line
         linestart = self.linestart
@@ -240,6 +242,8 @@ class Scanner:
         # return file object pointers to prior settings
         self.linestart = linestart
         self.prev_linestart = prev_linestart
+        self.linecount = linecount
         self.f.seek(file_pos)
+        self.current_char = char
 
         return message, error_line_num, col
