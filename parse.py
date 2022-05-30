@@ -98,7 +98,8 @@ class Parser:
 
         #hopefully we will always reach EOF symbol...
 
-        print("Completely parsed the definition file")
+        print(f"Completely parsed the definition file. {self.error_count} "
+              f"error(s) found in total.")
         if self.error_count == 0:  # TOTAL number of errors = 0
             return True
         else:
