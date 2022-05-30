@@ -500,18 +500,15 @@ class Gui(wx.Frame):
         self.command_line_sizer.Add(self.command_line_input, 1, wx.ALL, 5)
 
         self.manual_settings_sizer.Add(self.devices_heading, 0, wx.ALL, 5)
-        self.manual_settings_sizer.Add(self.devices_window, 0, wx.ALL, 5)
-        self.manual_settings_sizer.AddStretchSpacer()
+        self.manual_settings_sizer.Add(self.devices_window, 1, wx.EXPAND | wx.ALL, 5)
         self.manual_settings_sizer.Add(self.switches_text, 0, wx.ALL, 5)
-        self.manual_settings_sizer.Add(self.switches_window, 0, wx.ALL, 5)
-        self.manual_settings_sizer.AddStretchSpacer()
+        self.manual_settings_sizer.Add(self.switches_window, 1, wx.EXPAND | wx.ALL, 5)
         self.manual_settings_sizer.Add(self.monitors_sizer, 0, wx.ALL, 5)
         self.manual_settings_sizer.Add(self.monitors_help_sizer, 0, wx.ALL, 5)
-        self.manual_settings_sizer.Add(self.monitors_window, 0, wx.ALL, 5)
+        self.manual_settings_sizer.Add(self.monitors_window, 1, wx.EXPAND | wx.ALL, 5)
 
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
-        self.Bind(wx.EVT_SIZE, self.on_gui_resize)
         self.Layout()
         self.updateNewCircuit(first=True)
 
@@ -732,47 +729,9 @@ class Gui(wx.Frame):
         self.canvas.devices = self.devices
         self.canvas.names = self.names
 
-        remaining_height = self.getManualSettingsRemainingHeight()
-
-        self.resizeButtonWindow(self.devices_window, remaining_height)
-        self.resizeButtonWindow(self.switches_window, remaining_height)
-        self.resizeButtonWindow(self.monitors_window, remaining_height)
-
         if not first:
             self.canvas.render(text)
         self.Layout()
-
-    def getManualSettingsRemainingHeight(self):
-        """Calculate remaining space in manual settings sizer."""
-        sideWidth, sideHeight = self.side_sizer.GetSize()
-        file_name = self.file_name_sizer.GetSize()[1]
-        text = self.monitors_sizer.GetSize()[1]*3
-        monitors_help = self.monitors_help_sizer.GetSize()[1]
-        cycles = self.cycles_sizer.GetSize()[1]
-        command_line = self.command_line_sizer.GetSize()[1]
-        total = file_name + text + monitors_help + cycles + command_line
-        rem = sideHeight - total
-        return rem
-
-    def resizeButtonWindow(self, window, remaining_height):
-        """Resizes a window with buttons in it."""
-        winWidth, winHeight = window.GetSize()
-        window.SetSize(wx.Size(winWidth, remaining_height/3))
-        print(window.GetName(), window.GetSize(), window.GetClientSize())
-        window.Layout()
-
-    def on_gui_resize(self, event):
-        """Handle the buttons windows resize event."""
-        remaining_height = self.getManualSettingsRemainingHeight()
-        self.resizeButtonWindow(self.devices_window, remaining_height)
-        self.resizeButtonWindow(self.switches_window, remaining_height)
-        self.resizeButtonWindow(self.monitors_window, remaining_height)
-        self.devices_window.SetAutoLayout(True)
-        self.Layout()
-        self.Show()
-        self.devices_window.Update()
-        self.devices_window.Refresh()
-        self.devices_window.Show()
 
     def on_spin_cycles(self, event):
         """Handle the event when the user changes the number of cycles."""
