@@ -79,7 +79,7 @@ class Scanner:
         directory = pathlib.Path().resolve()
 
         try:
-            return open(path)
+            return open(path, 'rb')  # use binary mode due to unix line endings
         except FileNotFoundError:
             print("File '", path, "' either does not exist or is not in '",
                 directory, "'", sep='')
@@ -91,7 +91,7 @@ class Scanner:
             self.prev_linestart = self.linestart
             self.linestart = self.f.tell() + 1
             self.linecount += 1
-        self.current_char = self.f.read(1)
+        self.current_char = self.f.read(1).decode('UTF-8')
         return self.current_char
 
     def _next_non_ws(self):
@@ -203,7 +203,6 @@ class Scanner:
             sym.line = self.linecount
             self._next()
 
-        print("this symbol pos ", sym.pos)
         return sym
 
     def _get_error_line(self):
@@ -234,8 +233,6 @@ class Scanner:
         else:
             self.f.seek(linestart - 1)
             errorline = self._get_error_line()
-            print("error_pos ", error_pos)
-            print("linestart ", linestart)
             caratline = " "*(error_pos - linestart) + "^"
             message = errorline + "\n" + caratline
             col = error_pos - linestart
