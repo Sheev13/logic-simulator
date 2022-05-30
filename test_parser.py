@@ -5,7 +5,7 @@ from names import Names
 from network import Network
 from devices import Devices
 from monitors import Monitors
-from parser import Parser
+from parse import Parser
 from scanner import Scanner
 
 def new_parser(path):
