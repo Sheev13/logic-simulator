@@ -56,6 +56,7 @@ class Parser:
         while True:
             if self.symbol.id == self.scanner.DEVICES_ID:
                 success = self.parse_devices_list()
+                #this success parameter is completely redundant
                 devices_done = True
 
             elif self.symbol.id == self.scanner.CONNECTIONS_ID:
@@ -98,7 +99,7 @@ class Parser:
         #hopefully we will always reach EOF symbol...
 
         print("Done the definition file")
-        if self.error_count == 0:
+        if self.error_count == 0:  # TOTAL number of errors = 0
             return True
         else:
             return False
@@ -122,6 +123,7 @@ class Parser:
 
                 # this is definitely cursed below TODO
                 if missing_semicolon:
+                    # this is also cropping up at the wrong place
                     print("missed semi colon at end of device definition, "
                           "will end up skipping the device after")
                     
@@ -137,7 +139,11 @@ class Parser:
                 elif self.symbol.id == self.scanner.CLOSE_SQUARE:
                     parsing_devices = False
                 elif self.symbol.id == self.scanner.MONITOR_ID or self.symbol.id == self.scanner.CONNECTIONS_ID:
-                    parsing_devices = False
+                    # case when an error causes us to skip to the end of
+                    # devices
+                    # oh but what if we never recover.... i think that is
+                    # the else statement
+                    return
                 
                 else:
                     # TODO: what if it is neither of those???
@@ -240,6 +246,7 @@ class Parser:
                 break
 
             # if we get here we have done a whole device!
+            # for each device there are no new errors
             if self.error_count - previous_errors == 0:
                 print(f"syntactically parsed the device: "
                       f"{device_name}-{device_kind_string}-{device_qual}")
@@ -262,9 +269,6 @@ class Parser:
                           f" {device_name}-"
                           f"{device_kind_string}-{device_qual}")
 
-
-                # this is here so that error recover + normal operation are
-                # in sync
                 self.setNext()
                 break
             else:
@@ -685,6 +689,7 @@ class Parser:
                     break
             # found a semi colon, now need to check if the expected element
             # is next
+            #print(self.strSymbol())
             self.setNext()
             if self.symbol.type == self.scanner.EOF:
                 print("reached end of file!")
@@ -693,6 +698,7 @@ class Parser:
             if self.symbol.id in expect_next_list or self.symbol.type in expect_next_list:
                 # found the character we want to keep parsing, therefore we
                 # resume in the parsing
+                #print(self.strSymbol())
                 break
 
     def eof(self):
