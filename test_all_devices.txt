@@ -1,4 +1,4 @@
-DEVICES: [
+DEVICES [
 {id: D1; kind: DTYPE;};
 {id: D2; kind: DTYPE; };
 {id: D3; kind: DTYPE; };
@@ -21,7 +21,7 @@ DEVICES: [
 
 ];
 
-CONNECTIONS: [
+CONNECTIONS[
     CLK1:D1.CLK;
     D1.QBAR: D1.DATA;
     SW1 : D1.SET;
@@ -54,7 +54,7 @@ CONNECTIONS: [
     ]
 ;
 
-MONITOR: [
+MONITORS [
     CLK1;
     D1.Q;
     D2.Q;

@@ -8,8 +8,10 @@ Classes:
 MyGLCanvas - handles all canvas drawing operations.
 Gui - configures the main window and all the widgets.
 """
+from inspect import getmembers
 from matplotlib.ft2font import VERTICAL
 import wx
+import wx.lib.agw.gradientbutton as gb
 import os
 import wx.glcanvas as wxcanvas
 from OpenGL import GL, GLUT
@@ -100,6 +102,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def render(self, text):
         """Handle all drawing operations."""
+        
         self.SetCurrent(self.context)
         if not self.init:
             # Configure the viewport, modelview and projection matrices
@@ -110,7 +113,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
         # Draw specified text at position (10, 10)
-        top = 675
+        top = 975
         self.render_text(text, 10, top)
 
         # Draw signal traces
@@ -326,7 +329,7 @@ class Gui(wx.Frame):
         self.scrollable.ShowScrollbars(wx.SHOW_SB_ALWAYS, wx.SHOW_SB_DEFAULT)
         self.scrollable.SetScrollbars(20, 20, 15, 10)
         self.canvas = MyGLCanvas(
-            self.scrollable, wx.Size(1500, 700), devices, monitors, names
+            self.scrollable, wx.Size(1500, 1000), devices, monitors, names
         )
         # Configure the widgets
         self.subHeadingFont = wx.Font(wx.FontInfo(12).FaceName("Rockwell"))
@@ -338,7 +341,7 @@ class Gui(wx.Frame):
         self.file_name.SetFont(fileFont)
         self.browse = wx.Button(self, wx.ID_ANY, "Browse")
         self.browse.SetFont(helpFont)
-        self.browse.SetCursor(self.click)
+        #self.browse.SetCursor(self.click)
 
         self.switches_text = wx.StaticText(self, wx.ID_ANY, "")
         self.switches_text.SetFont(self.subHeadingFont)
@@ -359,9 +362,9 @@ class Gui(wx.Frame):
         )
         self.monitors_help_text.SetFont(helpFont)
         self.clear_all_monitors = wx.Button(self, wx.ID_ANY, "Clear All")
-        self.clear_all_monitors.SetCursor(self.click)
+        #self.clear_all_monitors.SetCursor(self.click)
         self.clear_all_monitors.SetFont(helpFont)
-        self.monitorButtons = {}
+        self.monitor_buttons = {}
 
         go_font = wx.Font(wx.FontInfo(14).FaceName("Rockwell"))
         self.cycles_text = wx.StaticText(self, wx.ID_ANY, "Cycles:")
@@ -369,7 +372,7 @@ class Gui(wx.Frame):
         self.spin_cycles = wx.SpinCtrl(self, wx.ID_ANY, "10")
 
         self.run_button = wx.Button(self, wx.ID_ANY, "Run")
-        self.run_button.SetCursor(self.click)
+        #self.run_button.SetCursor(self.click)
         self.run_button.SetFont(wx.Font(go_font))
         self.run_button.SetBackgroundColour(darkgreen)
         self.run_button.SetForegroundColour(white)
@@ -378,7 +381,7 @@ class Gui(wx.Frame):
         self.continue_button.SetFont(wx.Font(go_font))
         self.continue_button.SetBackgroundColour(cornflower)
         self.continue_button.SetForegroundColour(white)
-        self.continue_button.SetCursor(self.click)
+        #self.continue_button.SetCursor(self.click)
 
         commandLineFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL)
         self.command_line_input = wx.TextCtrl(
@@ -406,35 +409,35 @@ class Gui(wx.Frame):
 
         # Configure sizers for layout
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        side_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.side_sizer = wx.BoxSizer(wx.VERTICAL)
 
-        # Sizers to be contained within side_sizer
-        file_name_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        manual_settings_sizer = wx.BoxSizer(wx.VERTICAL)
-
+        # Sizers to be contained within self.side_sizer
+        self.file_name_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.manual_settings_sizer = wx.BoxSizer(wx.VERTICAL)
         self.devices_sizer = wx.FlexGridSizer(4)
         self.devices_window = wx.ScrolledWindow(
             self,
             wx.ID_ANY,
             wx.DefaultPosition,
-            wx.Size(375, 120),
-            wx.SUNKEN_BORDER | wx.HSCROLL | wx.VSCROLL
+            wx.Size(375, 60),
+            wx.SUNKEN_BORDER | wx.HSCROLL | wx.VSCROLL, name = "dev"
         )
         self.devices_window.SetSizer(self.devices_sizer)
         self.devices_window.SetScrollRate(10, 10)
         self.devices_window.SetAutoLayout(True)
+        print("hi", self.devices_window.GetName(), self.devices_window.GetSize(), self.devices_window.GetMinClientSize())
 
         self.switch_buttons_sizer = wx.FlexGridSizer(4)
-        self.switch_window = wx.ScrolledWindow(
+        self.switches_window = wx.ScrolledWindow(
             self,
             wx.ID_ANY,
             wx.DefaultPosition,
             wx.Size(375, 60),
-            wx.SUNKEN_BORDER | wx.HSCROLL | wx.VSCROLL
+            wx.SUNKEN_BORDER | wx.HSCROLL | wx.VSCROLL, name = "swit"
         )
-        self.switch_window.SetSizer(self.switch_buttons_sizer)
-        self.switch_window.SetScrollRate(10, 10)
-        self.switch_window.SetAutoLayout(True)
+        self.switches_window.SetSizer(self.switch_buttons_sizer)
+        self.switches_window.SetScrollRate(10, 10)
+        self.switches_window.SetAutoLayout(True)
 
         self.monitor_buttons_sizer = wx.FlexGridSizer(4)
         self.monitors_window = wx.ScrolledWindow(
@@ -442,56 +445,60 @@ class Gui(wx.Frame):
             wx.ID_ANY,
             wx.DefaultPosition,
             wx.Size(375, 60),
-            wx.SUNKEN_BORDER | wx.HSCROLL | wx.VSCROLL
+            wx.SUNKEN_BORDER | wx.HSCROLL | wx.VSCROLL, name = "mon"
         )
         self.monitors_window.SetSizer(self.monitor_buttons_sizer)
         self.monitors_window.SetScrollRate(10, 10)
         self.monitors_window.SetAutoLayout(True)
 
-        monitors_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        monitors_help_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        cycles_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        command_line_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.monitors_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.monitors_help_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.cycles_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.command_line_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        # Add side_sizer and canvas to main_sizer
-        main_sizer.Add(side_sizer, 5, wx.EXPAND | wx.ALL, 5)
+        # Add self.side_sizer and canvas to main_sizer
+        main_sizer.Add(self.side_sizer, 5, wx.EXPAND | wx.ALL, 5)
         main_sizer.Add(self.scrollable, 10, wx.EXPAND | wx.ALL, 5)
 
-        # Add sizers to side_sizer
-        side_sizer.Add(manual_settings_sizer, 1, wx.ALL, 5)
-        side_sizer.Add(cycles_sizer, 0, wx.LEFT, 5)
-        side_sizer.Add(command_line_sizer, 0, wx.LEFT, 5)
+        # Add sizers to self.side_sizer
+        self.side_sizer.Add(self.file_name_sizer, 0, wx.ALL, 5)
+        self.side_sizer.Add(self.manual_settings_sizer, 1, wx.ALL, 5)
+        self.side_sizer.Add(self.cycles_sizer, 0, wx.LEFT, 5)
+        self.side_sizer.Add(self.command_line_sizer, 0, wx.LEFT, 5)
 
         # add widgets to smaller sizers
-        command_line_sizer.Add(self.command_line_input, 1, wx.ALL, 5)
+        self.file_name_sizer.Add(self.file_name, 1, wx.TOP, 10)
+        self.file_name_sizer.Add(self.browse, 0, wx.TOP, 6)
 
-        manual_settings_sizer.Add(file_name_sizer, 1, wx.TOP, 5)
-        manual_settings_sizer.Add(self.devices_heading, 0, wx.ALL, 5)
-        manual_settings_sizer.Add(self.devices_window, 0, wx.ALL, 5)
-        manual_settings_sizer.Add(self.switches_text, 0, wx.ALL, 5)
-        manual_settings_sizer.Add(self.switch_window, 0, wx.ALL, 5)
-        manual_settings_sizer.Add(monitors_sizer, 0, wx.TOP, 5)
-        manual_settings_sizer.Add(monitors_help_sizer)
-        manual_settings_sizer.Add(self.monitors_window, 0, wx.ALL, 5)
+        self.monitors_sizer.Add(self.monitors_text, 1, wx.ALL, 5)
 
-        file_name_sizer.Add(self.file_name, 1, wx.ALL, 5)
-        file_name_sizer.Add(self.browse, 0, wx.TOP, 6)
+        self.monitors_help_sizer.Add(self.monitor_input, 0, wx.ALL, 5)
+        self.monitors_help_sizer.Add(self.clear_all_monitors, 0, wx.ALL, 5)
+        self.monitors_help_sizer.Add(self.monitors_help_text, 0, wx.ALL, 10)
 
-        monitors_sizer.Add(self.monitors_text, 1, wx.ALL, 5)
+        self.cycles_sizer.Add(self.cycles_text, 0, wx.TOP, 20)
+        self.cycles_sizer.Add(self.spin_cycles, 0, wx.LEFT+wx.TOP, 10)
+        self.cycles_sizer.Add(self.run_button, 1, wx.ALL, 5)
+        self.cycles_sizer.Add(self.continue_button, 1, wx.ALL, 5)
 
-        monitors_help_sizer.Add(self.monitor_input, 0, wx.ALL, 5)
-        monitors_help_sizer.Add(self.clear_all_monitors, 0, wx.ALL, 5)
-        monitors_help_sizer.Add(self.monitors_help_text, 0, wx.ALL, 10)
+        self.command_line_sizer.Add(self.command_line_input, 1, wx.ALL, 5)
 
-        cycles_sizer.Add(self.cycles_text, 0, wx.TOP, 10)
-        cycles_sizer.Add(self.spin_cycles, 0, wx.LEFT+wx.TOP, 10)
-        cycles_sizer.Add(self.run_button, 1, wx.ALL, 5)
-        cycles_sizer.Add(self.continue_button, 1, wx.ALL, 5)
+        
+        self.manual_settings_sizer.Add(self.devices_heading, 0, wx.ALL, 5)
+        self.manual_settings_sizer.Add(self.devices_window, 0, wx.ALL, 5)
+        self.manual_settings_sizer.AddStretchSpacer()
+        self.manual_settings_sizer.Add(self.switches_text, 0, wx.ALL, 5)
+        self.manual_settings_sizer.Add(self.switches_window, 0, wx.ALL, 5)
+        self.manual_settings_sizer.AddStretchSpacer()
+        self.manual_settings_sizer.Add(self.monitors_sizer, 0, wx.ALL, 5)
+        self.manual_settings_sizer.Add(self.monitors_help_sizer, 0, wx.ALL, 5)
+        self.manual_settings_sizer.Add(self.monitors_window, 0, wx.ALL, 5)
 
-        self.updateNewCircuit(first=True)
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
+        self.Bind(wx.EVT_SIZE, self.on_gui_resize)
         self.Layout()
+        self.updateNewCircuit(first=True)
 
     def setFileTitle(self, path):
         """Display name of open file at top of screen."""
@@ -577,7 +584,7 @@ class Gui(wx.Frame):
                 button.Destroy()
 
             # destroy current monitor buttons
-            for monitor in self.monitorButtons.values():
+            for monitor in self.monitor_buttons.values():
                 monitor.Destroy()
 
         # add new switches
@@ -586,9 +593,9 @@ class Gui(wx.Frame):
             name = self.names.get_name_string(s)
             state = self.devices.get_device(s).switch_state
             shortName = self.shorten(name)
-            button = wx.Button(self.switch_window, s, shortName)
+            button = wx.Button(self.switches_window, s, shortName)
             button.SetToolTip(name)
-            button.SetCursor(self.click)
+            #button.SetCursor(self.click)
             if state == 0:
                 button.SetBackgroundColour(red)
             else:
@@ -636,7 +643,7 @@ class Gui(wx.Frame):
                 self.devices_window, id, self.shorten(f"{label}{extra}")
             )
             c = wx.Cursor(wx.Image('info.png'))
-            device_button.SetCursor(c)
+            #device_button.SetCursor(c)
             kindId = self.devices.get_device(id).device_kind
             kindLabel = self.names.get_name_string(kindId)
             device_button.SetToolTip(f"{label}, {kindLabel}{extra}")
@@ -651,7 +658,7 @@ class Gui(wx.Frame):
             self.devices_sizer.Add(device, 0, wx.ALL, 5)
 
         # add new monitor buttons
-        self.monitorButtons = {}
+        self.monitor_buttons = {}
         self.current_monitors = self.monitors.get_signal_names()[0]
         for curr in self.current_monitors:
             currId = self.names.lookup([curr])[0]
@@ -659,17 +666,17 @@ class Gui(wx.Frame):
                 self.monitors_window, currId, curr
             )
             button.SetBackgroundColour(lightblue)
-            button.SetCursor(self.click)
-            self.monitorButtons[curr] = button
+            #button.SetCursor(self.click)
+            self.monitor_buttons[curr] = button
 
         # bind monitor buttons to event
-        for name in self.monitorButtons.keys():
-            self.monitorButtons[name].Bind(
+        for name in self.monitor_buttons.keys():
+            self.monitor_buttons[name].Bind(
                 wx.EVT_BUTTON, self.on_monitor_button
             )
 
         # add new monitor buttons to sizer
-        for mon in self.monitorButtons.values():
+        for mon in self.monitor_buttons.values():
             self.monitor_buttons_sizer.Add(mon, 1, wx.TOP+wx.RIGHT+wx.LEFT, 5)
 
         text = "New circuit loaded."
@@ -677,8 +684,43 @@ class Gui(wx.Frame):
         self.canvas.monitors = self.monitors
         self.canvas.devices = self.devices
         self.canvas.names = self.names
-        self.canvas.render(text)
+
+        remaining_height = self.getManualSettingsRemainingHeight()
+        
+        self.resizeButtonWindow(self.devices_window, remaining_height)
+        self.resizeButtonWindow(self.switches_window, remaining_height)
+        self.resizeButtonWindow(self.monitors_window, remaining_height)
+
+        if not first:
+            self.canvas.render(text)
         self.Layout()
+
+    def getManualSettingsRemainingHeight(self):
+        sideWidth, sideHeight = self.side_sizer.GetSize()
+        file_name_height = self.file_name_sizer.GetSize()[1]
+        text_height = self.monitors_sizer.GetSize()[1]*3
+        monitors_help_height = self.monitors_help_sizer.GetSize()[1]
+        cycles_height = self.cycles_sizer.GetSize()[1]
+        command_line_height = self.command_line_sizer.GetSize()[1]
+        total = file_name_height + text_height + monitors_help_height + cycles_height + command_line_height
+        rem = sideHeight - total
+        return rem
+
+    def resizeButtonWindow(self, window, remaining_height):
+        winWidth, winHeight = window.GetSize()
+        window.SetSize(wx.Size(winWidth, remaining_height/3))
+        window.GetSizer().Fit(window)
+        print(window.GetName(), window.GetSize())
+        self.Layout()
+
+    def on_gui_resize(self, event):
+        """Handle the buttons windows resize event."""
+        remaining_height = self.getManualSettingsRemainingHeight()
+        self.resizeButtonWindow(self.devices_window, remaining_height)
+        self.resizeButtonWindow(self.switches_window, remaining_height)
+        self.resizeButtonWindow(self.monitors_window, remaining_height)
+        self.Layout()
+
 
     def on_spin_cycles(self, event):
         """Handle the event when the user changes the number of cycles."""
@@ -737,13 +779,13 @@ class Gui(wx.Frame):
         monitorName = self.names.get_name_string(button.GetId())
         text = self.destroyMonitor(monitorName)
         button.Destroy()
-        self.monitorButtons.pop(monitorName)
+        self.monitor_buttons.pop(monitorName)
         self.canvas.render(text)
         self.Layout()
 
     def on_clear_all_monitors_button(self, event):
         """Handle the event when the user clears all monitors."""
-        for button in self.monitorButtons.values():
+        for button in self.monitor_buttons.values():
             button.Destroy()
 
         for monitorName in self.monitors.get_signal_names()[0]:
@@ -756,7 +798,7 @@ class Gui(wx.Frame):
             )
             [deviceId, portId] = commandint.read_signal_name()
             self.monitors.remove_monitor(deviceId, portId)
-            self.monitorButtons.pop(monitorName, "")
+            self.monitor_buttons.pop(monitorName, "")
         self.Layout()
 
     def on_monitor_input(self, event):
@@ -842,9 +884,9 @@ class Gui(wx.Frame):
     def on_command_line_zap_monitor(self, deviceId, portId):
         """Destroy monitor button based on command line input."""
         monitorName = self.getMonitorName(deviceId, portId)
-        button = self.monitorButtons[monitorName]
+        button = self.monitor_buttons[monitorName]
         button.Destroy()
-        self.monitorButtons.pop(monitorName)
+        self.monitor_buttons.pop(monitorName)
         self.Layout()
 
     def getMonitorName(self, deviceId, portId):
@@ -892,11 +934,11 @@ class Gui(wx.Frame):
         newButton.SetBackgroundColour(lightblue)
         newButton.Bind(wx.EVT_BUTTON, self.on_monitor_button)
         newButton.SetToolTip(name)
-        newButton.SetCursor(self.click)
+        #newButton.SetCursor(self.click)
         self.monitor_buttons_sizer.Add(
             newButton, 1, wx.TOP+wx.RIGHT+wx.LEFT, 5
         )
-        self.monitorButtons[name] = newButton
+        self.monitor_buttons[name] = newButton
         self.Layout()
 
     def shorten(self, name):

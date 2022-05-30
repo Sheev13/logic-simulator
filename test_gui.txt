@@ -1,4 +1,4 @@
-DEVICES: [
+DEVICES[
 {id: SW1; kind: SWITCH; qual: 1;};
 {id: SW2; kind: SWITCH; qual: 0;};
 {id: SW3; kind: SWITCH; qual: 0;};
@@ -7,7 +7,7 @@ DEVICES: [
 {id: G3; kind: OR; qual: 2;};
 ];
 
-CONNECTIONS: [
+CONNECTIONS [
     SW1: G1.I1;
     SW2:G1.I2;
     SW3: G2.I1;
