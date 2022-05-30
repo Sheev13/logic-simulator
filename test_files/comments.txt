@@ -1,10 +1,12 @@
+/ this is a circuit definition file
+
 DEVICES [
 {id: A; kind: SWITCH; qual: 0;};  #hello#
 {id: B; kind: SWITCH; qual: 1;};
 {id: C; kind: SWITCH; qual: 1;};
 {id: G1; kind: NOR; qual: 2;};
 {id: G2; kind: AND; qual: 2;};
-{id: G3; kind: OR; qual: 2;};
+{id: G3; kind: OR; qual: 2;}; #namaste#
 ];
 
 / howdy
@@ -13,5 +15,5 @@ CONNECTIONS [
 ];
 
 MONITORS [
-    G1; A;
+    G1; A; #see ya#
 ];

@@ -1,4 +1,5 @@
 """Test the parser module."""
+from this import d
 import pytest
 
 from names import Names
@@ -30,11 +31,11 @@ def new_parser_good_devices():
     path = "test_files/devices.txt"
     return new_parser(path)
 
-# @pytest.fixture
-# def new_parser_bad_devices():
-#     """Return a Parser class instance for bad devices."""
-#     path = "test_files/broken_devices.txt"
-#     return new_parser(path)
+@pytest.fixture
+def new_parser_bad_devices():
+    """Return a Parser class instance for bad devices."""
+    path = "test_files/broken_devices.txt"
+    return new_parser(path)
 
 @pytest.fixture
 def new_parser_good_devices_and_connections():
@@ -42,11 +43,11 @@ def new_parser_good_devices_and_connections():
     path = "test_files/devices_and_connections.txt"
     return new_parser(path)
 
-# @pytest.fixture
-# def new_parser_bad_devices_and_connections():
-#     """Return a Parser class instance for bad devices and connections."""
-#     path = "test_files/broken_devices_and_connections.txt"
-#     return new_parser(path)
+@pytest.fixture
+def new_parser_bad_devices_and_connections():
+    """Return a Parser class instance for bad devices and connections."""
+    path = "test_files/broken_devices_and_connections.txt"
+    return new_parser(path)
 
 @pytest.fixture
 def new_parser_good_devices_and_monitors():
@@ -54,11 +55,11 @@ def new_parser_good_devices_and_monitors():
     path = "test_files/devices_and_monitors.txt"
     return new_parser(path)
 
-# @pytest.fixture
-# def new_parser_bad_devices_and_monitors():
-#     """Return a Parser class instance for bad devices and monitors."""
-#     path = "test_files/broken_devices_and_monitors.txt"
-#     return new_parser(path)
+@pytest.fixture
+def new_parser_bad_devices_and_monitors():
+    """Return a Parser class instance for bad devices and monitors."""
+    path = "test_files/broken_devices_and_monitors.txt"
+    return new_parser(path)
 
 @pytest.fixture
 def new_parser_good_all_three():
@@ -66,24 +67,29 @@ def new_parser_good_all_three():
     path = "test_files/all_three.txt"
     return new_parser(path)
 
-# @pytest.fixture
-# def new_parser_all_three_bad_devices():
-#     """Return a Parser class instance for all three present, bad devices."""
-#     path = "test_files/all_three_bad_devices.txt"
-#     return new_parser(path)
+@pytest.fixture
+def new_parser_all_three_bad_devices():
+    """Return a Parser class instance for all three present, bad devices."""
+    path = "test_files/all_three_bad_devices.txt"
+    return new_parser(path)
 
-# @pytest.fixture
-# def new_parser_all_three_bad_connections():
-#     """Return a Parser class instance for all three present, bad connections."""
-#     path = "test_files/all_three_bad_connections.txt"
-#     return new_parser(path)
+@pytest.fixture
+def new_parser_all_three_bad_connections():
+    """Return a Parser class instance for all three present, bad connections."""
+    path = "test_files/all_three_bad_connections.txt"
+    return new_parser(path)
 
-# @pytest.fixture
-# def new_parser_all_three_bad_monitors():
-#     """Return a Parser class instance for all three present, bad monitors."""
-#     path = "test_files/all_three_bad_monitors.txt"
-#     return new_parser(path)
+@pytest.fixture
+def new_parser_all_three_bad_monitors():
+    """Return a Parser class instance for all three present, bad monitors."""
+    path = "test_files/all_three_bad_monitors.txt"
+    return new_parser(path)
 
+@pytest.fixture
+def new_parser_comments():
+    """Return a Parser class instance for comments in text file."""
+    path = "test_files/comments.txt"
+    return new_parser(path)
 
 def test_parse_network_no_errors(
     new_parser_good_devices,
@@ -91,11 +97,32 @@ def test_parse_network_no_errors(
     new_parser_good_devices_and_monitors,
     new_parser_good_all_three
 ):
-    """Test if parse network works when no errors present in any files."""
-    print(new_parser_good_devices)
+    """Test if parse network works when no errors present in any simple files."""
     assert new_parser_good_devices.parse_network()
     assert new_parser_good_devices_and_connections.parse_network()
     assert new_parser_good_devices_and_monitors.parse_network()
     assert new_parser_good_all_three.parse_network()
 
+def test_parse_network_with_errors(
+    new_parser_bad_devices,
+    new_parser_bad_devices_and_connections,
+    new_parser_bad_devices_and_monitors,
+    new_parser_all_three_bad_devices,
+    new_parser_all_three_bad_connections,
+    new_parser_all_three_bad_monitors
+):
+    """Test if parse network returns False when errors present in files."""
+    # assert new_parser_bad_devices.parse_network()
+    # assert new_parser_bad_devices_and_connections.parse_network()
+    # assert new_parser_bad_devices_and_monitors.parse_network()
+    # assert new_parser_all_three_bad_devices.parse_network()
+    # assert new_parser_all_three_bad_connections.parse_network()
+    # assert new_parser_all_three_bad_monitors.parse_network()
+
+def test_parse_network_comments(new_parser_comments):
+    """Test if parse network works when no comments present in a simple file."""
+    assert new_parser_comments.parse_network()
+
+def test(new_parser_comments):
+    assert new_parser_comments.parse_network()
 
