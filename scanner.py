@@ -198,7 +198,8 @@ class Scanner:
         """Return erroneous line as a string."""
         line = ""
         while self.current_char not in ["\n", ""]:
-            line += self._next()
+            line += self.current_char
+            self._next()
         return line
 
     def show_error(self, symbol):
