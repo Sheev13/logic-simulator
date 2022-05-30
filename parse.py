@@ -31,6 +31,7 @@ class Parser:
     --------------
     parse_network(self): Parses the circuit definition file.
     """
+
     def __init__(self, names, devices, network, monitors, scanner):
         """Initialise constants."""
         self.names = names
@@ -646,11 +647,11 @@ class Parser:
 
                 if error_type != self.monitors.NO_ERROR:
                     if error_type == self.network.DEVICE_ABSENT:
-                        self.error("semantic", "Device you are trying to monitor is absent.")
+                        self.semantic_error("Device you are trying to monitor is absent.")
                     elif error_type == self.monitors.NOT_OUTPUT:
-                        self.error("semantic", f"{signalName} is not an output.")
+                        self.semantic_error(f"{signalName} is not an output.")
                     elif error_type == self.monitors.MONITOR_PRESENT:
-                        self.error("semantic", f"Already monitoring {signalName}.")
+                        self.semantic_error(f"Already monitoring {signalName}.")
                 else:
                     print(f"Successfully built monitor {signalName}.")
                 break
@@ -689,16 +690,16 @@ class Parser:
                     break
             # found a semi colon, now need to check if the expected element
             # is next
-            #print(self.strSymbol())
             self.setNext()
             if self.symbol.type == self.scanner.EOF:
                 print("reached end of file!")
                 self.end_of_file = True
                 break
+            print("hie", expect_next_list)
+            print("hie")
             if self.symbol.id in expect_next_list or self.symbol.type in expect_next_list:
                 # found the character we want to keep parsing, therefore we
                 # resume in the parsing
-                #print(self.strSymbol())
                 break
 
     def eof(self):
