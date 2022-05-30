@@ -674,10 +674,13 @@ class Gui(wx.Frame):
             kindId = self.devices.get_device(id).device_kind
             kindLabel = self.names.get_name_string(kindId)
             device_button.SetToolTip(f"{label}, {kindLabel}{extra}")
-
-            # device_button.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
             device_button.SetTopStartColour(self.getDeviceColour(kindId)[0])
             device_button.SetBottomEndColour(self.getDeviceColour(kindId)[0])
+            device_button.Bind(
+                wx.EVT_ENTER_WINDOW,
+                self.on_enter_device_button
+            )
+
             self.device_buttons.append(device_button)
 
         # add new device list to sizer
@@ -744,9 +747,8 @@ class Gui(wx.Frame):
         """Resizes a window with buttons in it."""
         winWidth, winHeight = window.GetSize()
         window.SetSize(wx.Size(winWidth, remaining_height/3))
-        window.GetSizer().Fit(window)
-        print(window.GetName(), window.GetSize())
-        self.Layout()
+        print(window.GetName(), window.GetSize(), window.GetClientSize())
+        window.Layout()
 
     def on_gui_resize(self, event):
         """Handle the buttons windows resize event."""
@@ -761,6 +763,14 @@ class Gui(wx.Frame):
         self.cycles_to_run = self.spin_cycles.GetValue()
         text = "".join(["Number of cycles: ", str(self.cycles_to_run)])
         self.canvas.render(text)
+
+    def on_enter_device_button(self, event):
+        """Stop colour change when user hovers over device button."""
+        btn = event.GetEventObject()
+        deviceKindId = self.devices.get_device(btn.GetId()).device_kind
+        btn.SetTopStartColour(self.getDeviceColour(deviceKindId)[0])
+        btn.SetBottomEndColour(self.getDeviceColour(deviceKindId)[0])
+        self.Layout()
 
     def on_run_button(self, event):
         """Handle the event when the user clicks the run button."""
