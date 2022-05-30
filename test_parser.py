@@ -112,17 +112,13 @@ def test_parse_network_with_errors(
     new_parser_all_three_bad_monitors
 ):
     """Test if parse network returns False when errors present in files."""
-    # assert new_parser_bad_devices.parse_network()
-    # assert new_parser_bad_devices_and_connections.parse_network()
-    # assert new_parser_bad_devices_and_monitors.parse_network()
-    # assert new_parser_all_three_bad_devices.parse_network()
-    # assert new_parser_all_three_bad_connections.parse_network()
-    # assert new_parser_all_three_bad_monitors.parse_network()
+    assert not new_parser_bad_devices.parse_network()
+    assert not new_parser_bad_devices_and_connections.parse_network()
+    assert not new_parser_bad_devices_and_monitors.parse_network()
+    assert not new_parser_all_three_bad_devices.parse_network()
+    assert not new_parser_all_three_bad_connections.parse_network()
+    assert not new_parser_all_three_bad_monitors.parse_network()
 
 def test_parse_network_comments(new_parser_comments):
     """Test if parse network works when no comments present in a simple file."""
     assert new_parser_comments.parse_network()
-
-def test(new_parser_comments):
-    assert new_parser_comments.parse_network()
-
