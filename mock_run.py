@@ -17,7 +17,7 @@ devices = Devices(names)
 network = Network(names, devices)
 monitors = Monitors(names, devices, network)
 
-path = 'test_files/broken_devices_and_monitors.txt'
+path = 'test_files/devices.txt'
 
 scanner = Scanner(path, names)
 parser = Parser(names, devices, network, monitors, scanner)

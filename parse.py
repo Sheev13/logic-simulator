@@ -174,22 +174,9 @@ class Parser:
                 break
 
             print("Successfully parsed the DEVICES list! \n")
+            self.setNext()
             return True
 
-
-            # TODO: tidy up the logic below here
-            # I mean it has to be 0 surely?
-            # i think maybe residue errors?
-            # if self.error_count == 0:
-            #     # no need for previous_errors count
-            #     # bc devices are always parsed first
-            #     print("Successfully parsed the DEVICES list!")
-            #     self.setNext()
-            #     return True
-            # else:
-            #     print(f"found {self.error_count} error(s) when parsing the "
-            #           f"DEVICES list")
-            #     break
 
         self.setNext()
 
