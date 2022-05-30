@@ -147,6 +147,7 @@ class Parser:
                     print("sort this problem out")
 
             # no longer parsing devices
+            # possible at this point that we have monitors or connections instead - there is no error! thoughhh maybe i want to return in line 139
             if self.symbol.id != self.scanner.CLOSE_SQUARE and self.symbol.type != self.scanner.EOF:
                 self.error("expected ]", [self.scanner.CONNECTIONS_ID,
                                           self.scanner.MONITOR_ID])
