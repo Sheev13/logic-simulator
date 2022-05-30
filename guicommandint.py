@@ -48,8 +48,6 @@ class GuiCommandInterface:
 
     read_number(self, lower_bound, upper_bound): Returns the current number.
 
-    help_command(self): Prints a list of valid commands.
-
     switch_command(self): Sets the specified switch to the specified signal
                           level.
 

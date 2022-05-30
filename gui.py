@@ -8,7 +8,6 @@ Classes:
 MyGLCanvas - handles all canvas drawing operations.
 Gui - configures the main window and all the widgets.
 """
-from inspect import getmembers
 from matplotlib.ft2font import VERTICAL
 import wx
 import wx.lib.agw.gradientbutton as gb
@@ -26,8 +25,6 @@ from parse import Parser
 from userint import UserInterface
 from guicommandint import GuiCommandInterface
 from gui_utils import *
-
-import numpy as np
 
 
 class MyGLCanvas(wxcanvas.GLCanvas):
@@ -67,6 +64,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GLUT.glutInit()
         self.init = False
         self.context = wxcanvas.GLContext(self)
+
+        # Initialise for signal display
         self.monitors = monitors
         self.devices = devices
         self.names = names
@@ -161,7 +160,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             i += 2
         GL.glEnd()
 
-        # Draw x axis
+        # Draw x axis with ticks
         GL.glColor3f(0, 0, 0)  # x axis is black
         GL.glBegin(GL.GL_LINE_STRIP)
         for i in range(len(X)):
@@ -170,9 +169,10 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             GL.glVertex2f(X[i], axis)
         GL.glEnd()
 
+        # x axis numbers
         t = 0
         while t < len(X):
-            self.render_text(str(int(t/2)), X[t]-4, axis-14)
+            self.render_text(str(int(t/2)), X[t], axis-14)
             t += 4
 
     def traceColour(self, device_kind):
@@ -298,6 +298,8 @@ class Gui(wx.Frame):
         """Initialise user interface."""
         self.path = path
         self.userint = UserInterface(names, devices, network, monitors)
+
+        """Initialise utils."""
         self.help_string = help_string
         self.canvas_control_string = canvas_control_string
         self.sidebar_guide_string = sidebar_guide_string
@@ -324,22 +326,24 @@ class Gui(wx.Frame):
         # Set background colour for GUI
         self.SetBackgroundColour(paleyellow)
 
+        # Set fonts
+        fileFont = wx.Font(wx.FontInfo(18).FaceName("Mono").Bold())
+        genBtnFont = wx.Font(wx.FontInfo(10).FaceName("Mono").Bold())
+        helpFont = wx.Font(wx.FontInfo(10).FaceName("Mono"))
+        self.subHeadingFont = wx.Font(wx.FontInfo(12).FaceName("Mono"))
+
         # Canvas for drawing signals
         self.scrollable = wx.ScrolledCanvas(self, wx.ID_ANY)
-        self.scrollable.SetVirtualSize(500, 500)
         self.scrollable.ShowScrollbars(wx.SHOW_SB_ALWAYS, wx.SHOW_SB_DEFAULT)
         self.scrollable.SetScrollbars(20, 20, 15, 10)
         self.canvas = MyGLCanvas(
             self.scrollable, wx.Size(1500, 1000), devices, monitors, names
         )
+
         # Configure the widgets
-        self.subHeadingFont = wx.Font(wx.FontInfo(12).FaceName("Mono"))
         self.file_name = wx.StaticText(
             self, wx.ID_ANY, f"", size=wx.Size(350, 30)
         )
-        fileFont = wx.Font(wx.FontInfo(18).FaceName("Mono").Bold())
-        genBtnFont = wx.Font(wx.FontInfo(10).FaceName("Mono").Bold())
-        helpFont = wx.Font(wx.FontInfo(10).FaceName("Mono"))
         self.file_name.SetFont(fileFont)
         self.browse = wx.Button(self, wx.ID_ANY, "Browse")
         self.browse.SetFont(genBtnFont)
@@ -421,11 +425,11 @@ class Gui(wx.Frame):
             wx.EVT_BUTTON, self.on_clear_all_monitors_button
         )
 
-        # Configure sizers for layout
+        # Configure sizers for overall layout
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.side_sizer = wx.BoxSizer(wx.VERTICAL)
 
-        # Sizers to be contained within self.side_sizer
+        # Sizers and windows to be contained within side sizer
         self.file_name_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.manual_settings_sizer = wx.BoxSizer(wx.VERTICAL)
         self.devices_sizer = wx.FlexGridSizer(4)
@@ -472,11 +476,11 @@ class Gui(wx.Frame):
         self.cycles_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.command_line_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        # Add self.side_sizer and canvas to main_sizer
+        # Add side sizer and canvas to main sizer
         main_sizer.Add(self.side_sizer, 5, wx.EXPAND | wx.ALL, 5)
         main_sizer.Add(self.scrollable, 10, wx.EXPAND | wx.ALL, 5)
 
-        # Add sizers to self.side_sizer
+        # Add sizers to side_sizer
         self.side_sizer.Add(self.file_name_sizer, 0, wx.ALL, 5)
         self.side_sizer.Add(self.manual_settings_sizer, 1, wx.ALL, 5)
         self.side_sizer.Add(self.cycles_sizer, 0, wx.LEFT, 5)
@@ -500,12 +504,27 @@ class Gui(wx.Frame):
         self.command_line_sizer.Add(self.command_line_input, 1, wx.ALL, 5)
 
         self.manual_settings_sizer.Add(self.devices_heading, 0, wx.ALL, 5)
-        self.manual_settings_sizer.Add(self.devices_window, 1, wx.EXPAND | wx.ALL, 5)
+        self.manual_settings_sizer.Add(
+            self.devices_window,
+            1,
+            wx.EXPAND | wx.ALL,
+            5
+        )
         self.manual_settings_sizer.Add(self.switches_text, 0, wx.ALL, 5)
-        self.manual_settings_sizer.Add(self.switches_window, 1, wx.EXPAND | wx.ALL, 5)
+        self.manual_settings_sizer.Add(
+            self.switches_window,
+            1,
+            wx.EXPAND | wx.ALL,
+            5
+        )
         self.manual_settings_sizer.Add(self.monitors_sizer, 0, wx.ALL, 5)
         self.manual_settings_sizer.Add(self.monitors_help_sizer, 0, wx.ALL, 5)
-        self.manual_settings_sizer.Add(self.monitors_window, 1, wx.EXPAND | wx.ALL, 5)
+        self.manual_settings_sizer.Add(
+            self.monitors_window,
+            1,
+            wx.EXPAND | wx.ALL,
+            5
+        )
 
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
@@ -549,8 +568,6 @@ class Gui(wx.Frame):
                 "Sidebar Guide",
                 wx.ICON_INFORMATION | wx.OK
             )
-
-            
 
     def on_browse(self, event):
         """Handle the event when user wants to find circuit definition file."""
@@ -812,7 +829,6 @@ class Gui(wx.Frame):
         """Handle the event when the user clears all monitors."""
         for button in self.monitor_buttons.values():
             button.Destroy()
-
         for monitorName in self.monitors.get_signal_names()[0]:
             commandint = GuiCommandInterface(
                 monitorName,
@@ -837,7 +853,6 @@ class Gui(wx.Frame):
                 self.addMonitorButton(name)
         else:
             text = "Invalid monitor"
-
         self.canvas.render(text)
 
     def on_command_line_input(self, event):
