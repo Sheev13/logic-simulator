@@ -83,7 +83,6 @@ class Parser:
                     if self.eof():
                         break
             elif self.symbol.type == self.scanner.EOF:
-                #print("reached end of file!")
                 break
             else:
                 self.error("not DEVICES, CONNECTIONS, MONITORS nor EOF",
@@ -125,7 +124,7 @@ class Parser:
                 # this is definitely cursed below TODO
                 if missing_semicolon:
                     # this is also cropping up at the wrong place
-                    print("missed semi colon at end of device definition, "
+                    print("missed semicolon at end of device definition, "
                           "will end up skipping the device after")
                     
                     # this is also way too hacky
@@ -174,8 +173,22 @@ class Parser:
                 break
 
             print("Successfully parsed the DEVICES list! \n")
-            self.setNext()
             return True
+
+
+            # TODO: tidy up the logic below here
+            # I mean it has to be 0 surely?
+            # i think maybe residue errors?
+            # if self.error_count == 0:
+            #     # no need for previous_errors count
+            #     # bc devices are always parsed first
+            #     print("Successfully parsed the DEVICES list!")
+            #     self.setNext()
+            #     return True
+            # else:
+            #     print(f"found {self.error_count} error(s) when parsing the "
+            #           f"DEVICES list")
+            #     break
 
         self.setNext()
 
@@ -205,7 +218,7 @@ class Parser:
             missing_semicolon, device_name = self.parse_device_id()
 
             if missing_semicolon:
-                print("missed a semi colon in device id, will skip to next "
+                print("missed a semicolon in device id, will skip to next "
                       "device")
                 break
 
@@ -213,7 +226,7 @@ class Parser:
                 self.parse_device_kind()
 
             if missing_semicolon:
-                print("missed a semi colon in device kind, will skip to next "
+                print("missed a semicolon in device kind, will skip to next "
                       "device")
                 break
 
@@ -221,7 +234,7 @@ class Parser:
                 missing_semicolon, device_qual = self.parse_device_qual()
                 if missing_semicolon:
                     print(
-                        "missed a semi colon in device qual, will skip to "
+                        "missed a semicolon in device qual, will skip to "
                         "next device")
                     break
             else:
@@ -412,6 +425,9 @@ class Parser:
 
             parsing_connections = True
             while parsing_connections:
+                if self.end_of_file:
+                    break
+
                 if self.symbol.id == self.scanner.CLOSE_SQUARE:
                     parsing_connections = False
                     break
@@ -419,14 +435,15 @@ class Parser:
                 missing_semicolon = self.parse_connection(self.error_count)
                 # TODO: still need to check if there is an unique issue with
                 #  missing semi-colon
+                if self.end_of_file:
+                    break
                 if missing_semicolon:
-                    print("missed semi colon at end of connection definition, "
+                    print("missed semicolon at end of connection definition, "
                           "will end up skipping the connection after")
-                    if self.end_of_file:
-                        break
                     if self.symbol.id == self.scanner.MONITOR_ID:
                         break
                     continue
+
                 if self.symbol.type == self.scanner.NAME:
                     parsing_connections = True
                 elif self.symbol.id == self.scanner.CLOSE_SQUARE:
@@ -440,12 +457,16 @@ class Parser:
                     # is this when there is an error at the end of connection
                     # lists?
                     print("sort this problem out")
+                    print("Unexpected symbol: ", self.strSymbol())
+
+            if self.end_of_file:
+                break
 
             if self.symbol.id == self.scanner.MONITOR_ID:
                 break
             
             # no longer parsing connections
-            if self.symbol.id != self.scanner.CLOSE_SQUARE and self.symbol.type != self.scanner.EOF:
+            if self.symbol.id != self.scanner.CLOSE_SQUARE:
                 self.error("expected ]", [self.scanner.MONITOR_ID, self.scanner.EOF])
                 break
 
@@ -458,9 +479,8 @@ class Parser:
             if self.error_count - previous_errors != 0:
                 break
 
-            # if we get this far we have success!
             print("Successfully parsed the CONNECTIONS list! \n")
-            self.setNext()  #to sync with error recovery
+            self.setNext()
             return True
 
         if self.symbol.id != self.scanner.MONITOR_ID:
@@ -479,15 +499,27 @@ class Parser:
         print("Parsing a single connection.")
         missing_signal_end_marker = False
         while True:
+            if self.symbol.id == self.scanner.SEMICOLON:
+                self.error(
+                    "No connection found before semicolon",
+                    [self.scanner.NAME]
+                )
+                break
             missing_signal_end_marker, leftOutputId, leftPortId, leftSignalName = self.parse_signal()
+            if self.end_of_file:
+                break
             if missing_signal_end_marker:
-                print("missed a colon in connection, will skip to next "
+                print("missed colon in connection, will skip to next "
                       "connection")
                 break
             self.setNext()
 
             missing_signal_end_marker, rightOutputId, rightPortId, rightSignalName = self.parse_signal()
+            if self.end_of_file:
+                break
             if missing_signal_end_marker:
+                print("missed semicolon at end of connection, will skip to next "
+                      "connection")
                 break
 
             if self.error_count - previous_errors == 0:
@@ -529,7 +561,7 @@ class Parser:
 
         while True:
             if self.symbol.type != self.scanner.NAME:
-                self.error("expected an output name here", [self.scanner.NAME])
+                self.error("Expected an output name here", [self.scanner.NAME])
                 break
 
             signalName += self.names.get_name_string(self.symbol.id)
@@ -570,19 +602,21 @@ class Parser:
 
             parsing_monitors = True
             while parsing_monitors:
+                if self.end_of_file:
+                    break
+
                 if self.symbol.id == self.scanner.CLOSE_SQUARE:
                     parsing_monitors = False
                     break
 
                 missing_semicolon = self.parse_monitor(self.error_count)
-
                 # TODO: still need to check if there is an unique issue with
                     #  missing semi-colon
+                if self.end_of_file:
+                    break
                 if missing_semicolon:
-                    print("missed semi colon at end of monitor, "
-                          "will end up skipping the monitor after")
-                    if self.end_of_file:
-                        break
+                    print("missed semicolon at end of monitor, "
+                        "will end up skipping the monitor after")
                     if self.symbol.id == self.scanner.CONNECTIONS_ID:
                         break
                     continue
@@ -599,12 +633,16 @@ class Parser:
                     # is this when there is an error at the end of connection
                     # lists?
                     print("sort this problem out")
+                    print("Unexpected symbol: ", self.strSymbol())
 
+            if self.end_of_file:
+                break
+            
             if self.symbol.id == self.scanner.CONNECTIONS_ID:
                 break
 
             # no longer parsing monitors
-            if self.symbol.id != self.scanner.CLOSE_SQUARE and self.symbol.type != self.scanner.EOF:
+            if self.symbol.id != self.scanner.CLOSE_SQUARE:
                 self.error("expected ]", [self.scanner.CONNECTIONS_ID, self.scanner.EOF])
                 break
 
@@ -614,7 +652,6 @@ class Parser:
                 self.error("expected ;", [self.scanner.EOF, self.scanner.CONNECTIONS_ID])
                 break
 
-
             if self.error_count - previous_errors != 0:
                 break
 
@@ -622,10 +659,10 @@ class Parser:
             self.setNext()
             return True
 
-        if self.symbol.id != self.scanner.CONNECTIONS_ID:
-            self.setNext()
-
         print("Did not manage to parse the MONITORS list perfectly")
+
+        if self.symbol.id != self.scanner.CONNECTIONS_ID and self.symbol.id != self.scanner.EOF:
+            self.setNext()
 
         if self.error_count - previous_errors != 0:
             print(f"Found {self.error_count - previous_errors} error(s) when parsing the MONITORS list")
@@ -636,10 +673,17 @@ class Parser:
         print("Parsing a monitor.")
         missing_semicolon = False
         while True:
+            if self.symbol.id == self.scanner.SEMICOLON:
+                self.error(
+                    "No signal found before semicolon",
+                    [self.scanner.NAME]
+                )
+                break
             missing_semicolon, deviceId, portId, signalName = self.parse_signal()
+            if self.end_of_file:
+                break
             if missing_semicolon:
-                print("missed a semicolon, will skip to next "
-                      "monitor")
+                print("missed a semicolon, will skip to next monitor")
                 break
             self.setNext()
 
@@ -663,6 +707,7 @@ class Parser:
                 print("No attempts to build/check semantics will occur.")
                 self.setNext()
                 break
+
         return missing_semicolon
 
     def setNext(self):
@@ -686,19 +731,19 @@ class Parser:
         while True:
             while self.symbol.id != self.scanner.SEMICOLON:
                 self.setNext()
+                self.strSymbol()
                 if self.symbol.type == self.scanner.EOF:
-                    print("reached end of file!")
+                    print("reached end of file without another semicolon")
                     self.end_of_file = True
                     break
             # found a semi colon, now need to check if the expected element
             # is next
             self.setNext()
+            self.strSymbol()
             if self.symbol.type == self.scanner.EOF:
-                print("reached end of file!")
+                print("reached end of file without finding expected symbol")
                 self.end_of_file = True
                 break
-            print("hie", expect_next_list)
-            print("hie")
             if self.symbol.id in expect_next_list or self.symbol.type in expect_next_list:
                 # found the character we want to keep parsing, therefore we
                 # resume in the parsing
@@ -710,3 +755,4 @@ class Parser:
     def semantic_error(self, msg):
         print("SEMANTIC ERROR: "+ msg)
         self.error_count += 1
+        # no error recovery stuff here? :0
