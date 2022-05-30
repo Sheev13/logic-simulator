@@ -62,7 +62,7 @@ class Parser:
 
             elif self.symbol.id == self.scanner.CONNECTIONS_ID:
                 if devices_done:
-                    success = self.parse_connections_list()
+                    success = self.parse_connections_list(self.error_count)
                     connections_done = True
                 else:
                     self.error("can't parse connections if not done devices",
@@ -75,7 +75,7 @@ class Parser:
 
             elif self.symbol.id == self.scanner.MONITOR_ID:
                 if devices_done:
-                    success = self.parse_monitors_list()
+                    success = self.parse_monitors_list(self.error_count)
                     monitors_done = True
                 else:
                     self.error("can't parse monitors if not done devices",
@@ -83,7 +83,7 @@ class Parser:
                     if self.eof():
                         break
             elif self.symbol.type == self.scanner.EOF:
-                print("reached end of file!")
+                #print("reached end of file!")
                 break
             else:
                 self.error("not DEVICES, CONNECTIONS, MONITORS nor EOF",
@@ -99,7 +99,7 @@ class Parser:
 
         #hopefully we will always reach EOF symbol...
 
-        print("Done the definition file")
+        print("Completely parsed the definition file")
         if self.error_count == 0:  # TOTAL number of errors = 0
             return True
         else:
@@ -144,7 +144,7 @@ class Parser:
                     # devices
                     # oh but what if we never recover.... i think that is
                     # the else statement
-                    return
+                    break
                 
                 else:
                     # TODO: what if it is neither of those???
@@ -153,8 +153,10 @@ class Parser:
                     print("device list problem", self.strSymbol())
                     print("sort this problem out")
 
+            if self.symbol.id == self.scanner.MONITOR_ID or self.symbol.id == self.scanner.CONNECTIONS_ID:
+                break
+
             # no longer parsing devices
-            # possible at this point that we have monitors or connections instead - there is no error! thoughhh maybe i want to return in line 139
             if self.symbol.id != self.scanner.CLOSE_SQUARE and self.symbol.type != self.scanner.EOF:
                 self.error("expected ]", [self.scanner.CONNECTIONS_ID,
                                           self.scanner.MONITOR_ID])
@@ -163,30 +165,41 @@ class Parser:
             self.setNext()
 
             if self.symbol.id != self.scanner.SEMICOLON:
-                self.error("expected ;", [self.scanner.MONITOR_ID])
+                self.error("expected ;", [self.scanner.MONITOR_ID,
+                                          self.scanner.CONNECTIONS_ID])
                 # TODO: not sure if it's connections/monitors
                 break
+
+            if self.error_count != 0:
+                break
+
+            print("Successfully parsed the DEVICES list! \n")
+            return True
+
 
             # TODO: tidy up the logic below here
             # I mean it has to be 0 surely?
             # i think maybe residue errors?
-            if self.error_count == 0:
-                print("successfully parsed a device list!")
-                self.setNext()  #to sync with error recovery
-                return True
-            else:
-                print(f"found {self.error_count} error(s)")
-                break
+            # if self.error_count == 0:
+            #     # no need for previous_errors count
+            #     # bc devices are always parsed first
+            #     print("Successfully parsed the DEVICES list!")
+            #     self.setNext()
+            #     return True
+            # else:
+            #     print(f"found {self.error_count} error(s) when parsing the "
+            #           f"DEVICES list")
+            #     break
 
         self.setNext()
-        # only get here if there is an error with the 'outer' device list
-        # wrapper
-        print("did not manage to parse the device list perfectly")
+
+        print("Did not manage to parse the DEVICES list perfectly.")
         # wish this could be more informative.......
         # maybe thats for self.error / scanner
         # what is the point of this code below huhh/???
         if self.error_count != 0:
-            print(f"found {self.error_count} error(s)")
+            print(f"Found {self.error_count} error(s) when parsing the "
+                  f"DEVICES list \n")
             return False
 
     def parse_device(self, previous_errors):
@@ -399,7 +412,7 @@ class Parser:
 
         return missing_semicolon, device_qual
 
-    def parse_connections_list(self):
+    def parse_connections_list(self, previous_errors):
         """Parse list of connections."""
         self.setNext()
         while True:
@@ -456,21 +469,26 @@ class Parser:
                 self.error("expected ;", [self.scanner.MONITOR_ID, self.scanner.EOF])
                 break
 
-            if self.error_count == 0:
-                print("successfully parsed a connections list!")
-                self.setNext()  #to sync with error recovery
-                return True
-            else:
-                print(f"found {self.error_count} error(s)")
+            if self.error_count - previous_errors != 0:
                 break
+
+            # if we get this far we have success!
+            print("Successfully parsed the CONNECTIONS list! \n")
+            self.setNext()  #to sync with error recovery
+            return True
+            # else:
+            #     print(f"found {self.error_count - - previous_errors} error(s)")
+            #     break
 
         if self.symbol.id != self.scanner.MONITOR_ID:
             self.setNext()
 
-        print("did not manage to parse the connections list perfectly")
+        print("Did not manage to parse the connections list perfectly")
 
-        if self.error_count != 0:
-            print(f"found {self.error_count} error(s)")
+        if self.error_count - previous_errors != 0:
+            print(f"Found {self.error_count - previous_errors} error(s) when parsing "
+                  f"the "
+                  f"CONNECTIONS list \n")
             return False
 
     def parse_connection(self, previous_errors):
@@ -554,7 +572,7 @@ class Parser:
 
         return missing_end_marker, deviceId, portId, signalName
 
-    def parse_monitors_list(self):
+    def parse_monitors_list(self, previous_errors):
         """Parse list of monitors."""
         self.setNext()
         while True:
@@ -612,21 +630,31 @@ class Parser:
                 self.error("expected ;", [self.scanner.EOF, self.scanner.CONNECTIONS_ID])
                 break
 
-            if self.error_count == 0:
-                print("successfully parsed a monitors list!")
-                self.setNext()  #to sync with error recovery
-                return True
-            else:
-                print(f"Number of errors: {self.error_count}")
+
+            if self.error_count - previous_errors != 0:
                 break
+
+            print("Successfully parsed the MONITORS list! \n")
+            self.setNext()
+            return True
+
+
+
+            # if self.error_count == 0:
+            #     print("successfully parsed a monitors list!")
+            #     self.setNext()  #to sync with error recovery
+            #     return True
+            # else:
+            #     print(f"Number of errors: {self.error_count}")
+            #     break
 
         if self.symbol.id != self.scanner.CONNECTIONS_ID:
             self.setNext()
 
-        print("did not manage to parse the monitor list perfectly")
+        print("Did not manage to parse the MONITORS list perfectly")
 
-        if self.error_count != 0:
-            print(f"found {self.error_count} error(s)")
+        if self.error_count - previous_errors != 0:
+            print(f"Found {self.error_count - previous_errors} error(s) when parsing the MONITORS list")
             return False
 
     def parse_monitor(self, previous_errors):
@@ -707,4 +735,5 @@ class Parser:
     
     def semantic_error(self, msg):
         print("SEMANTIC ERROR: "+ msg)
+        self.error_count += 1
         # no error recovery stuff here? :0

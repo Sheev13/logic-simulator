@@ -17,7 +17,7 @@ devices = Devices(names)
 network = Network(names, devices)
 monitors = Monitors(names, devices, network)
 
-path = 'test_endings_parser.txt'
+path = 'test_files/jessye_mess_about.txt'
 
 scanner = Scanner(path, names)
 parser = Parser(names, devices, network, monitors, scanner)
