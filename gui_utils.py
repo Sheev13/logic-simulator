@@ -29,12 +29,32 @@ help_string = "Enter command line inputs in the bottom left of " \
 
 canvas_control_string = "Signals on the canvas can be manipulated to " \
                             "better view them.\n" \
-                            "\n Scroll in to zoom in" \
+                            "\nScroll in to zoom in" \
                             "\n \n" \
                             "Scroll out to zoom out - this may " \
                             "be useful if you have many monitors" \
                             "\n \n" \
                             "Click and hold to drag the signals "\
                             "around the space"
+
+sidebar_guide_string = "The sidebar can be used to set device properties " \
+                            "and monitors.\n" \
+                            "\nClick 'Browse' to load a new circuit file." \
+                            "\n \n" \
+                            "See the list of devices to decide what you " \
+                            "want to monitor." \
+                            "\n \n" \
+                            "Click the switch buttons to toggle on or off." \
+                            "\n \n" \
+                            "Type the name of an output in the 'Add new " \
+                            "monitor' box to add to monitors."\
+                            " Press 'Clear All' to remove all monitors." \
+                            " Click on an individual monitor button to " \
+                            "remove it."\
+                            "\n \n" \
+                            "Adjust the number of cycles with the spinner." \
+                            "\n \n" \
+                            "Press 'Run' or 'Continue' to start the " \
+                            "simulation."\
 
 parse_error_string = "Unable to parse file. Old file will remain loaded."

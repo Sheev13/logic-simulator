@@ -198,8 +198,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.init = True
 
         text = "Welcome to the Logic Simulator! " \
-            "See User Guide for canvas controls "\
-            "and a guide to command line input."
+            "See User Guide for help."
         self.render(text)
 
     def on_size(self, event):
@@ -301,6 +300,7 @@ class Gui(wx.Frame):
         self.userint = UserInterface(names, devices, network, monitors)
         self.help_string = help_string
         self.canvas_control_string = canvas_control_string
+        self.sidebar_guide_string = sidebar_guide_string
         self.parse_error_string = parse_error_string
         self.click = wx.Cursor(wx.Image("smallclick.png"))
         self.standard_button_size = wx.Size(85, 36)
@@ -316,6 +316,7 @@ class Gui(wx.Frame):
         fileMenu.Append(wx.ID_EXIT, "&Exit")
         userGuideMenu.Append(wx.ID_HELP_COMMANDS, "&Command Line Guide")
         userGuideMenu.Append(wx.ID_CONTEXT_HELP, "&Canvas Controls")
+        userGuideMenu.Append(wx.ID_HELP_PROCEDURES, "&Sidebar Guide")
         menuBar.Append(fileMenu, "&File")
         menuBar.Append(userGuideMenu, "&User Guide")
         self.SetMenuBar(menuBar)
@@ -337,10 +338,11 @@ class Gui(wx.Frame):
             self, wx.ID_ANY, f"", size=wx.Size(350, 30)
         )
         fileFont = wx.Font(wx.FontInfo(18).FaceName("Mono").Bold())
+        genBtnFont = wx.Font(wx.FontInfo(10).FaceName("Mono").Bold())
         helpFont = wx.Font(wx.FontInfo(10).FaceName("Mono"))
         self.file_name.SetFont(fileFont)
         self.browse = wx.Button(self, wx.ID_ANY, "Browse")
-        self.browse.SetFont(helpFont)
+        self.browse.SetFont(genBtnFont)
         self.browse.SetCursor(self.click)
 
         self.switches_text = wx.StaticText(self, wx.ID_ANY, "")
@@ -367,7 +369,7 @@ class Gui(wx.Frame):
         self.monitors_help_text.SetFont(helpFont)
         self.clear_all_monitors = wx.Button(self, wx.ID_ANY, "Clear All")
         self.clear_all_monitors.SetCursor(self.click)
-        self.clear_all_monitors.SetFont(helpFont)
+        self.clear_all_monitors.SetFont(genBtnFont)
         self.monitor_buttons = {}
 
         go_font = wx.Font(wx.FontInfo(14).FaceName("Rockwell"))
@@ -543,6 +545,15 @@ class Gui(wx.Frame):
                 "Canvas Controls",
                 wx.ICON_INFORMATION | wx.OK
             )
+
+        if Id == wx.ID_HELP_PROCEDURES:
+            wx.MessageBox(
+                self.sidebar_guide_string,
+                "Sidebar Guide",
+                wx.ICON_INFORMATION | wx.OK
+            )
+
+            
 
     def on_browse(self, event):
         """Handle the event when user wants to find circuit definition file."""
@@ -756,7 +767,12 @@ class Gui(wx.Frame):
         self.resizeButtonWindow(self.devices_window, remaining_height)
         self.resizeButtonWindow(self.switches_window, remaining_height)
         self.resizeButtonWindow(self.monitors_window, remaining_height)
+        self.devices_window.SetAutoLayout(True)
         self.Layout()
+        self.Show()
+        self.devices_window.Update()
+        self.devices_window.Refresh()
+        self.devices_window.Show()
 
     def on_spin_cycles(self, event):
         """Handle the event when the user changes the number of cycles."""
