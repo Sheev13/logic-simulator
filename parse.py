@@ -174,22 +174,8 @@ class Parser:
                 break
 
             print("Successfully parsed the DEVICES list! \n")
+            self.setNext()
             return True
-
-
-            # TODO: tidy up the logic below here
-            # I mean it has to be 0 surely?
-            # i think maybe residue errors?
-            # if self.error_count == 0:
-            #     # no need for previous_errors count
-            #     # bc devices are always parsed first
-            #     print("Successfully parsed the DEVICES list!")
-            #     self.setNext()
-            #     return True
-            # else:
-            #     print(f"found {self.error_count} error(s) when parsing the "
-            #           f"DEVICES list")
-            #     break
 
         self.setNext()
 
@@ -476,9 +462,6 @@ class Parser:
             print("Successfully parsed the CONNECTIONS list! \n")
             self.setNext()  #to sync with error recovery
             return True
-            # else:
-            #     print(f"found {self.error_count - - previous_errors} error(s)")
-            #     break
 
         if self.symbol.id != self.scanner.MONITOR_ID:
             self.setNext()
@@ -639,16 +622,6 @@ class Parser:
             self.setNext()
             return True
 
-
-
-            # if self.error_count == 0:
-            #     print("successfully parsed a monitors list!")
-            #     self.setNext()  #to sync with error recovery
-            #     return True
-            # else:
-            #     print(f"Number of errors: {self.error_count}")
-            #     break
-
         if self.symbol.id != self.scanner.CONNECTIONS_ID:
             self.setNext()
 
@@ -737,4 +710,3 @@ class Parser:
     def semantic_error(self, msg):
         print("SEMANTIC ERROR: "+ msg)
         self.error_count += 1
-        # no error recovery stuff here? :0
