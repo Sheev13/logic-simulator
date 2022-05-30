@@ -71,7 +71,12 @@ class Names:
         list_of_name_ids = []
         for name in name_string_list:
             if not isinstance(name, str):
+<<<<<<< HEAD
                 raise TypeError(f"This element of name_string_list is {name}, but elements of name_string_list must be strings")
+=======
+                raise TypeError(f"This element of name_string_list is {name}" 
+                "but elements of name_string_list must be strings")
+>>>>>>> sorting ending errors
             elif name in self.names_list:
                 list_of_name_ids.append(self.names_list.index(name))
             else:

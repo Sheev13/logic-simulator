@@ -119,17 +119,26 @@ class Parser:
                 missing_semicolon = self.parse_device(self.error_count)
                 # TODO: still need to check if there is an unique issue with
                 #  missing semi-colon
+
+                # this is definitely cursed below TODO
                 if missing_semicolon:
                     print("missed semi colon at end of device definition, "
                           "will end up skipping the device after")
+                    
+                    # this is also way too hacky
                     if self.end_of_file:
+                        # TODO: SORT THIS OUT
                         break
-                    continue
+                    #continue
+                    #i don't think this is necessary because we should have an open curly in the next if statement
 
                 if self.symbol.id == self.scanner.OPEN_CURLY:
                     parsing_devices = True
                 elif self.symbol.id == self.scanner.CLOSE_SQUARE:
                     parsing_devices = False
+                elif self.symbol.id == self.scanner.MONITOR_ID or self.symbol.id == self.scanner.CONNECTIONS_ID:
+                    parsing_devices = False
+                
                 else:
                     # TODO: what if it is neither of those???
                     # is this when there is an error at the end of device
@@ -222,8 +231,10 @@ class Parser:
             if self.symbol.id != self.scanner.SEMICOLON:
                 self.error("expected ;",
                            [self.scanner.OPEN_CURLY,
-                            self.scanner.CLOSE_SQUARE]
+                            self.scanner.CONNECTIONS_ID,
+                            self.scanner.MONITOR_ID]
                            )
+                # if we get MONITORS or CONNECTIONS, we don't want to parse devices anymore
                 missing_device_semicolon = True
                 break
 
