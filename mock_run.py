@@ -1,7 +1,7 @@
 import getopt
 import sys
 
-import wx
+#import wx
 
 from names import Names
 from devices import Devices
@@ -17,7 +17,7 @@ devices = Devices(names)
 network = Network(names, devices)
 monitors = Monitors(names, devices, network)
 
-path = 'broken_definition_file.txt'
+path = 'broken_connections.txt'
 
 scanner = Scanner(path, names)
 parser = Parser(names, devices, network, monitors, scanner)
