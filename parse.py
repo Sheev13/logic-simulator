@@ -135,9 +135,11 @@ class Parser:
                     break
 
                 else:
-                    # TODO: no semicolon after devices?
-                    print("device list problem at ", self.strSymbol())
-                    print("sort this problem out")
+                    # unknown character encountered
+                    self.error(
+                        "unexpected/unknown character encountered",
+                        [self.scanner.OPEN_CURLY]
+                    )
 
             if (self.symbol.id == self.scanner.MONITOR_ID or
                     self.symbol.id == self.scanner.CONNECTIONS_ID):
@@ -444,11 +446,11 @@ class Parser:
                     parsing_connections = False
                     break
                 else:
-                    # TODO: what if it is neither of those???
-                    # is this when there is an error at the end of connection
-                    # lists?
-                    print("sort this problem out")
-                    print("Unexpected symbol: ", self.strSymbol())
+                    # unknown character encountered
+                    self.error(
+                        "unexpected/unknown character encountered",
+                        [self.scanner.NAME]
+                    )
 
             if self.end_of_file:
                 break
@@ -655,11 +657,11 @@ class Parser:
                     parsing_monitors = False
                     break
                 else:
-                    # TODO: what if it is neither of those???
-                    # is this when there is an error at the end of connection
-                    # lists?
-                    print("sort this problem out")
-                    print("Unexpected symbol: ", self.strSymbol())
+                    # unknown character encountered
+                    self.error(
+                        "unexpected/unknown character encountered",
+                        [self.scanner.NAME]
+                    )
 
             if self.end_of_file:
                 break
@@ -759,9 +761,9 @@ class Parser:
     def strSymbol(self):
         """More easily print current symbol string."""
         try:
-            return self.names.get_name_string(self.symbol.id)
-        except IndexError:
-            return "NONE"
+            return self.names.get_name_string(self.symbol.id)   
+        except TypeError:
+            return "None"
 
     def error(self, msg, expect_next_list):
         """Print error message and recover from next semicolon."""
