@@ -133,13 +133,17 @@ class Parser:
                         self.symbol.id == self.scanner.CONNECTIONS_ID):
                     # error skips to end of devices
                     break
-
-                else:
+                elif self.symbol.type == self.scanner.INVALID_CHAR:
                     # unknown character encountered
                     self.error(
-                        "unexpected/unknown character encountered",
+                        "invalid character encountered",
                         [self.scanner.OPEN_CURLY]
                     )
+                else:
+                    # unknown problem
+                    print("unknown error has occurred")
+                    self.error_count += 1
+                    break
 
             if (self.symbol.id == self.scanner.MONITOR_ID or
                     self.symbol.id == self.scanner.CONNECTIONS_ID):
@@ -444,11 +448,11 @@ class Parser:
                     break
                 elif self.symbol.id == self.scanner.MONITOR_ID:
                     parsing_connections = False
-                    break
-                else:
+                    break  
+                elif self.symbol.type == self.scanner.INVALID_CHAR:
                     # unknown character encountered
                     self.error(
-                        "unexpected/unknown character encountered",
+                        "invalid character encountered",
                         [self.scanner.NAME]
                     )
 
@@ -656,12 +660,17 @@ class Parser:
                 elif self.symbol.id == self.scanner.CONNECTIONS_ID:
                     parsing_monitors = False
                     break
-                else:
+                elif self.symbol.type == self.scanner.INVALID_CHAR:
                     # unknown character encountered
                     self.error(
-                        "unexpected/unknown character encountered",
+                        "invalid character encountered",
                         [self.scanner.NAME]
                     )
+                else:
+                    # unknown problem
+                    print("unknown error has occurred")
+                    self.error_count += 1
+                    break
 
             if self.end_of_file:
                 break
