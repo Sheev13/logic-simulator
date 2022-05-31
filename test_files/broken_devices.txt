@@ -1,0 +1,15 @@
+DEVICES [
+{id: A missingsemicolon kind: SWITCH; qual: 0;};
+{id: B; kind: SWITCH; qual: 1;};
+{id: C; kind: SWITCH; qual: 1;}
+{id: G1; kind: NOR; qual: 2;};
+{id: G2; kind: throwsemantic; qual: 2;};
+{id: G3; kind: OR; qual: buzz;};
+];
+
+CONNECTIONS [
+];
+
+MONITOR [
+    G1; A;
+];
