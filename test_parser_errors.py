@@ -10,7 +10,7 @@ pytest test_parser_errors.py::TestParserDevicesErrors::test_parse_device_id
 
 """
 
-class TestParserDevicesErrors:
+class TestParserDevices:
 
     def test_parse_device_list(self):
         # can check if the total number of errors is correct?
@@ -74,7 +74,7 @@ class TestParserDevicesErrors:
         pass
 
 
-class TestParserConnectionsErrors:
+class TestParserConnections:
 
     def test_parse_connections_list(self):
         pass
@@ -82,3 +82,33 @@ class TestParserConnectionsErrors:
     def test_parse_connections(self):
         pass
 
+    def test_parse_signal(self):
+        pass
+
+
+class TestParserMonitors:
+
+    def test_parse_monitors_list(self):
+        #missing semi colons
+        pass
+
+    def test_parse_monitor(self):
+        #test the missing semicolon funciton?
+
+        #the right number of errors
+        pass
+
+
+class TestParserErrorRecovery:
+
+    # can i test this without having to create all the other objects?
+    def test_error_recovery_midfile(self):
+        # may require mocking for self.scanner.show_error?
+        pass
+
+    def test_error_recovery_eof(self):
+        # test wat happens if we reach the end of the file during error
+        # recovery
+
+        #is this doable???
+        pass
