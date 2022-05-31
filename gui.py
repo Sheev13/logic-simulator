@@ -331,6 +331,8 @@ class Gui(wx.Frame):
         genBtnFont = wx.Font(wx.FontInfo(10).FaceName("Mono").Bold())
         helpFont = wx.Font(wx.FontInfo(10).FaceName("Mono"))
         self.subHeadingFont = wx.Font(wx.FontInfo(12).FaceName("Mono"))
+        inputBoxFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL)
+        go_font = wx.Font(wx.FontInfo(14).FaceName("Rockwell"))
 
         # Canvas for drawing signals
         self.scrollable = wx.ScrolledCanvas(self, wx.ID_ANY)
@@ -364,9 +366,10 @@ class Gui(wx.Frame):
             wx.ID_ANY,
             "",
             style=wx.TE_PROCESS_ENTER,
-            size=wx.Size(150, 30)
+            size=wx.Size(150, 25)
         )
         self.monitor_input.SetHint("Add new monitor")
+        self.monitor_input.SetFont(inputBoxFont)
         self.monitors_help_text = wx.StaticText(
             self, wx.ID_ANY, "(click to remove)"
         )
@@ -376,8 +379,7 @@ class Gui(wx.Frame):
         self.clear_all_monitors.SetFont(genBtnFont)
         self.monitor_buttons = {}
 
-        go_font = wx.Font(wx.FontInfo(14).FaceName("Rockwell"))
-        self.cycles_text = wx.StaticText(self, wx.ID_ANY, "Cycles:")
+        self.cycles_text = wx.StaticText(self, wx.ID_ANY, " Cycles:  ")
         self.cycles_text.SetFont(self.subHeadingFont)
         self.spin_cycles = wx.SpinCtrl(self, wx.ID_ANY, "10")
 
@@ -401,14 +403,13 @@ class Gui(wx.Frame):
         self.continue_button.SetBottomEndColour(darkpurple)
         self.continue_button.SetCursor(self.click)
 
-        commandLineFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL)
         self.command_line_input = wx.TextCtrl(
             self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER, size=(420, 25)
         )
         self.command_line_input.SetHint(
             "Command line input. See User Guide for help."
         )
-        self.command_line_input.SetFont(commandLineFont)
+        self.command_line_input.SetFont(inputBoxFont)
 
         # Bind events to widgets
         self.Bind(wx.EVT_MENU, self.on_menu)
@@ -471,7 +472,6 @@ class Gui(wx.Frame):
         self.monitors_window.SetScrollRate(10, 10)
         self.monitors_window.SetAutoLayout(True)
 
-        self.monitors_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.monitors_help_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.cycles_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.command_line_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -483,21 +483,21 @@ class Gui(wx.Frame):
         # Add sizers to side_sizer
         self.side_sizer.Add(self.file_name_sizer, 0, wx.ALL, 5)
         self.side_sizer.Add(self.manual_settings_sizer, 1, wx.ALL, 5)
-        self.side_sizer.Add(self.cycles_sizer, 0, wx.LEFT, 5)
-        self.side_sizer.Add(self.command_line_sizer, 0, wx.LEFT, 5)
+        self.side_sizer.Add(self.cycles_sizer, 0, wx.ALL, 5)
+        self.side_sizer.Add(self.command_line_sizer, 0, wx.ALL, 5)
 
         # add widgets to smaller sizers
-        self.file_name_sizer.Add(self.file_name, 1, wx.TOP, 10)
-        self.file_name_sizer.Add(self.browse, 0, wx.TOP, 6)
+        self.file_name_sizer.Add(self.file_name, 0, wx.ALIGN_CENTER, 5)
+        self.file_name_sizer.AddStretchSpacer()
+        self.file_name_sizer.Add(self.browse, 0, wx.ALIGN_CENTER, 5)
 
-        self.monitors_sizer.Add(self.monitors_text, 1, wx.ALL, 5)
-
-        self.monitors_help_sizer.Add(self.monitor_input, 0, wx.ALL, 8)
+        self.monitors_help_sizer.Add(self.monitor_input, 0, wx.ALL, 5)
         self.monitors_help_sizer.Add(self.clear_all_monitors, 0, wx.ALL, 5)
-        self.monitors_help_sizer.Add(self.monitors_help_text, 0, wx.TOP, 15)
+        self.monitors_help_sizer.Add(self.monitors_help_text, 0, wx.ALIGN_CENTER, 5)
 
-        self.cycles_sizer.Add(self.cycles_text, 0, wx.TOP, 15)
-        self.cycles_sizer.Add(self.spin_cycles, 0, wx.TOP+wx.RIGHT+wx.LEFT, 7)
+        self.cycles_sizer.Add(self.cycles_text, 0, wx.ALIGN_CENTER, 5)
+        self.cycles_sizer.Add(self.spin_cycles, 0, wx.ALIGN_CENTER, 5)
+        self.cycles_sizer.AddStretchSpacer()
         self.cycles_sizer.Add(self.run_button, 1, wx.ALL, 5)
         self.cycles_sizer.Add(self.continue_button, 1, wx.ALL, 5)
 
@@ -517,7 +517,7 @@ class Gui(wx.Frame):
             wx.EXPAND | wx.ALL,
             5
         )
-        self.manual_settings_sizer.Add(self.monitors_sizer, 0, wx.ALL, 5)
+        self.manual_settings_sizer.Add(self.monitors_text, 0, wx.ALL, 5)
         self.manual_settings_sizer.Add(self.monitors_help_sizer, 0, wx.ALL, 5)
         self.manual_settings_sizer.Add(
             self.monitors_window,
