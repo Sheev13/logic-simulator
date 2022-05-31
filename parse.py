@@ -770,9 +770,9 @@ class Parser:
     def strSymbol(self):
         """More easily print current symbol string."""
         try:
-            return self.names.get_name_string(self.symbol.id)   
+            return self.names.get_name_string(self.symbol.id)
         except TypeError:
-            return "None"
+            return "NONE"
 
     def error(self, msg, expect_next_list):
         """Print error message and recover from next semicolon."""
