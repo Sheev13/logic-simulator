@@ -1,4 +1,5 @@
 """Test the monitors module."""
+from signal import signal
 import pytest
 
 from names import Names
@@ -197,3 +198,65 @@ def test_display_signals_console(capsys, new_monitors):
             "Clock1: -__--__--__--__--__-" in traces)
 
     assert "" in traces  # additional empty line at the end
+
+def test_display_signals_gui(new_monitors):
+    """Test if signal trace data is correct for GUI display."""
+    names = new_monitors.names
+    devices = new_monitors.devices
+    network = new_monitors.network
+
+    [SW1_ID, CLOCK_ID, CL_ID] = names.lookup(["Sw1", "CLOCK", "Clock1"])
+
+    HIGH = devices.HIGH
+
+    # Make a clock and set a monitor on its output
+    devices.make_device(CL_ID, CLOCK_ID, 2)
+    new_monitors.make_monitor(CL_ID, None)
+
+    # Both switches are currently LOW
+    for _ in range(10):
+        network.execute_network()
+        new_monitors.record_signals()
+
+    # Set Sw1 to HIGH
+    devices.set_switch(SW1_ID, HIGH)
+    for _ in range(10):
+        network.execute_network()
+        new_monitors.record_signals()
+
+    # Set arbitrary high/low axis positions
+    high, low = 25, 5
+
+    # Get signal data for 40 points
+    signalData = new_monitors.display_signals_gui(high, low)
+    assert list(signalData.keys()) == [
+        'Sw1', 'Sw2', 'Or1', 'Clock1'
+    ]
+
+    # Check all x coordinates are the same for every device
+    for device in signalData.keys():
+        assert signalData[device][1] == [
+            0, 20, 20, 40, 40, 60, 60, 80, 80, 100, 100, 
+            120, 120, 140, 140, 160, 160, 180, 180, 200,
+            200, 220, 220, 240, 240, 260, 260, 280, 280,
+            300, 300, 320, 320, 340, 340, 360, 360, 380,
+            380, 400
+        ]
+
+    # Assert y coordinates are all correct
+    assert signalData['Sw1'][2] == [low]*20 + [high]*20
+    assert signalData['Sw2'][2] == [low]*40
+    assert signalData['Or1'][2] == [low]*20 + [high]*20
+
+    # Clock could be anywhere in cycle, but half period is 2
+    assert (signalData['Clock1'][2] == [[low]*4 + [high]*4] * 5 or
+                                       [[low]*2 + [high]*4 + [low]*2] * 5 or
+                                       [[high]*4 + [low]*4] * 5 or
+                                       [[high]*2 + [low]*4 + [high]*2] * 5)
+
+
+    # # Clock could be anywhere in its cycle, but its half period is 2
+    # assert ("Clock1: __--__--__--__--__--" in traces or
+    #         "Clock1: _--__--__--__--__--_" in traces or
+    #         "Clock1: --__--__--__--__--__" in traces or
+    #         "Clock1: -__--__--__--__--__-" in traces)
