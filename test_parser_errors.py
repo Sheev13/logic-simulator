@@ -1,14 +1,41 @@
 import pytest
+#import pytest-mock need to install this...?
+
+from names import Names
+from network import Network
+from devices import Devices
+from monitors import Monitors
+from parse import Parser
+from scanner import Scanner, Symbol
 
 """
 useful prompts for running pytest
 
 pytest -q test_parser_errors.py --> run in 'quiet' mode
 
-pytest test_parser_errors.py::TestParserDevicesErrors::test_parse_device_id 
+pytest test_parser_errors.py::TestParserDevices::test_parse_device_id 
 --> run a specific tes
 
 """
+
+
+def new_parser(path):
+    """Return a Parser class instance for given path."""
+    new_names = Names()
+    new_devices = Devices(new_names)
+    new_network = Network(new_names, new_devices)
+    new_monitors = Monitors(new_names, new_devices, new_network)
+    new_scanner = Scanner(path, new_names)
+    new_parser = Parser(
+        new_names,
+        new_devices,
+        new_network,
+        new_monitors,
+        new_scanner
+    )
+    return new_parser
+
+
 
 class TestParserDevices:
 
@@ -16,7 +43,79 @@ class TestParserDevices:
         # can check if the total number of errors is correct?
 
         #could test which devices are created successfully? maybe
-        pass
+
+        """
+        [ {}; {}; {}; ];
+
+        if self.parse_device returns false (no missing semicolons)
+            if self.symbol.id = ]
+            we assert that parse_device is no longer called
+            we assert that self.error is not called if there is nothing wrong
+            we assert that error_count == 0
+            we assert that we returned True
+
+        so need to mock self.setNext() (scanner)
+        need to mock self.symbol.id (or maybe in setNext we can replace it
+        with a function that sets self.symbol.id
+        """
+        parser_obj = new_parser("test_files/jessye_mess_about.txt")
+        parser_obj.parse_devices_list()
+
+    def test_parse_device_list_with_mocker(self, mocker):
+        parser_obj = new_parser("test_files/jessye_mess_about.txt")
+        # the path could literally be anything? bc we aren't using scanner
+        # functionality
+        parser_obj.symbol = Symbol()
+
+        #this is the customisable code per test
+        def generate_next_symbol():
+            symbols = [
+                parser_obj.scanner.OPEN_SQUARE,
+                parser_obj.scanner.OPEN_CURLY,
+                parser_obj.scanner.DEVICES_ID,
+                parser_obj.scanner.CONNECTIONS_ID
+            ]
+
+            return (id for id in symbols)
+
+        gen = generate_next_symbol()
+
+        def mock_error(self,msg,error_call_count):
+            parser_obj.error_count += 1
+            print(f"SYNTAX ERROR FOUND: {msg}, recevied"
+                  f" {parser_obj.strSymbol()}")
+
+        def mock_set_next(self):
+            print("before ", parser_obj.strSymbol())
+            parser_obj.symbol.id = next(gen)
+            print("after ", parser_obj.strSymbol())
+            return
+
+        def mock_parse_device(self, err):
+            #par.setNext()
+            #print(parser_obj.strSymbol())
+            parser_obj.symbol.id = parser_obj.scanner.CLOSE_SQUARE
+            return False
+            #return False  # not missing semicolon
+
+
+        mock_scanner_err_f = mocker.patch('parse.Parser.error', mock_error)
+
+        mocker.patch('parse.Parser.setNext', mock_set_next)
+
+        # can't get mocker spy to spy a patched function :/
+        # spy = mocker.spy(
+        #     parser_obj,
+        #     "parse_device" )
+        # spy.assert_called_once()
+
+        mock_device = mocker.patch('parse.Parser.parse_device',
+                                  mock_parse_device)
+
+        assert not parser_obj.parse_devices_list()
+        assert parser_obj.error_count == 1
+
+
 
 
     def test_parse_device(self):
@@ -102,6 +201,8 @@ class TestParserMonitors:
 class TestParserErrorRecovery:
 
     # can i test this without having to create all the other objects?
+    # debatable
+
     def test_error_recovery_midfile(self):
         # may require mocking for self.scanner.show_error?
         pass
