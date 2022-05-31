@@ -154,7 +154,7 @@ def test_reset_monitors(new_monitors):
                                                 (OR1_ID, None): []}
 
 
-def test_display_signals(capsys, new_monitors):
+def test_display_signals_console(capsys, new_monitors):
     """Test if signal traces are displayed correctly on the console."""
     names = new_monitors.names
     devices = new_monitors.devices
@@ -179,7 +179,7 @@ def test_display_signals(capsys, new_monitors):
         network.execute_network()
         new_monitors.record_signals()
 
-    new_monitors.display_signals()
+    new_monitors.display_signals_console()
 
     # Get std_output
     out, _ = capsys.readouterr()
