@@ -12,7 +12,6 @@ import random
 
 
 class Device:
-
     """Store device properties.
 
     Parameters
@@ -26,7 +25,6 @@ class Device:
 
     def __init__(self, device_id):
         """Initialise device properties."""
-
         self.device_id = device_id
 
         # inputs dictionary stores
@@ -44,7 +42,6 @@ class Device:
 
 
 class Devices:
-
     """Make and store devices.
 
     This class contains many functions for making devices and ports.
@@ -99,7 +96,6 @@ class Devices:
 
     def __init__(self, names):
         """Initialise devices list and constants."""
-
         self.names = names
 
         self.devices_list = []

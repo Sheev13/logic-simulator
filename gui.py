@@ -24,7 +24,7 @@ from parse import Parser
 
 from userint import UserInterface
 from guicommandint import GuiCommandInterface
-from gui_utils import *
+from gui_utils.gui_utils import *
 
 
 class MyGLCanvas(wxcanvas.GLCanvas):
@@ -304,7 +304,7 @@ class Gui(wx.Frame):
         self.canvas_control_string = canvas_control_string
         self.sidebar_guide_string = sidebar_guide_string
         self.parse_error_string = parse_error_string
-        self.click = wx.Cursor(wx.Image("smallclick.png"))
+        self.click = wx.Cursor(wx.Image("gui_utils/smallclick.png"))
         self.standard_button_size = wx.Size(85, 36)
 
         """Initialise widgets and layout."""
@@ -493,7 +493,9 @@ class Gui(wx.Frame):
 
         self.monitors_help_sizer.Add(self.monitor_input, 0, wx.ALL, 5)
         self.monitors_help_sizer.Add(self.clear_all_monitors, 0, wx.ALL, 5)
-        self.monitors_help_sizer.Add(self.monitors_help_text, 0, wx.ALIGN_CENTER, 5)
+        self.monitors_help_sizer.Add(
+            self.monitors_help_text, 0, wx.ALIGN_CENTER, 5
+        )
 
         self.cycles_sizer.Add(self.cycles_text, 0, wx.ALIGN_CENTER, 5)
         self.cycles_sizer.Add(self.spin_cycles, 0, wx.ALIGN_CENTER, 5)
@@ -694,7 +696,7 @@ class Gui(wx.Frame):
                 label=self.shorten(f"{label}{extra}"),
                 size=self.standard_button_size
             )
-            c = wx.Cursor(wx.Image('smallinfo.png'))
+            c = wx.Cursor(wx.Image('gui_utils/smallinfo.png'))
             device_button.SetCursor(c)
             kindId = self.devices.get_device(id).device_kind
             kindLabel = self.names.get_name_string(kindId)
