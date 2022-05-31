@@ -14,10 +14,9 @@ class TestParserDevicesErrors:
 
     def test_parse_device_list(self):
         # can check if the total number of errors is correct?
-        a = 1
-        b = 2
-        assert a+b == 3
+
         #could test which devices are created successfully? maybe
+        pass
 
 
     def test_parse_device(self):
@@ -77,7 +76,9 @@ class TestParserDevicesErrors:
 
 class TestParserConnectionsErrors:
 
-    def test_connections_list(self):
-        a=4
-        b=8
-        assert b-a == 4
+    def test_parse_connections_list(self):
+        pass
+
+    def test_parse_connections(self):
+        pass
+
