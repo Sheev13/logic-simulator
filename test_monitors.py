@@ -1,5 +1,4 @@
 """Test the monitors module."""
-from signal import signal
 import pytest
 
 from names import Names
