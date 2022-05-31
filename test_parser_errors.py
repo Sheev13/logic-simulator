@@ -386,16 +386,79 @@ class TestParserConnections:
 
 
 class TestParserMonitors:
+    @pytest.mark.parametrize("symbol_list, success, setNext_count, "
+                             "error_count",
+                             [
+                                 ([dummy_parser.scanner.OPEN_SQUARE,
+                                   None,  # could be anything
+                                   dummy_parser.scanner.SEMICOLON,
+                                   None],  # could be anything
+                                  True,
+                                  4, 0),
+                                 ([dummy_parser.scanner.OPEN_SQUARE,
+                                   None,  # could be anything
+                                   dummy_parser.scanner.INVALID_CHAR,
+                                   None],  # could be anything
+                                  False,
+                                  4, 1),
+                                 ([dummy_parser.scanner.CLOSE_CURLY,
+                                   None,  # could be anything
+                                   dummy_parser.scanner.INVALID_CHAR,
+                                   None],  # could be anything
+                                  False,
+                                  2, 1),
+                             ])
+    def test_parse_monitors_list(self, mocker, symbol_list, success,
+                                 setNext_count, error_count):
+        parser_obj = new_parser(f"test_files/blank.txt")
+        parser_obj.symbol = Symbol()
 
-    def test_parse_monitors_list(self):
-        # missing semi colons
-        pass
+        def symbol_generator(sym_list):
+            return (x for x in sym_list)
 
-    def test_parse_monitor(self):
-        # test the missing semicolon funciton?
+        gen = symbol_generator(symbol_list)
 
-        # the right number of errors
-        pass
+        def mock_set_next(self):
+            parser_obj.symbol.id = next(gen)
+            return
+        # Parser.setNext is patched so that we do not test scanner functionality
+        mocker.patch('parse.Parser.setNext', mock_set_next)
+
+        def mock_error(self, msg, expt_list):
+            parser_obj.error_count += 1
+            print(f"SYNTAX ERROR FOUND: {msg}, recevied"
+                  f" {parser_obj.strSymbol()}")
+        mocker.patch('parse.Parser.error', mock_error)
+
+        def mock_parse_monitor(self, err):
+            parser_obj.symbol.id = parser_obj.scanner.CLOSE_SQUARE
+            return False
+
+        mocker.patch('parse.Parser.parse_monitor', mock_parse_monitor)
+
+        spy_setNext = mocker.spy(parser_obj, "setNext")
+        spy_error = mocker.spy(parser_obj, "error")
+
+        assert parser_obj.parse_monitors_list(0) == success
+        assert spy_setNext.call_count == setNext_count
+        assert spy_error.call_count == error_count
+
+    @pytest.mark.parametrize("text_file, syntax_errors, semantic_errors",
+                             [
+                                 ("parse_monitor_semantic.txt",  0, 1),
+                                 ("parse_monitor_syntax_semantic.txt", 1, 1),
+                             ])
+    def test_parse_monitor_semantic(self, mocker, text_file, semantic_errors,
+                            syntax_errors):
+        parser_obj = new_parser(f"test_files/{text_file}")
+        parser_obj.symbol = Symbol()
+
+        spy_syntactic = mocker.spy(parser_obj, "error")
+        spy_semantic = mocker.spy(parser_obj, "semantic_error")
+
+        parser_obj.parse_network()
+        assert spy_semantic.call_count == semantic_errors
+        assert spy_syntactic.call_count == syntax_errors
 
 
 class TestParserErrorRecovery:
