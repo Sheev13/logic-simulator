@@ -760,7 +760,7 @@ class Parser:
         """More easily print current symbol string."""
         try:
             return self.names.get_name_string(self.symbol.id)
-        except IndexError:
+        except TypeError:
             return "NONE"
 
     def error(self, msg, expect_next_list):
