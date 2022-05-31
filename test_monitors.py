@@ -199,6 +199,7 @@ def test_display_signals_console(capsys, new_monitors):
 
     assert "" in traces  # additional empty line at the end
 
+
 def test_display_signals_gui(new_monitors):
     """Test if signal trace data is correct for GUI display."""
     names = new_monitors.names
@@ -236,7 +237,7 @@ def test_display_signals_gui(new_monitors):
     # Check all x coordinates are the same for every device
     for device in signalData.keys():
         assert signalData[device][1] == [
-            0, 20, 20, 40, 40, 60, 60, 80, 80, 100, 100, 
+            0, 20, 20, 40, 40, 60, 60, 80, 80, 100, 100,
             120, 120, 140, 140, 160, 160, 180, 180, 200,
             200, 220, 220, 240, 240, 260, 260, 280, 280,
             300, 300, 320, 320, 340, 340, 360, 360, 380,
@@ -253,10 +254,3 @@ def test_display_signals_gui(new_monitors):
                                        [[low]*2 + [high]*4 + [low]*2] * 5 or
                                        [[high]*4 + [low]*4] * 5 or
                                        [[high]*2 + [low]*4 + [high]*2] * 5)
-
-
-    # # Clock could be anywhere in its cycle, but its half period is 2
-    # assert ("Clock1: __--__--__--__--__--" in traces or
-    #         "Clock1: _--__--__--__--__--_" in traces or
-    #         "Clock1: --__--__--__--__--__" in traces or
-    #         "Clock1: -__--__--__--__--__-" in traces)
