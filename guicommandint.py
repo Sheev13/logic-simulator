@@ -9,6 +9,7 @@ GuiCommandInterface - reads and parses user commands.
 """
 import wx
 
+
 class GuiCommandInterface:
     """Read and parse user commands.
 
@@ -47,8 +48,6 @@ class GuiCommandInterface:
 
     read_number(self, lower_bound, upper_bound): Returns the current number.
 
-    help_command(self): Prints a list of valid commands.
-
     switch_command(self): Sets the specified switch to the specified signal
                           level.
 
@@ -63,8 +62,8 @@ class GuiCommandInterface:
 
     continue_command(self): Continues a previously run simulation.
     """
-    
-    def __init__(self, line, names, devices, network, monitors, cycles_completed=0):
+
+    def __init__(self, line, names, devices, network, monitors, complete=0):
         """Initialise variables."""
         self.names = names
         self.devices = devices
@@ -72,7 +71,7 @@ class GuiCommandInterface:
         self.network = network
         self.line = line
 
-        self.cycles_completed = cycles_completed  # number of simulation cycles completed
+        self.cycles_completed = complete
 
         self.character = ""  # current character
         self.cursor = 0  # cursor position
@@ -92,7 +91,15 @@ class GuiCommandInterface:
             text, extra = self.continue_command()
         else:
             text, extra = "Invalid command. See User Guide for help.", None
-        return [command, text, extra, self.names, self.devices, self.network, self.monitors]
+        return [
+            command,
+            text,
+            extra,
+            self.names,
+            self.devices,
+            self.network,
+            self.monitors
+        ]
 
     def read_command(self):
         """Return the first non-whitespace character."""
@@ -134,7 +141,7 @@ class GuiCommandInterface:
         if name_string is None:
             return None
         else:
-            name_id = self.names.query(name_string.upper())
+            name_id = self.names.query(name_string)
         if name_id is None:
             print("Error! Unknown name.")
         return name_id
@@ -185,13 +192,13 @@ class GuiCommandInterface:
 
     def switch_command(self):
         """Set the specified switch to the specified signal level."""
-        switch_id = self.read_name()
-        switch_state = None
-        if switch_id is not None:
-            switch_state = self.read_number(0, 1)
-            if switch_state is not None:
-                if self.devices.set_switch(switch_id, switch_state):
-                    return "Successfully set switch.", [switch_id, switch_state]
+        id = self.read_name()
+        state = None
+        if id is not None:
+            state = self.read_number(0, 1)
+            if state is not None:
+                if self.devices.set_switch(id, state):
+                    return "Successfully set switch.", [id, state]
         return "Error! Invalid switch.", None
 
     def monitor_command(self):
