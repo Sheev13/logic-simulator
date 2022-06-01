@@ -120,6 +120,7 @@ def new_parser_invalid_char():
     path = "test_files/test_unknown_problem.txt"
     return new_parser(path)
 
+
 def test_parse_network_no_errors(
     new_parser_good_devices,
     new_parser_good_devices_and_connections,
