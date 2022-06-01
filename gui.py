@@ -808,13 +808,21 @@ class Gui(wx.Frame):
             complete=self.cycles_completed
         )
         text, cycles = int.continue_command()
-        if self.cycles_completed > 0:
-            self.cycles_completed += cycles
+        self.cycles_completed += cycles
         self.canvas.render(text)
 
     def on_clear_button(self, event):
         """Handle the event when the user clicks Clear Canvas."""
-        self.cycles_completed = 0
+        int = GuiCommandInterface(
+            f"0",
+            self.names,
+            self.devices,
+            self.network,
+            self.monitors
+        )
+        text, cycles = int.run_command()
+        self.cycles_completed = cycles
+        self.canvas.render(text)
         text = "Canvas cleared. Press run to start simulation again."
         self.canvas.render(text, clearAll=True)
 
