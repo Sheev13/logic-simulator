@@ -99,7 +99,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glTranslated(self.pan_x, self.pan_y, 0.0)
         GL.glScaled(self.zoom, self.zoom, self.zoom)
 
-    def render(self, text):
+    def render(self, text, clearAll=False):
         """Handle all drawing operations."""
         self.SetCurrent(self.context)
         if not self.init:
@@ -115,20 +115,21 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         self.render_text(text, 10, top)
 
         # Draw signal traces
-        low = 5
-        high = 25
-        signalData = self.monitors.display_signals_gui(high=high, low=low)
-        axis = top-45
-        for monitor in signalData.keys():
-            desc, X, Y, device_kind = signalData[monitor]
-            if len(X) > 0:
-                margin = len(desc)*10
-                Y = [axis+y for y in Y]
-                X = [x+margin+10 for x in X]
-                rgb = self.traceColour(device_kind)
-                self.render_text(desc, X[0]-margin, axis+12)
-                self.drawTrace(X, Y, axis, rgb)
-                axis -= 100
+        if not clearAll:
+            low = 5
+            high = 25
+            signalData = self.monitors.display_signals_gui(high=high, low=low)
+            axis = top-45
+            for monitor in signalData.keys():
+                desc, X, Y, device_kind = signalData[monitor]
+                if len(X) > 0:
+                    margin = len(desc)*10
+                    Y = [axis+y for y in Y]
+                    X = [x+margin+10 for x in X]
+                    rgb = self.traceColour(device_kind)
+                    self.render_text(desc, X[0]-margin, axis+12)
+                    self.drawTrace(X, Y, axis, rgb)
+                    axis -= 100
 
         # We have been drawing to the back buffer, flush the graphics pipeline
         # and swap the back buffer to the front
@@ -403,6 +404,10 @@ class Gui(wx.Frame):
         self.continue_button.SetBottomEndColour(darkpurple)
         self.continue_button.SetCursor(self.click)
 
+        self.clear_button = gb.GradientButton(self, wx.ID_ANY, label="Clear Canvas")
+        self.clear_button.SetCursor(self.click)
+        self.clear_button.SetFont(wx.Font(go_font))
+
         self.command_line_input = wx.TextCtrl(
             self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER, size=(420, 25)
         )
@@ -417,6 +422,7 @@ class Gui(wx.Frame):
         self.spin_cycles.Bind(wx.EVT_SPINCTRL, self.on_spin_cycles)
         self.run_button.Bind(wx.EVT_BUTTON, self.on_run_button)
         self.continue_button.Bind(wx.EVT_BUTTON, self.on_continue_button)
+        self.clear_button.Bind(wx.EVT_BUTTON, self.on_clear_button)
         self.monitor_input.Bind(wx.EVT_TEXT_ENTER, self.on_monitor_input)
         self.command_line_input.Bind(
             wx.EVT_TEXT_ENTER,
@@ -504,6 +510,7 @@ class Gui(wx.Frame):
         self.cycles_sizer.AddStretchSpacer()
         self.cycles_sizer.Add(self.run_button, 0, wx.ALL, 5)
         self.cycles_sizer.Add(self.continue_button, 0, wx.ALL, 5)
+        self.cycles_sizer.Add(self.clear_button, 0, wx.ALL, 5)
 
         self.command_line_sizer.Add(self.command_line_input, 1, wx.ALL, 5)
 
@@ -795,6 +802,12 @@ class Gui(wx.Frame):
         if self.cycles_completed > 0:
             self.cycles_completed += cycles
         self.canvas.render(text)
+
+    def on_clear_button(self, event):
+        """Handle the event when the user clicks Clear Canvas."""
+        self.cycles_completed = 0
+        text = "Canvas cleared. Press run to start simulation again."
+        self.canvas.render(text, clearAll=True)
 
     def on_switch_button(self, event):
         """Handle the event when the user clicks the switch button."""
