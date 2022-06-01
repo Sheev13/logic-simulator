@@ -1,5 +1,4 @@
 import pytest
-# import pytest-mock need to install this...?
 
 from names import Names
 from network import Network
@@ -39,7 +38,6 @@ def new_parser(path):
 def get_symbol_generator():
     dummy_parser = new_parser("test_files/blank.txt")
     return dummy_parser
-
 
 dummy_parser = get_symbol_generator()
 

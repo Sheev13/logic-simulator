@@ -174,9 +174,6 @@ class Parser:
         self.setNext()
 
         print("Did not manage to parse the DEVICES list perfectly.")
-        # wish this could be more informative.......
-        # maybe thats for self.error / scanner
-        # what is the point of this code below huhh/???
         if self.error_count != 0:
             print(f"Found {self.error_count} error(s) when parsing the "
                   f"DEVICES list \n")
@@ -711,7 +708,7 @@ class Parser:
         if self.error_count - previous_errors != 0:
             print(
                 f"Found {self.error_count - previous_errors} "
-                "error(s) when parsing the MONITORS list")
+                "error(s) when parsing the MONITORS list \n")
             return False
 
     def parse_monitor(self, previous_errors):
@@ -785,7 +782,6 @@ class Parser:
         while True:
             while self.symbol.id != self.scanner.SEMICOLON:
                 self.setNext()
-                self.strSymbol()
                 if self.isEof():
                     print("reached end of file without another semicolon")
                     self.end_of_file = True
@@ -793,7 +789,6 @@ class Parser:
             # found a semi colon, now need to check if the expected element
             # is next
             self.setNext()
-            self.strSymbol()
             if self.isEof():
                 print("reached end of file without finding expected symbol")
                 self.end_of_file = True
@@ -812,4 +807,3 @@ class Parser:
         """Print semantic error with message."""
         print("SEMANTIC ERROR: " + msg)
         self.error_count += 1
-        # TODO: error recovery here?
