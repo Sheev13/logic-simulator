@@ -366,7 +366,7 @@ class Gui(wx.Frame):
             wx.ID_ANY,
             "",
             style=wx.TE_PROCESS_ENTER,
-            size=wx.Size(150, 25)
+            size=wx.Size(175, 25)
         )
         self.monitor_input.SetHint("Add new monitor")
         self.monitor_input.SetFont(inputBoxFont)
@@ -379,7 +379,7 @@ class Gui(wx.Frame):
         self.clear_all_monitors.SetFont(genBtnFont)
         self.monitor_buttons = {}
 
-        self.cycles_text = wx.StaticText(self, wx.ID_ANY, " Cycles:  ")
+        self.cycles_text = wx.StaticText(self, wx.ID_ANY, " Cycles: ")
         self.cycles_text.SetFont(self.subHeadingFont)
         self.spin_cycles = wx.SpinCtrl(self, wx.ID_ANY, "10")
 
@@ -491,17 +491,19 @@ class Gui(wx.Frame):
         self.file_name_sizer.AddStretchSpacer()
         self.file_name_sizer.Add(self.browse, 0, wx.ALIGN_CENTER, 5)
 
-        self.monitors_help_sizer.Add(self.monitor_input, 0, wx.ALL, 5)
-        self.monitors_help_sizer.Add(self.clear_all_monitors, 0, wx.ALL, 5)
+        self.monitors_help_sizer.Add(self.monitor_input, 0, wx.ALIGN_CENTER, 2)
+        self.file_name_sizer.AddStretchSpacer()
+        self.monitors_help_sizer.Add(self.clear_all_monitors, 0, wx.ALIGN_CENTER, 2)
+        self.file_name_sizer.AddStretchSpacer()
         self.monitors_help_sizer.Add(
-            self.monitors_help_text, 0, wx.ALIGN_CENTER, 5
+            self.monitors_help_text, 0, wx.ALIGN_CENTER, 2
         )
 
         self.cycles_sizer.Add(self.cycles_text, 0, wx.ALIGN_CENTER, 5)
         self.cycles_sizer.Add(self.spin_cycles, 0, wx.ALIGN_CENTER, 5)
         self.cycles_sizer.AddStretchSpacer()
-        self.cycles_sizer.Add(self.run_button, 1, wx.ALL, 5)
-        self.cycles_sizer.Add(self.continue_button, 1, wx.ALL, 5)
+        self.cycles_sizer.Add(self.run_button, 0, wx.ALL, 5)
+        self.cycles_sizer.Add(self.continue_button, 0, wx.ALL, 5)
 
         self.command_line_sizer.Add(self.command_line_input, 1, wx.ALL, 5)
 
