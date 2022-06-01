@@ -58,6 +58,7 @@ class Scanner:
         self.prev_linestart = 0
         self.linecount = 1
         self.names = names
+        self.current_char = " "  # start as a whitespace to avoid EOF
         self.symbol_types = [self.PUNCTUATION, self.KEYWORD,
             self.NUMBER, self.NAME, self.EOF, self.INVALID_CHAR] = range(6)
 
@@ -72,7 +73,6 @@ class Scanner:
             self.CLOSE_CURLY, self.SEMICOLON, self.COMMA,
             self.DOT] = self.names.lookup(self.puncs)
 
-        self.current_char = " "  # start as a whitespace
 
     def _open_file(self, path):
         """Open and return the file specified by path."""
@@ -100,18 +100,29 @@ class Scanner:
             pass  # keep looping
         return self.current_char
 
+    def _invalid_current(self):
+        """Return True if current character is invalid"""
+        char = self.current_char
+        if not char.isspace() and not char.isalnum(): 
+            if char != "" and char not in self.puncs:
+                return True
+        return False 
+
     def _next_name(self, symb):
         """Read the file as necessary to return the next name string.
 
         Assumes current_char at time of function call is alphabetic
         """
         name = ""
+        inv = False
         symb.pos = self.f.tell()
         symb.line = self.linecount
-        while self.current_char.isalnum():
+        while self.current_char.isalnum() or self._invalid_current():
+            if self._invalid_current():
+                inv = True
             name += self.current_char
             self._next()
-        return name
+        return name, inv
 
     def _next_number(self, symb):
         """Read the file as necessary to return the next number as an int.
@@ -119,12 +130,16 @@ class Scanner:
         Assumes current_char at time of function call is numeric
         """
         n = ""
+        inv = False
         symb.pos = self.f.tell()
         symb.line = self.linecount
-        while self.current_char.isdigit():
+        while self.current_char.isdigit() or self._invalid_current():
+            if self._invalid_current():
+                inv = True
+                return None, inv
             n += self.current_char
             self._next()
-        return int(n)
+        return int(n), inv   
 
     def _skip_comment(self):
         """Advance the file object reader pointer to after the current comment.
@@ -160,6 +175,7 @@ class Scanner:
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
         sym = Symbol()
+        inv = False
 
         if self.current_char.isspace():
             self._next_non_ws()
@@ -170,17 +186,23 @@ class Scanner:
 
         # name/keyword
         if self.current_char.isalpha():
-            name_string = self._next_name(sym)
-            if name_string in self.keywords:
+            name_string, inv = self._next_name(sym)
+            if inv:
+                sym.type = self.INVALID_CHAR
+            elif name_string in self.keywords:
                 sym.type = self.KEYWORD
+                [sym.id] = self.names.lookup([name_string])
             else:
                 sym.type = self.NAME
-            [sym.id] = self.names.lookup([name_string])
+                [sym.id] = self.names.lookup([name_string])
 
         # number
         elif self.current_char.isdigit():
-            sym.type = self.NUMBER
-            sym.id = self._next_number(sym)
+            sym.id, inv = self._next_number(sym)
+            if inv:
+                sym.type = self.INVALID_CHAR
+            else:
+                sym.type = self.NUMBER
 
         # punctuation
         elif self.current_char in self.puncs:
