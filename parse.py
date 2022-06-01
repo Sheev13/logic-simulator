@@ -167,7 +167,8 @@ class Parser:
             self.setNext()
             return True
 
-        self.setNext()
+        if self.symbol.id != self.scanner.MONITOR_ID and self.symbol.id != self.scanner.CONNECTIONS_ID:
+            self.setNext()
 
         print("Did not manage to parse the DEVICES list perfectly.")
         if self.error_count != 0:
@@ -306,11 +307,14 @@ class Parser:
             if self.symbol.id != self.scanner.SEMICOLON:
                 self.error("missing semicolon", [self.scanner.OPEN_CURLY])
                 missing_semicolon = True
+                print(self.strSymbol())
                 break
 
             self.setNext()
             break
-
+        
+        self.strSymbol()
+        print("do we get here")
         return missing_semicolon, device_name
 
     def parse_device_kind(self):
@@ -701,7 +705,7 @@ class Parser:
         if self.error_count - previous_errors != 0:
             print(
                 f"Found {self.error_count - previous_errors} "
-                "error(s) when parsing the MONITORS list")
+                "error(s) when parsing the MONITORS list \n")
             return False
 
     def parse_monitor(self, previous_errors):
@@ -792,6 +796,7 @@ class Parser:
                     self.symbol.type in expect_next_list):
                 # found the character we want to keep parsing, therefore we
                 # resume in the parsing
+                self.strSymbol()  # necessary for unit testing of error recovery
                 break
 
     def isEof(self):
@@ -802,3 +807,4 @@ class Parser:
         """Print semantic error with message."""
         print("SEMANTIC ERROR: " + msg)
         self.error_count += 1
+

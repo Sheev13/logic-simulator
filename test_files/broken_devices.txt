@@ -10,6 +10,6 @@ DEVICES [
 CONNECTIONS [
 ];
 
-MONITOR [
+MONITORS [
     G1; A;
 ];

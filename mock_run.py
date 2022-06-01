@@ -17,7 +17,7 @@ devices = Devices(names)
 network = Network(names, devices)
 monitors = Monitors(names, devices, network)
 
-path = 'error_recov.txt'
+path = 'test_files/er_device_list.txt'
 
 scanner = Scanner(path, names)
 parser = Parser(names, devices, network, monitors, scanner)

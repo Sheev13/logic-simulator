@@ -1,5 +1,4 @@
 import pytest
-# import pytest-mock need to install this...?
 
 from names import Names
 from network import Network
@@ -39,7 +38,6 @@ def new_parser(path):
 def get_symbol_generator():
     dummy_parser = new_parser("test_files/blank.txt")
     return dummy_parser
-
 
 dummy_parser = get_symbol_generator()
 
@@ -324,8 +322,6 @@ class TestParserConnections:
         mocker.patch('parse.Parser.error', mock_error)
 
         def mock_parse_connection(self, err):
-            # parser_obj.symbol.id = parser_obj.scanner.DEVICES_ID
-            # TODO: need to sort problem in parse.py
             parser_obj.symbol.id = parser_obj.scanner.CLOSE_SQUARE
             return False
 
@@ -462,17 +458,44 @@ class TestParserMonitors:
 
 
 class TestParserErrorRecovery:
+    
+    @pytest.mark.parametrize("text_file, expected_symbol_string",
+                             [
+                                 ("er_device_list_missing_end_semicolon.txt",  "MONITORS"),
+                                 ("er_device_list_missing_open_square.txt",  "CONNECTIONS"),
 
-    # can i test this without having to create all the other objects?
-    # debatable
+                             ])
+    def test_error_recovery_parse_devices_list(self, mocker, text_file, expected_symbol_string):
 
-    def test_error_recovery_midfile(self):
-        # may require mocking for self.scanner.show_error?
-        pass
+        parser_obj = new_parser(f"test_files/{text_file}")
+        parser_obj.symbol = Symbol()
 
-    def test_error_recovery_eof(self):
-        # test wat happens if we reach the end of the file during error
-        # recovery
+        def mock_scanner_error(self, symbol):
+            return "carat message","ln","cn"
+        mocker.patch('scanner.Scanner.show_error', mock_scanner_error)
 
-        # is this doable???
-        pass
+        spy_symbol_id = mocker.spy(parser_obj, "strSymbol") 
+
+        parser_obj.parse_devices_list()
+        assert spy_symbol_id.spy_return == expected_symbol_string
+        
+
+    @pytest.mark.parametrize("text_file, expected_symbol_string",
+                             [
+                                 ("er_parse_device_bad_id.txt",  "kind"),
+                                 ("er_parse_device_id_missing_semicolon.txt",  "{"),
+
+                             ])
+    def test_error_recovery_parse_device_id(self, mocker, text_file, expected_symbol_string):
+        parser_obj = new_parser(f"test_files/{text_file}")
+        parser_obj.symbol = Symbol()
+        parser_obj.setNext()
+
+        def mock_scanner_error(self, symbol):
+            return "carat message","ln","cn"
+        mocker.patch('scanner.Scanner.show_error', mock_scanner_error)
+
+        spy_symbol_id = mocker.spy(parser_obj, "strSymbol") 
+
+        parser_obj.parse_device_id()
+        assert spy_symbol_id.spy_return == expected_symbol_string
