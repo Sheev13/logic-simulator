@@ -171,7 +171,9 @@ class Parser:
             self.setNext()
             return True
 
-        self.setNext()
+        
+        if self.symbol.id != self.scanner.MONITOR_ID and self.symbol.id != self.scanner.CONNECTIONS_ID:
+            self.setNext()
 
         print("Did not manage to parse the DEVICES list perfectly.")
         if self.error_count != 0:

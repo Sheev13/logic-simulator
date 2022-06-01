@@ -322,8 +322,6 @@ class TestParserConnections:
         mocker.patch('parse.Parser.error', mock_error)
 
         def mock_parse_connection(self, err):
-            # parser_obj.symbol.id = parser_obj.scanner.DEVICES_ID
-            # TODO: need to sort problem in parse.py
             parser_obj.symbol.id = parser_obj.scanner.CLOSE_SQUARE
             return False
 
@@ -461,12 +459,38 @@ class TestParserMonitors:
 
 class TestParserErrorRecovery:
 
-    # can i test this without having to create all the other objects?
+    # can I test this without having to create all the other objects?
     # debatable
 
-    def test_error_recovery_midfile(self):
+    def test_error_recovery_midfile(self, mocker):
         # may require mocking for self.scanner.show_error?
-        pass
+
+        # test error recovery when parsing network:
+        # i.e. if connections come before devices, need to start looking for devices
+        # if instead we reach end of file we also need to stop parsing
+
+        # test error recovery when parsing a list of devices
+        # miss out semicolon after ] --> assert that we end up with symbol.id CONNECTIONS
+        
+
+        # test error recovery when parsing a device
+
+        parser_obj = new_parser(f"test_files/er_device_list.txt")
+        parser_obj.symbol = Symbol()
+
+        def mock_scanner_error(self, symbol):
+            return "carat message","ln","cn"
+        mocker.patch('scanner.Scanner.show_error', mock_scanner_error)
+
+        spy_symbol_id = mocker.spy(parser_obj, "strSymbol")  #will this work probably not
+
+        parser_obj.parse_devices_list()
+        print(spy_symbol_id.spy_return)
+        #assert spy_symbol_id.id == dummy_parser.scanner.MONITOR_ID
+        assert True == False
+
+
+        
 
     def test_error_recovery_eof(self):
         # test wat happens if we reach the end of the file during error
