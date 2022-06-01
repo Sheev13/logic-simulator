@@ -844,6 +844,7 @@ class Gui(wx.Frame):
             [deviceId, portId] = commandint.read_signal_name()
             self.monitors.remove_monitor(deviceId, portId)
             self.monitor_buttons.pop(monitorName, "")
+        self.canvas.render("All monitors destroyed.")
         self.Layout()
 
     def on_monitor_input(self, event):
