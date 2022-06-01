@@ -54,8 +54,8 @@ class Scanner:
     def __init__(self, path, names):
         """Open specified file and initialise reserved words and IDs."""
         self.f = self._open_file(path)
-        self.linestart = 0
-        self.prev_linestart = 0
+        self.linestart = 1
+        self.prev_linestart = 1
         self.linecount = 1
         self.names = names
 
@@ -190,7 +190,7 @@ class Scanner:
             self._next_non_ws()
 
         # comment
-        if self.current_char in ["#", "/"]:
+        while self.current_char in ["#", "/"]:
             self._skip_comment()
 
         # name/keyword
@@ -257,12 +257,21 @@ class Scanner:
         col = 0
 
         if error_pos == linestart:
-            self.f.seek(prev_linestart - 1)
-            errorline = self._get_error_line()
-            caratline = " "*len(errorline) + "^"
-            message = errorline + "\n" + caratline
-            error_line_num -= 1
-            col = len(errorline)
+            if linestart != 1:  # if there is a previous line
+                self.f.seek(prev_linestart - 1)
+                errorline1 = self._get_error_line()
+                caratline = " "*len(errorline1) + "^"
+                self.f.seek(linestart - 1)
+                errorline2 = self._get_error_line()
+                message = errorline1 + "\n" + caratline + "\n" + errorline2
+                error_line_num -= 1
+                col = len(errorline1)
+            else:  # if there is no previous line
+                self.f.seek(linestart - 1)
+                errorline = self._get_error_line()
+                caratline = "^"
+                message = errorline + "\n" + caratline
+                col = error_pos - linestart
         else:
             self.f.seek(linestart - 1)
             errorline = self._get_error_line()

@@ -1,2 +1,2 @@
 / helvod nfjfhseo 
-# this is a comment # *DEVICES
+# this is a comment # DEVICES
