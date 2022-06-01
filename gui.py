@@ -930,7 +930,8 @@ class Gui(wx.Frame):
     def on_command_line_add_monitor(self, deviceId, portId):
         """Add monitor button based on command line input."""
         monitorName = self.getMonitorName(deviceId, portId)
-        self.addMonitorButton(monitorName)
+        if monitorName not in self.monitor_buttons.keys():
+            self.addMonitorButton(monitorName)
 
     def on_command_line_zap_monitor(self, deviceId, portId):
         """Destroy monitor button based on command line input."""
@@ -953,7 +954,7 @@ class Gui(wx.Frame):
     def makeMonitor(self, monitorName):
         """Create a new monitoring point based on user selection."""
         commandint = GuiCommandInterface(
-            monitorName, self.names, self.devices, self.network, self.monitors
+            monitorName, self.names, self.devices, self.network, self.monitors, complete=self.cycles_completed
         )
         text, [self.monitors, monitor] = commandint.monitor_command()
         self.canvas.render(text)
