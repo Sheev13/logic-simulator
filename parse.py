@@ -133,11 +133,17 @@ class Parser:
                         self.symbol.id == self.scanner.CONNECTIONS_ID):
                     # error skips to end of devices
                     break
-
+                elif self.symbol.type == self.scanner.INVALID_CHAR:
+                    # unknown character encountered
+                    self.error(
+                        "invalid character encountered",
+                        [self.scanner.OPEN_CURLY]
+                    )
                 else:
-                    # TODO: no semicolon after devices?
-                    print("device list problem at ", self.strSymbol())
-                    print("sort this problem out")
+                    # unknown problem
+                    print("unknown error has occurred")
+                    self.error_count += 1
+                    break
 
             if (self.symbol.id == self.scanner.MONITOR_ID or
                     self.symbol.id == self.scanner.CONNECTIONS_ID):
@@ -442,13 +448,13 @@ class Parser:
                     break
                 elif self.symbol.id == self.scanner.MONITOR_ID:
                     parsing_connections = False
-                    break
-                else:
-                    # TODO: what if it is neither of those???
-                    # is this when there is an error at the end of connection
-                    # lists?
-                    print("sort this problem out")
-                    print("Unexpected symbol: ", self.strSymbol())
+                    break  
+                elif self.symbol.type == self.scanner.INVALID_CHAR:
+                    # unknown character encountered
+                    self.error(
+                        "invalid character encountered",
+                        [self.scanner.NAME]
+                    )
 
             if self.end_of_file:
                 break
@@ -654,12 +660,17 @@ class Parser:
                 elif self.symbol.id == self.scanner.CONNECTIONS_ID:
                     parsing_monitors = False
                     break
+                elif self.symbol.type == self.scanner.INVALID_CHAR:
+                    # unknown character encountered
+                    self.error(
+                        "invalid character encountered",
+                        [self.scanner.NAME]
+                    )
                 else:
-                    # TODO: what if it is neither of those???
-                    # is this when there is an error at the end of connection
-                    # lists?
-                    print("sort this problem out")
-                    print("Unexpected symbol: ", self.strSymbol())
+                    # unknown problem
+                    print("unknown error has occurred")
+                    self.error_count += 1
+                    break
 
             if self.end_of_file:
                 break
