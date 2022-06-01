@@ -56,5 +56,8 @@ sidebar_guide_string = "The sidebar can be used to set device properties " \
                             "\n \n" \
                             "Press 'Run' or 'Continue' to start the " \
                             "simulation."\
+                            "\n \n" \
+                            "Press 'Clear Canvas' to reset the " \
+                            "simulation."\
 
 parse_error_string = "Unable to parse file. Old file will remain loaded."
