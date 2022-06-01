@@ -1,0 +1,33 @@
+   DEVICES [{
+            id: SW1;
+            
+            kind: SWITCH;
+            qual: 1;
+        }; 
+    {
+            id: SW2;
+        kind: SWITCH;
+            qual: 0;
+        };
+        {
+            id: SW3;
+            kind: SWITCH;
+            qual: 0;
+        };
+        {
+            id: F1;
+            kind: DTYPE;
+        };
+        {
+            id: CLK1;
+            kind:    CLOCK;
+            qual: 4;
+    };
+    ];
+
+    CONNECTIONS [SW1 : F1.SET;SW2:F1.DATA;
+        CLK1 :F1.CLK;
+        SW3:F1.CLEAR;
+    ];
+
+    MONITORS [F1.Q;   F1.QBAR;];
