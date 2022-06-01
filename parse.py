@@ -53,12 +53,16 @@ class Parser:
         self.setNext()
         while True:
             if self.symbol.id == self.scanner.DEVICES_ID:
-                success = self.parse_devices_list()
+                if devices_done:
+                    print("Warning - multiple device lists found")
+                self.parse_devices_list()
                 devices_done = True
 
             elif self.symbol.id == self.scanner.CONNECTIONS_ID:
+                if connections_done:
+                    print("Warning - multiple connections lists found")
                 if devices_done:
-                    success = self.parse_connections_list(self.error_count)
+                    self.parse_connections_list(self.error_count)
                     connections_done = True
                 else:
                     self.error("can't parse connections if not done devices",
@@ -67,11 +71,12 @@ class Parser:
                         break
                     # error recovery should look for devices
                     # maybe user put devices after connections accidentally?
-                    # TODO: confirm this error recovery strategy
 
             elif self.symbol.id == self.scanner.MONITOR_ID:
+                if monitors_done:
+                    print("Warning - multiple monitors lists found")
                 if devices_done:
-                    success = self.parse_monitors_list(self.error_count)
+                    self.parse_monitors_list(self.error_count)
                     monitors_done = True
                 else:
                     self.error("can't parse monitors if not done devices",
@@ -89,8 +94,6 @@ class Parser:
                             ])
                 if self.isEof():
                     break
-                # TODO: !!!!!! what if they put eg. DEVICES twice! will it
-                #  still work?
 
         print(f"Completely parsed the definition file. {self.error_count} "
               f"error(s) found in total.")
@@ -113,16 +116,10 @@ class Parser:
             parsing_devices = True
             while parsing_devices:
                 missing_semicolon = self.parse_device(self.error_count)
-                # TODO: check unique issue with missing semi-colon
-
-                # TODO: this is definitely cursed
                 if missing_semicolon:
-                    # this is also cropping up at the wrong place
                     print("missed semicolon at end of device definition, "
                           "will end up skipping the device after")
-                    # this is also way too hacky
                     if self.end_of_file:
-                        # TODO: SORT THIS OUT
                         break
 
                 if self.symbol.id == self.scanner.OPEN_CURLY:
@@ -161,7 +158,6 @@ class Parser:
             if self.symbol.id != self.scanner.SEMICOLON:
                 self.error("expected ;", [self.scanner.MONITOR_ID,
                                           self.scanner.CONNECTIONS_ID])
-                # TODO: not sure if it's connections/monitors
                 break
 
             if self.error_count != 0:
@@ -189,8 +185,6 @@ class Parser:
                 self.error("expected {",
                            [self.scanner.OPEN_CURLY,
                             self.scanner.CLOSE_CURLY])
-                # TODO: this is where the error of searching expected
-                #  linearly crops up i believeeeee ... see onennote
                 break
 
             self.setNext()
@@ -334,7 +328,6 @@ class Parser:
                 self.error("expected kind keyword here",
                            [self.scanner.QUAL_KEYWORD_ID,
                             self.scanner.CLOSE_CURLY])
-                # TODO: tidy if the expected list is defined before  while loop
                 break
 
             self.setNext()
@@ -359,10 +352,10 @@ class Parser:
 
             self.setNext()
             if self.symbol.id != self.scanner.SEMICOLON:
-                self.error("missing semicolon", [self.scanner.OPEN_CURLY])
-                # TODO: should we not also be expecting a close square....?
-                #  :/ in case its the last device which has the error?
-
+                self.error(
+                    "missing semicolon",
+                    [self.scanner.OPEN_CURLY, self.scanner.CLOSE_SQUARE]
+                )
                 missing_semicolon = True
                 break
 
@@ -397,8 +390,10 @@ class Parser:
 
             self.setNext()
             if self.symbol.id != self.scanner.SEMICOLON:
-                self.error("missing semicolon", [self.scanner.OPEN_CURLY])
-                # TODO: should we be expecting a close square if last device
+                self.error(
+                    "missing semicolon",
+                    [self.scanner.OPEN_CURLY, self.scanner.CLOSE_SQUARE]
+                )
                 missing_semicolon = True
                 break
 
@@ -431,8 +426,6 @@ class Parser:
                     break
 
                 missing_semicolon = self.parse_connection(self.error_count)
-                # TODO: still need to check if there is an unique issue with
-                #  missing semi-colon
                 if self.end_of_file:
                     break
                 if missing_semicolon:
@@ -449,7 +442,7 @@ class Parser:
                     break
                 elif self.symbol.id == self.scanner.MONITOR_ID:
                     parsing_connections = False
-                    break  
+                    break
                 elif self.symbol.type == self.scanner.INVALID_CHAR:
                     # unknown character encountered
                     self.error(
@@ -642,7 +635,7 @@ class Parser:
                     break
 
                 missing_semicolon = self.parse_monitor(self.error_count)
-                # TODO: check for unique issue with missing semi-colon
+
                 if self.end_of_file:
                     break
                 if missing_semicolon:
@@ -814,3 +807,4 @@ class Parser:
         """Print semantic error with message."""
         print("SEMANTIC ERROR: " + msg)
         self.error_count += 1
+

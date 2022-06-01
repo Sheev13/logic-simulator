@@ -232,7 +232,6 @@ class GuiCommandInterface:
             else:
                 print("Error! Network oscillating.")
                 return False
-        self.monitors.display_signals_console()
         return True
 
     def run_command(self):
@@ -253,7 +252,7 @@ class GuiCommandInterface:
         cycles = self.read_number(0, None)
         if cycles is not None:  # if the number of cycles provided is valid
             if self.cycles_completed == 0:
-                return "Error! Nothing to continue. Run first.", cycles
+                return "Error! Nothing to continue. Run first.", 0
             elif self.run_network(cycles):
                 self.cycles_completed += cycles
                 return " ".join(["Continuing for", str(cycles), "cycles.",
