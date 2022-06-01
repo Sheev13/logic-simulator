@@ -4,7 +4,7 @@ DEVICES [
 {id: D3; kind: DTYPE; };
 {id: CLK1; kind: CLOCK; qual: 1;};
 
-{id: SW*1; kind: SWITCH; qual: 0;};
+{id: SW1; kind: SWITCH; qual: 0;};
 {id: SW2; kind: SWITCH; qual: 0;};
 {id: SW3; kind: SWITCH; qual: 0;};
 
