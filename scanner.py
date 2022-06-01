@@ -67,31 +67,55 @@ class Scanner:
             self.NUMBER,
             self.NAME,
             self.EOF,
-            self.INVALID_CHAR
+            self.INVALID_CHAR,
         ] = range(6)
 
-        self.keywords = ["CIRCUIT", "DEVICES", "CONNECTIONS", "MONITORS",
-                         "id", "kind", "qual"]
-        [self.CIRCUIT_ID, self.DEVICES_ID, self.CONNECTIONS_ID,
-         self.MONITOR_ID, self.ID_KEYWORD_ID, self.KIND_KEYWORD_ID,
-         self.QUAL_KEYWORD_ID] = self.names.lookup(self.keywords)
+        self.keywords = [
+            "CIRCUIT",
+            "DEVICES",
+            "CONNECTIONS",
+            "MONITORS",
+            "id",
+            "kind",
+            "qual",
+        ]
+        [
+            self.CIRCUIT_ID,
+            self.DEVICES_ID,
+            self.CONNECTIONS_ID,
+            self.MONITOR_ID,
+            self.ID_KEYWORD_ID,
+            self.KIND_KEYWORD_ID,
+            self.QUAL_KEYWORD_ID,
+        ] = self.names.lookup(self.keywords)
 
         self.puncs = [":", "[", "]", "{", "}", ";", ",", "."]
-        [self.COLON, self.OPEN_SQUARE, self.CLOSE_SQUARE, self.OPEN_CURLY,
-            self.CLOSE_CURLY, self.SEMICOLON, self.COMMA,
-            self.DOT] = self.names.lookup(self.puncs)
-
+        [
+            self.COLON,
+            self.OPEN_SQUARE,
+            self.CLOSE_SQUARE,
+            self.OPEN_CURLY,
+            self.CLOSE_CURLY,
+            self.SEMICOLON,
+            self.COMMA,
+            self.DOT,
+        ] = self.names.lookup(self.puncs)
 
     def _open_file(self, path):
         """Open and return the file specified by path."""
         directory = pathlib.Path().resolve()
 
         try:
-            return open(path, 'rb')  # use binary mode due to unix line endings
+            return open(path, "rb")  # use binary mode due to unix line endings
         except FileNotFoundError:
             print(
-                "File '", path, "' either does not exist or is not in '",
-                directory, "'", sep='')
+                "File '",
+                path,
+                "' either does not exist or is not in '",
+                directory,
+                "'",
+                sep="",
+            )
             sys.exit()
 
     def _next(self):
@@ -100,7 +124,7 @@ class Scanner:
             self.prev_linestart = self.linestart
             self.linestart = self.f.tell() + 1
             self.linecount += 1
-        self.current_char = self.f.read(1).decode('UTF-8')
+        self.current_char = self.f.read(1).decode("UTF-8")
         return self.current_char
 
     def _next_non_ws(self):
@@ -110,12 +134,12 @@ class Scanner:
         return self.current_char
 
     def _invalid_current(self):
-        """Return True if current character is invalid"""
+        """Return True if current character is invalid."""
         char = self.current_char
-        if not char.isspace() and not char.isalnum(): 
+        if not char.isspace() and not char.isalnum():
             if char != "" and char not in self.puncs:
                 return True
-        return False 
+        return False
 
     def _next_name(self, symb):
         """Read the file as necessary to return the next name string.
@@ -148,7 +172,7 @@ class Scanner:
                 return None, inv
             n += self.current_char
             self._next()
-        return int(n), inv   
+        return int(n), inv
 
     def _skip_comment(self):
         """Advance the file object reader pointer to after the current comment.
@@ -260,7 +284,7 @@ class Scanner:
             if linestart != 1:  # if there is a previous line
                 self.f.seek(prev_linestart - 1)
                 errorline1 = self._get_error_line()
-                caratline = " "*len(errorline1) + "^"
+                caratline = " " * len(errorline1) + "^"
                 self.f.seek(linestart - 1)
                 errorline2 = self._get_error_line()
                 message = errorline1 + "\n" + caratline + "\n" + errorline2
@@ -275,7 +299,7 @@ class Scanner:
         else:
             self.f.seek(linestart - 1)
             errorline = self._get_error_line()
-            caratline = " "*(error_pos - linestart) + "^"
+            caratline = " " * (error_pos - linestart) + "^"
             message = errorline + "\n" + caratline
             col = error_pos - linestart
 

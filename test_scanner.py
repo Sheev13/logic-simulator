@@ -130,17 +130,17 @@ def test_get_symbol(
     symb10 = invalid_char_scanner.get_symbol()
 
     assert symb1.type == empty_scanner.EOF
-    assert symb1.id == None
+    assert symb1.id is None
     assert symb1.pos == 0
     assert symb1.line == 1
 
     assert symb2.type == whitespace_scanner.EOF
-    assert symb2.id == None
+    assert symb2.id is None
     assert symb2.pos == 81
     assert symb2.line == 9
 
     assert symb3.type == comment_scanner.EOF
-    assert symb3.id == None
+    assert symb3.id is None
     assert symb3.pos == 129
     assert symb3.line == 10
 
@@ -153,7 +153,7 @@ def test_get_symbol(
     assert symb5.line == 1
 
     assert symb6.type == invalid_name_scanner.INVALID_CHAR
-    assert symb6.id == None
+    assert symb6.id is None
     assert symb6.pos == 1
     assert symb6.line == 1
 
@@ -163,7 +163,7 @@ def test_get_symbol(
     assert symb7.line == 1
 
     assert symb8.type == invalid_number_scanner.INVALID_CHAR
-    assert symb8.id == None
+    assert symb8.id is None
     assert symb8.pos == 1
     assert symb8.line == 1
 
@@ -172,12 +172,14 @@ def test_get_symbol(
     assert symb9.line == 1
 
     assert symb10.type == invalid_char_scanner.INVALID_CHAR
-    assert symb10.id == None
+    assert symb10.id is None
     assert symb10.pos == 1
     assert symb10.line == 1
 
 
-def test_show_error(midline_symbol_scanner, linestart_symbol_scanner, lfstart_symbol_scanner):
+def test_show_error(
+    midline_symbol_scanner, linestart_symbol_scanner, lfstart_symbol_scanner
+):
     """Ensure Scanner.show_error() behaves correctly on a range of scenarios"""
     symb1 = midline_symbol_scanner.get_symbol()
     assert midline_symbol_scanner.show_error(symb1) == (
@@ -189,7 +191,7 @@ def test_show_error(midline_symbol_scanner, linestart_symbol_scanner, lfstart_sy
     assert linestart_symbol_scanner.show_error(symb2) == (
         "# this is a comment #\r\n                      ^\n;",
         1,
-        22
+        22,
     )
     symb3 = lfstart_symbol_scanner.get_symbol()
     assert lfstart_symbol_scanner.show_error(symb3) == (
