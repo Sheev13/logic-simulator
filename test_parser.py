@@ -114,6 +114,12 @@ def new_parser_comments():
     return new_parser(path)
 
 
+@pytest.fixture
+def new_parser_invalid_char():
+    """Return a Parser class instance for invalid chars in text file."""
+    path = "test_files/test_unknown_problem.txt"
+    return new_parser(path)
+
 def test_parse_network_no_errors(
     new_parser_good_devices,
     new_parser_good_devices_and_connections,
@@ -135,7 +141,8 @@ def test_parse_network_with_errors(
     new_parser_bad_devices_and_monitors,
     new_parser_all_three_bad_devices,
     new_parser_all_three_bad_connections,
-    new_parser_all_three_bad_monitors
+    new_parser_all_three_bad_monitors,
+    new_parser_invalid_char
 ):
     """Test if parse network returns False when errors present in files."""
     assert not new_parser_bad_devices.parse_network()
@@ -144,6 +151,7 @@ def test_parse_network_with_errors(
     assert not new_parser_all_three_bad_devices.parse_network()
     assert not new_parser_all_three_bad_connections.parse_network()
     assert not new_parser_all_three_bad_monitors.parse_network()
+    assert not new_parser_invalid_char.parse_network()
 
 
 def test_parse_network_comments(new_parser_comments):
