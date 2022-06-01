@@ -7,16 +7,6 @@ from monitors import Monitors
 from parse import Parser
 from scanner import Scanner, Symbol
 
-"""
-useful prompts for running pytest
-
-pytest -q test_parser_errors.py --> run in 'quiet' mode
-
-pytest test_parser_errors.py::TestParserDevices::test_parse_device_id 
---> run a specific tes
-
-"""
-
 
 def new_parser(path):
     """Return a Parser class instance for given path."""
@@ -38,6 +28,7 @@ def new_parser(path):
 def get_symbol_generator():
     dummy_parser = new_parser("test_files/blank.txt")
     return dummy_parser
+
 
 dummy_parser = get_symbol_generator()
 
@@ -70,13 +61,20 @@ class TestParserDevices:
                                  # to parse devices are made)
 
                              ])
-    def test_parse_device_list(self, mocker, symbol_list, success,
-                               expected_error_count, parse_device_call_number):
-        """Completely patched test for Parser.parse_device_list which tests
-        for correct handling for errors in the outer 'wrapping' for a
-        DEVICES list (assumes that Parser.parse_device reaches the end of
-        all the devices and that Parser.setNext always returns the correct
-        symbol)"""
+    def test_parse_devices_list(
+            self,
+            mocker,
+            symbol_list,
+            success,
+            expected_error_count,
+            parse_device_call_number):
+        """Test Parser.parse_devices_list error handling in outer
+        'wrapping' for a DEVICES list.
+
+        The use of patching lets one assume that Parser.parse_device
+        reaches the end of all the devices and that Parser.setNext
+        always returns the correct symbol.
+        """
 
         parser_obj = new_parser("test_files/blank.txt")
         parser_obj.symbol = Symbol()
@@ -85,8 +83,6 @@ class TestParserDevices:
             return (x for x in sym_list)
 
         gen = symbol_generator(symbol_list)
-
-        # ^ this could become a pytest fixture
 
         def mock_error(self, msg, expt_list):
             parser_obj.error_count += 1
@@ -100,7 +96,8 @@ class TestParserDevices:
             parser_obj.symbol.id = next(gen)
             return
 
-        # Parser.setNext is patched so that we do not test scanner functionality
+        # Parser.setNext is patched so that we do not test scanner
+        # functionality
         mocker.patch('parse.Parser.setNext', mock_set_next)
 
         def mock_parse_device(self, err):
@@ -118,7 +115,9 @@ class TestParserDevices:
         assert spy.call_count == parse_device_call_number
 
     def test_parse_device_semantic(self, mocker):
-        """test if a semantic error will be detected and handled correctly"""
+        """Test if a semantic error will be detected and handled
+        correctly in Parser.parse_device
+        """
 
         parser_obj = new_parser("test_files/parse_device_semantic_error.txt")
         parser_obj.setNext()
@@ -137,10 +136,11 @@ class TestParserDevices:
         assert spy_syntactic.call_count == 0  # no syntax error detected
 
     def test_parse_device_missing_semicolon_handling(self, mocker):
-        """ if one of parse_device_id/parse_device_kind/parse_device_qual
-        return a missing semicolon, we will skip to the next device"""
+        """Test if one of parse_device_id/parse_device_kind/parse_device_qual
+        return a missing semicolon, the next device is skipped
+        """
 
-        # test eg if parse_device_id returns misisng semicolon, no calls to
+        # e.g. if parse_device_id encounters a misisng semicolon, no calls to
         # device kind or device qual are made
 
         parser_obj = new_parser(
@@ -166,7 +166,8 @@ class TestParserDevices:
     def test_parse_device_optional_qual(self, mocker, text_file,
                                         semantic_errors, syntax_errors):
         """Test that if qualifier is not given, the parsing of the device can
-        continue regardless if qualifier is semantically necessary"""
+        continue regardless if qualifier is semantically necessary
+        """
         parser_obj = new_parser(f"test_files/{text_file}")
         parser_obj.setNext()
 
@@ -183,7 +184,7 @@ class TestParserDevices:
                              "error_calls",
                              [
                                  ("device_id_correct.txt", False, "A", 0),
-                                 # ("device_id_name_syntax.txt",False,None,1),
+                                 ("device_id_name_syntax.txt", False, None, 1),
                                  ("device_id_missing.txt", False, None, 1),
                                  ("device_id_missing_semicolon.txt", True,
                                   "A", 1),
@@ -191,7 +192,8 @@ class TestParserDevices:
     def test_parse_device_id(self, mocker, text_file, missing_semicolon,
                              device_name, error_calls):
         """Test that if something is wrong with a 'id:name;' block in
-        definition file, the appropriate error will be thrown"""
+        definition file, the appropriate error will be thrown
+        """
 
         parser_obj = new_parser(f"test_files/{text_file}")
         parser_obj.setNext()
@@ -208,7 +210,7 @@ class TestParserDevices:
 
         parser_obj.parse_device_id()
         assert spy_parse_device_id.spy_return == (
-        missing_semicolon, device_name)
+            missing_semicolon, device_name)
         assert spy_error.call_count == error_calls
 
     @pytest.mark.parametrize("text_file, missing_semicolon, "
@@ -225,7 +227,8 @@ class TestParserDevices:
     def test_parse_device_kind(self, mocker, text_file, missing_semicolon,
                                device_kind_string, error_calls):
         """Test that if something is wrong with a 'kind:kind;' block in
-        definition file, the appropriate error will be thrown"""
+        definition file, the appropriate error will be thrown
+        """
         parser_obj = new_parser(f"test_files/{text_file}")
         parser_obj.setNext()
 
@@ -246,15 +249,25 @@ class TestParserDevices:
 
     @pytest.mark.parametrize("text_file, missing_semicolon, "
                              "syntax_errors",
-                             [
-                                 ("device_qual_correct.txt", False, 0),
-                                 ("device_qual_not_number.txt", False, 1),
-                                 ("device_qual_missing.txt", False, 1),
-                                 (
-                                 "device_qual_missing_semicolon.txt", True, 1),
-                             ])
+                             [("device_qual_correct.txt",
+                               False,
+                               0),
+                              ("device_qual_not_number.txt",
+                               False,
+                               1),
+                                 ("device_qual_missing.txt",
+                                  False,
+                                  1),
+                                 ("device_qual_missing_semicolon.txt",
+                                  True,
+                                  1),
+                              ])
     def test_parse_device_qual(self, mocker, text_file, missing_semicolon,
                                syntax_errors):
+        """Test that if something is wrong with a 'qual:num;' block in
+        definition file, the appropriate error will be thrown
+        """
+
         parser_obj = new_parser(f"test_files/{text_file}")
         parser_obj.setNext()
 
@@ -299,6 +312,14 @@ class TestParserConnections:
                              ])
     def test_parse_connections_list_wrapper(self, mocker, symbol_list, success,
                                             setNext_count, error_count):
+        """Test Parser.parse_connections_list error handling in outer
+        'wrapping' for a CONNECTIONS list.
+
+        The use of patching lets one assume that Parser.parse_connection
+        reaches the end of all the connections and that Parser.setNext
+        always returns the correct symbol.
+        """
+
         parser_obj = new_parser(f"test_files/blank.txt")
         parser_obj.symbol = Symbol()
 
@@ -311,7 +332,8 @@ class TestParserConnections:
             parser_obj.symbol.id = next(gen)
             return
 
-        # Parser.setNext is patched so that we do not test scanner functionality
+        # Parser.setNext is patched so that we do not test scanner
+        # functionality
         mocker.patch('parse.Parser.setNext', mock_set_next)
 
         def mock_error(self, msg, expt_list):
@@ -335,6 +357,9 @@ class TestParserConnections:
         assert spy_error.call_count == error_count
 
     def test_parse_connection_semantic(self, mocker):
+        """Test if a semantic error will be detected and handled
+        correctly in Parser.parse_connection.
+        """
         parser_obj = new_parser(
             "test_files/parse_connection_semantic_error.txt")
         parser_obj.setNext()
@@ -354,15 +379,33 @@ class TestParserConnections:
 
     @pytest.mark.parametrize("text_file, end_marker_missing, signal_name, "
                              "port_name, errors",
-                             [
-                                 ("A_signal.txt", False, "A", None, 0),
-                                 ("G1I1_signal.txt", False,"G1", "I1", 0),
-                                 ("missing_end_marker_signal.txt", True, "G1", "I1", 1),
-                                 ("missing_port_name_signal.txt", False, "G1",
-                                  "I1", 1),
-                             ])
+                             [("A_signal.txt",
+                               False,
+                               "A",
+                               None,
+                               0),
+                              ("G1I1_signal.txt",
+                               False,
+                               "G1",
+                                 "I1",
+                                 0),
+                                 ("missing_end_marker_signal.txt",
+                                  True,
+                                  "G1",
+                                  "I1",
+                                  1),
+                                 ("missing_port_name_signal.txt",
+                                  False,
+                                  "G1",
+                                  "I1",
+                                  1),
+                              ])
     def test_parse_signal(self, mocker, text_file, end_marker_missing,
-                          signal_name,port_name,errors):
+                          signal_name, port_name, errors):
+        """Test that if something is wrong in Parser.parse_signal
+        then the correct error handling will occur by checking the calls
+        Parser.error().
+        """
         parser_obj = new_parser(f"test_files/{text_file}")
         parser_obj.setNext()
 
@@ -406,6 +449,15 @@ class TestParserMonitors:
                              ])
     def test_parse_monitors_list(self, mocker, symbol_list, success,
                                  setNext_count, error_count):
+        """
+        Test Parser.parse_monitors_list error handling in outer
+        'wrapping' for a MONITORS list.
+
+        The use of patching lets one assume that Parser.parse_monitor
+        reaches the end of all the monitors and that Parser.setNext
+        always returns the correct symbol.
+        """
+
         parser_obj = new_parser(f"test_files/blank.txt")
         parser_obj.symbol = Symbol()
 
@@ -417,7 +469,8 @@ class TestParserMonitors:
         def mock_set_next(self):
             parser_obj.symbol.id = next(gen)
             return
-        # Parser.setNext is patched so that we do not test scanner functionality
+        # Parser.setNext is patched so that we do not test scanner
+        # functionality
         mocker.patch('parse.Parser.setNext', mock_set_next)
 
         def mock_error(self, msg, expt_list):
@@ -441,11 +494,14 @@ class TestParserMonitors:
 
     @pytest.mark.parametrize("text_file, syntax_errors, semantic_errors",
                              [
-                                 ("parse_monitor_semantic.txt",  0, 1),
+                                 ("parse_monitor_semantic.txt", 0, 1),
                                  ("parse_monitor_syntax_semantic.txt", 1, 1),
                              ])
     def test_parse_monitor_semantic(self, mocker, text_file, semantic_errors,
-                            syntax_errors):
+                                    syntax_errors):
+        """Test if a semantic error will be detected and handled
+        correctly in Parser.parse_monitor.
+        """
         parser_obj = new_parser(f"test_files/{text_file}")
         parser_obj.symbol = Symbol()
 
@@ -458,44 +514,53 @@ class TestParserMonitors:
 
 
 class TestParserErrorRecovery:
-    
-    @pytest.mark.parametrize("text_file, expected_symbol_string",
-                             [
-                                 ("er_device_list_missing_end_semicolon.txt",  "MONITORS"),
-                                 ("er_device_list_missing_open_square.txt",  "CONNECTIONS"),
 
-                             ])
-    def test_error_recovery_parse_devices_list(self, mocker, text_file, expected_symbol_string):
+    @pytest.mark.parametrize("text_file, expected_symbol_string",
+                             [("er_device_list_missing_end_semicolon.txt",
+                               "MONITORS"),
+                              ("er_device_list_missing_open_square.txt",
+                               "CONNECTIONS"),
+                              ])
+    def test_error_recovery_parse_devices_list(
+            self, mocker, text_file, expected_symbol_string):
+        """Test Error Recovery in Parser.parse_devices_list
+        is correct by checking the expected symbol is
+        skipped to after an error is reported.
+        """
 
         parser_obj = new_parser(f"test_files/{text_file}")
         parser_obj.symbol = Symbol()
 
         def mock_scanner_error(self, symbol):
-            return "carat message","ln","cn"
+            return "carat message", "ln", "cn"
         mocker.patch('scanner.Scanner.show_error', mock_scanner_error)
 
-        spy_symbol_id = mocker.spy(parser_obj, "strSymbol") 
+        spy_symbol_id = mocker.spy(parser_obj, "strSymbol")
 
         parser_obj.parse_devices_list()
         assert spy_symbol_id.spy_return == expected_symbol_string
-        
 
     @pytest.mark.parametrize("text_file, expected_symbol_string",
-                             [
-                                 ("er_parse_device_bad_id.txt",  "kind"),
-                                 ("er_parse_device_id_missing_semicolon.txt",  "{"),
-
-                             ])
-    def test_error_recovery_parse_device_id(self, mocker, text_file, expected_symbol_string):
+                             [("er_parse_device_bad_id.txt",
+                               "kind"),
+                              ("er_parse_device_id_missing_semicolon.txt",
+                               "{"),
+                              ])
+    def test_error_recovery_parse_device_id(
+            self, mocker, text_file, expected_symbol_string):
+        """Test Error Recovery in Parser.parse_devices_id
+        is correct by checking the expected symbol is
+        skipped to after an error is reported.
+        """
         parser_obj = new_parser(f"test_files/{text_file}")
         parser_obj.symbol = Symbol()
         parser_obj.setNext()
 
         def mock_scanner_error(self, symbol):
-            return "carat message","ln","cn"
+            return "carat message", "ln", "cn"
         mocker.patch('scanner.Scanner.show_error', mock_scanner_error)
 
-        spy_symbol_id = mocker.spy(parser_obj, "strSymbol") 
+        spy_symbol_id = mocker.spy(parser_obj, "strSymbol")
 
         parser_obj.parse_device_id()
         assert spy_symbol_id.spy_return == expected_symbol_string
