@@ -438,7 +438,7 @@ class Parser:
                     break
                 elif self.symbol.id == self.scanner.MONITOR_ID:
                     parsing_connections = False
-                    break  
+                    break
                 elif self.symbol.type == self.scanner.INVALID_CHAR:
                     # unknown character encountered
                     self.error(

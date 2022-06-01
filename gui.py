@@ -404,7 +404,11 @@ class Gui(wx.Frame):
         self.continue_button.SetBottomEndColour(darkpurple)
         self.continue_button.SetCursor(self.click)
 
-        self.clear_button = gb.GradientButton(self, wx.ID_ANY, label="Clear Canvas")
+        self.clear_button = gb.GradientButton(
+            self,
+            wx.ID_ANY,
+            label="Clear Canvas"
+        )
         self.clear_button.SetCursor(self.click)
         self.clear_button.SetFont(wx.Font(go_font))
 
@@ -499,7 +503,12 @@ class Gui(wx.Frame):
 
         self.monitors_help_sizer.Add(self.monitor_input, 0, wx.ALIGN_CENTER, 2)
         self.file_name_sizer.AddStretchSpacer()
-        self.monitors_help_sizer.Add(self.clear_all_monitors, 0, wx.ALIGN_CENTER, 2)
+        self.monitors_help_sizer.Add(
+            self.clear_all_monitors,
+            0,
+            wx.ALIGN_CENTER,
+            2
+        )
         self.file_name_sizer.AddStretchSpacer()
         self.monitors_help_sizer.Add(
             self.monitors_help_text, 0, wx.ALIGN_CENTER, 2
@@ -969,7 +978,12 @@ class Gui(wx.Frame):
     def makeMonitor(self, monitorName):
         """Create a new monitoring point based on user selection."""
         commandint = GuiCommandInterface(
-            monitorName, self.names, self.devices, self.network, self.monitors, complete=self.cycles_completed
+            monitorName,
+            self.names,
+            self.devices,
+            self.network,
+            self.monitors,
+            complete=self.cycles_completed
         )
         text, [self.monitors, monitor] = commandint.monitor_command()
         self.canvas.render(text)
