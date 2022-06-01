@@ -792,7 +792,8 @@ class Gui(wx.Frame):
             complete=self.cycles_completed
         )
         text, cycles = int.continue_command()
-        self.cycles_completed += cycles
+        if self.cycles_completed > 0:
+            self.cycles_completed += cycles
         self.canvas.render(text)
 
     def on_switch_button(self, event):
