@@ -58,9 +58,17 @@ class Scanner:
         self.prev_linestart = 0
         self.linecount = 1
         self.names = names
+
         self.current_char = " "  # start as a whitespace to avoid EOF
-        self.symbol_types = [self.PUNCTUATION, self.KEYWORD,
-            self.NUMBER, self.NAME, self.EOF, self.INVALID_CHAR] = range(6)
+
+        self.symbol_types = [
+            self.PUNCTUATION,
+            self.KEYWORD,
+            self.NUMBER,
+            self.NAME,
+            self.EOF,
+            self.INVALID_CHAR
+        ] = range(6)
 
         self.keywords = ["CIRCUIT", "DEVICES", "CONNECTIONS", "MONITORS",
                          "id", "kind", "qual"]
@@ -81,7 +89,8 @@ class Scanner:
         try:
             return open(path, 'rb')  # use binary mode due to unix line endings
         except FileNotFoundError:
-            print("File '", path, "' either does not exist or is not in '",
+            print(
+                "File '", path, "' either does not exist or is not in '",
                 directory, "'", sep='')
             sys.exit()
 
@@ -168,7 +177,7 @@ class Scanner:
                 self._next()
             if not end:
                 self._next()
-        
+
         if self.current_char.isspace():
             self._next_non_ws()
 

@@ -9,7 +9,6 @@ Network - builds and executes the network.
 
 
 class Network:
-
     """Build and execute the network.
 
     This class contains many functions required for connecting devices together

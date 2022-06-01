@@ -1,4 +1,5 @@
 """Map variable names and string names to unique integers.
+
 Used in the Logic Simulator project. Most of the modules in the project
 use this module either directly or indirectly.
 Classes
@@ -9,6 +10,7 @@ Names - maps variable names and string names to unique integers.
 
 class Names:
     """Map variable names and string names to unique integers.
+
     This class deals with storing grammatical keywords and user-defined words,
     and their corresponding name IDs, which are internal indexing integers. It
     provides functions for looking up either the name ID or the name string.
@@ -44,9 +46,9 @@ class Names:
 
     def query(self, name_string):
         """Return the corresponding name ID for name_string.
+
         If the name string is not present in the names list, return None.
         """
-
         for idx in range(len(self.names_list)):
             if self.names_list[idx] == name_string:
                 return idx
@@ -55,12 +57,15 @@ class Names:
 
     def lookup(self, name_string_list):
         """Return a list of name IDs for each name string in name_string_list.
+
         If the name string is not present in the names list, add it.
         """
         list_of_name_ids = []
         for name in name_string_list:
             if not isinstance(name, str):
-                raise TypeError(f"This element of name_string_list is {name}, but elements of name_string_list must be strings")
+                raise TypeError(
+                    f"This element of name_string_list is {name}, "
+                    "but elements of name_string_list must be strings")
             elif name in self.names_list:
                 list_of_name_ids.append(self.names_list.index(name))
             else:
@@ -71,6 +76,7 @@ class Names:
 
     def get_name_string(self, name_id):
         """Return the corresponding name string for name_id.
+
         If the name_id is not an index in the names list, return None.
         """
         if not isinstance(name_id, int):
@@ -78,8 +84,8 @@ class Names:
         elif name_id < 0:
             raise ValueError(f"name_id is {name_id}, but it must be positive")
         elif name_id > len(self.names_list):
-            raise ValueError(f"name_id is {name_id}, but it must be less than names_list length {len(self.names_list)}")
+            raise ValueError(
+                f"name_id is {name_id}, but it must be less than "
+                f"names_list length {len(self.names_list)}")
         else:
             return self.names_list[name_id]
-
-       
