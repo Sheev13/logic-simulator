@@ -346,7 +346,6 @@ class Parser:
             break
 
         self.strSymbol()
-        print("do we get here")
         return missing_semicolon, device_name
 
     def parse_device_kind(self):
