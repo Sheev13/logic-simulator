@@ -171,7 +171,6 @@ class Parser:
             self.setNext()
             return True
 
-        
         if self.symbol.id != self.scanner.MONITOR_ID and self.symbol.id != self.scanner.CONNECTIONS_ID:
             self.setNext()
 
@@ -314,11 +313,14 @@ class Parser:
             if self.symbol.id != self.scanner.SEMICOLON:
                 self.error("missing semicolon", [self.scanner.OPEN_CURLY])
                 missing_semicolon = True
+                print(self.strSymbol())
                 break
 
             self.setNext()
             break
-
+        
+        self.strSymbol()
+        print("do we get here")
         return missing_semicolon, device_name
 
     def parse_device_kind(self):
@@ -784,6 +786,7 @@ class Parser:
         while True:
             while self.symbol.id != self.scanner.SEMICOLON:
                 self.setNext()
+                self.strSymbol()
                 if self.isEof():
                     print("reached end of file without another semicolon")
                     self.end_of_file = True
@@ -791,6 +794,7 @@ class Parser:
             # found a semi colon, now need to check if the expected element
             # is next
             self.setNext()
+            self.strSymbol()
             if self.isEof():
                 print("reached end of file without finding expected symbol")
                 self.end_of_file = True
@@ -799,6 +803,7 @@ class Parser:
                     self.symbol.type in expect_next_list):
                 # found the character we want to keep parsing, therefore we
                 # resume in the parsing
+                self.strSymbol()  # necessary for unit testing of error recovery
                 break
 
     def isEof(self):

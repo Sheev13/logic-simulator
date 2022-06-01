@@ -1,0 +1,2 @@
+id: A missingsemicolon kind: SWITCH; qual: 0;};
+{id: G1; kind: NOR; qual: 2;};
