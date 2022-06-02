@@ -1,11 +1,13 @@
 
 
+
 DEVICES [
 
 {id: D1; kind: DTYPE;};
 {id: D2; kind: DTYPE; };
 {id: D3; kind: DTYPE; };
 {id: CLK1; kind: CLOCK; qual: 1;};
+
 
 {id: SW1; kind: SWITCH; qual: 0;};
 {id: SW2; kind: SWITCH; qual: 0;};
@@ -61,6 +63,7 @@ MONITORS [
     SW1;
     D3.Q;
     random;
+
 
 ]
 ;

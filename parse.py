@@ -928,6 +928,7 @@ class Parser:
     def set_next(self):
         """Shift current symbol to next."""
         self.symbol = self.scanner.get_symbol()
+
         if self.symbol.type == self.scanner.UNCLOSED:
 
             self.unclosed_comment = True
@@ -936,6 +937,7 @@ class Parser:
                 "'#' for your comment?",
                 [],
             )
+
 
 
     def get_symbol_string(self):
@@ -949,8 +951,10 @@ class Parser:
         """Print error message and recover from next semicolon."""
         self.error_count += 1
 
+
         caret_msg, line_num, col_num = self.scanner.show_error(self.symbol)
         
+
         # if len(expect_next_list) == 0:
         #     #for unclosed comments
         #     full_error_message = f"\nERROR on line {line_num} " \
@@ -984,8 +988,10 @@ class Parser:
             print(full_error_message)
             self.error_message_list.append(full_error_message)
 
+
         self.error_message_list.append(caret_msg)
         print(caret_msg)
+
         while True:
             while self.symbol.id != self.scanner.SEMICOLON:
                 self.set_next()
@@ -1021,12 +1027,16 @@ class Parser:
 
     def semantic_error(self, msg):
         """Print semantic error with message."""
+
         caret_msg, line_num, col_num = self.scanner.show_error(self.symbol)
+
 
         err = f"\nERROR on line {line_num} index {col_num}: " + msg
 
         print(err)
         self.error_message_list.append(err)
 
+
         print(caret_msg[:-2]) #if time try to store semantic error symbol
+
         self.error_count += 1
