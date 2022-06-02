@@ -1,3 +1,7 @@
 __pycache__/
 
 .vscode/
+
+ahgtest.txt
+
+.pytest_cache
