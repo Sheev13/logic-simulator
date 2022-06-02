@@ -32,6 +32,9 @@ class Symbol:
         self.line = None
 
 
+        self.comment_start = None
+
+
 class Scanner:
     """Read circuit definition file and translate the characters into symbols.
 

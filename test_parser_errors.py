@@ -564,3 +564,13 @@ class TestParserErrorRecovery:
 
         parser_obj.parse_device_id()
         assert spy_symbol_id.spy_return == expected_symbol_string
+
+
+def test_empty_file(capfd):
+    parser_obj = new_parser(f"test_files/empty_file_error_test.txt")
+
+    result = parser_obj.parse_network()
+    out, err = capfd.readouterr()
+    assert out == "ERROR: Empty definition file was loaded.\nCompletely " \
+                  "parsed the definition file. 1 error(s) found in total.\n"
+    assert not result
