@@ -44,7 +44,7 @@ class Parser:
         self.end_of_file = False
 
         self.symbol = None
-        self.unclosed_comment_at_start_of_file = False
+        self.unclosed_comment = False
 
         self.error_message_list = []
 
@@ -56,7 +56,7 @@ class Parser:
         self.setNext()
 
         if self.symbol.type == self.scanner.EOF and not \
-                self.unclosed_comment_at_start_of_file:
+                self.unclosed_comment:
             # this is when we get an empty file - we would like to show
             # an error
             # oh no are my tests going to screw up?
@@ -898,16 +898,12 @@ class Parser:
         """Shift current symbol to next."""
         self.symbol = self.scanner.get_symbol()
         if self.symbol.type == self.scanner.UNCLOSED:
-            self.unclosed_comment_at_start_of_file = True
+            self.unclosed_comment = True
             self.error(
                 "Unclosed Comment Found - did you want to use '/' instead of "
                 "'#' for your comment?",
                 [],
             )
-
-        # added to deal with unclosed comments
-        # if self.symbol.type == self.scanner.UNCLOSED:
-        #     self.symbol = self.scanner.get_symbol()
 
     def strSymbol(self):
         """More easily print current symbol string."""
@@ -932,7 +928,8 @@ class Parser:
 
 
         if self.symbol.type == self.scanner.EOF:
-            full_error_message = "ERROR: " + msg
+            full_error_message = f"\nERROR on line {line_num} " \
+                                 f"index {col_num}: " + msg
             print(full_error_message)
             self.error_message_list.append(full_error_message)
             self.end_of_file = True
