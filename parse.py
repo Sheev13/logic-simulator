@@ -85,6 +85,7 @@ class Parser:
         monitors_done = False
         self.set_next()
 
+
         if self.symbol.type == self.scanner.EOF and not \
                 self.unclosed_comment:
 
@@ -928,6 +929,14 @@ class Parser:
     def set_next(self):
         """Shift current symbol to next."""
         self.symbol = self.scanner.get_symbol()
+        if self.symbol.type == self.scanner.UNCLOSED:
+            self.error(
+                "Unclosed Comment Found - did you want to use '/' instead of "
+                "'#' for your comment?",
+                [
+                    self.scanner.EOF,
+                ],
+            )
         # added to deal with unclosed comments
         # if self.symbol.type == self.scanner.UNCLOSED:
         #     self.symbol = self.scanner.get_symbol()
@@ -1000,6 +1009,7 @@ class Parser:
 
         while True:
             while self.symbol.id != self.scanner.SEMICOLON:
+
                 self.set_next()
                 self.get_symbol_string()
                 if self._is_eof():
@@ -1007,15 +1017,18 @@ class Parser:
                               "semicolon - cannot perform error recovery"
                     print(message)
                     self.error_message_list.append(f"\n{message}")
+
                     self.end_of_file = True
                     break
             # found a semi colon, now need to check if the expected element
             # is next
+
             self.set_next()
             self.get_symbol_string()
             if self._is_eof():
                 # print("Reached end of file without finding expected symbol "
                 #       "for error recovery")
+
                 break
             if (
                 self.symbol.id in expect_next_list
@@ -1033,7 +1046,7 @@ class Parser:
 
     def semantic_error(self, msg):
         """Print semantic error with message."""
-
+        self.error_count += 1
         caret_msg, line_num, col_num = self.scanner.show_error(self.symbol)
 
 
@@ -1043,8 +1056,4 @@ class Parser:
         print(err)
         self.error_message_list.append(err)
 
-
-
         print(caret_msg[:-2]) #if time try to store semantic error symbol
-
-        self.error_count += 1
