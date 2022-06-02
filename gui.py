@@ -503,7 +503,6 @@ class Gui(wx.Frame):
         self.file_name_sizer.AddStretchSpacer()
         self.file_name_sizer.Add(self.browse, 0, wx.ALIGN_CENTER, 5)
 
-        self.monitors_help_sizer.Add(self.monitors_text, 0, wx.ALL, 5)
         self.devices_heading_sizer.Add(
             self.devices_heading,
             0,
@@ -512,17 +511,17 @@ class Gui(wx.Frame):
         )
         self.devices_heading_sizer.AddStretchSpacer()
 
-        self.monitors_help_sizer.Add(self.monitor_input, 0, wx.ALIGN_CENTER, 2)
+        self.monitors_help_sizer.Add(self.monitors_text, 0, wx.ALIGN_CENTER, 5)
+        self.monitors_help_sizer.Add(self.monitor_input, 0, wx.ALL, 5)
         self.monitors_help_sizer.AddStretchSpacer()
         self.monitors_help_sizer.Add(
             self.clear_all_monitors,
-            0,
+            1,
             wx.ALIGN_CENTER,
-            2
+            5
         )
-        self.monitors_help_sizer.AddStretchSpacer()
         self.monitors_help_sizer.Add(
-            self.monitors_help_text, 0, wx.ALIGN_CENTER, 2
+            self.monitors_help_text, 0, wx.ALIGN_CENTER, 5
         )
 
         self.cycles_sizer.Add(self.cycles_text, 0, wx.ALIGN_CENTER, 5)
