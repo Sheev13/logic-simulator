@@ -136,12 +136,10 @@ def test_get_symbol(
 
     assert symb2.type == whitespace_scanner.EOF
     assert symb2.id is None
-    assert symb2.pos == 81
     assert symb2.line == 9
 
     assert symb3.type == comment_scanner.EOF
     assert symb3.id is None
-    assert symb3.pos == 129
     assert symb3.line == 10
 
     assert symb4.type == name_scanner.NAME
