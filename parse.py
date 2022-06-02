@@ -928,6 +928,9 @@ class Parser:
     def set_next(self):
         """Shift current symbol to next."""
         self.symbol = self.scanner.get_symbol()
+        # added to deal with unclosed comments
+        # if self.symbol.type == self.scanner.UNCLOSED:
+        #     self.symbol = self.scanner.get_symbol()
 
         if self.symbol.type == self.scanner.UNCLOSED:
 
@@ -952,8 +955,10 @@ class Parser:
         self.error_count += 1
 
 
+
         caret_msg, line_num, col_num = self.scanner.show_error(self.symbol)
         
+
 
         # if len(expect_next_list) == 0:
         #     #for unclosed comments
@@ -987,6 +992,7 @@ class Parser:
                                   + msg + f", received {self.get_symbol_string()}"
             print(full_error_message)
             self.error_message_list.append(full_error_message)
+
 
 
         self.error_message_list.append(caret_msg)
@@ -1031,10 +1037,12 @@ class Parser:
         caret_msg, line_num, col_num = self.scanner.show_error(self.symbol)
 
 
+
         err = f"\nERROR on line {line_num} index {col_num}: " + msg
 
         print(err)
         self.error_message_list.append(err)
+
 
 
         print(caret_msg[:-2]) #if time try to store semantic error symbol
