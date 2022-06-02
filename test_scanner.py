@@ -105,6 +105,13 @@ def lfstart_symbol_scanner():
     return new_scanner(path)
 
 
+@pytest.fixture
+def unclosed_comment_scanner():
+    """Return a Scanner object for file with unclosed comment"""
+    path = dir + "unclosed_comment.txt"
+    return new_scanner(path)
+
+
 def test_get_symbol(
     empty_scanner,
     whitespace_scanner,
@@ -116,6 +123,7 @@ def test_get_symbol(
     invalid_number_scanner,
     punc_scanner,
     invalid_char_scanner,
+    unclosed_comment_scanner
 ):
     """Ensure scanner.get_symbol() behaves correctly on a range of scenarios"""
     symb1 = empty_scanner.get_symbol()
@@ -128,6 +136,7 @@ def test_get_symbol(
     symb8 = invalid_number_scanner.get_symbol()
     symb9 = punc_scanner.get_symbol()
     symb10 = invalid_char_scanner.get_symbol()
+    symb11 = unclosed_comment_scanner.get_symbol()
 
     assert symb1.type == empty_scanner.EOF
     assert symb1.id is None
@@ -173,6 +182,11 @@ def test_get_symbol(
     assert symb10.id is None
     assert symb10.pos == 1
     assert symb10.line == 1
+
+    assert symb11.type == unclosed_comment_scanner.UNCLOSED
+    assert symb11.id is None
+    assert symb11.pos == 7
+    assert symb11.line == 1
 
 
 def test_show_error(
