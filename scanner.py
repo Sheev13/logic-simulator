@@ -68,7 +68,8 @@ class Scanner:
             self.NAME,
             self.EOF,
             self.INVALID_CHAR,
-        ] = range(6)
+            self.UNCLOSED
+        ] = range(7)
 
         self.keywords = [
             "CIRCUIT",
@@ -179,6 +180,7 @@ class Scanner:
 
         Assumes current character is either # or /.
         Open comments denoted by / , closed comments by #...#
+        Return if closed comment has not been closed.
         """
         end = False
 
@@ -187,7 +189,7 @@ class Scanner:
             while self.current_char != "#":
                 if self.current_char == "":
                     end = True
-                    break
+                    return True
                 self._next()
             if not end:
                 self._next()
@@ -205,20 +207,28 @@ class Scanner:
         if self.current_char.isspace():
             self._next_non_ws()
 
+        return False
+
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
         sym = Symbol()
         inv = False
+        unclosed_comment = False
 
         if self.current_char.isspace():
             self._next_non_ws()
 
         # comment
         while self.current_char in ["#", "/"]:
-            self._skip_comment()
+            unclosed_comment = self._skip_comment()
+
+        if unclosed_comment:
+            sym.pos = self.f.tell()
+            sym.line = self.linecount
+            sym.type = self.UNCLOSED
 
         # name/keyword
-        if self.current_char.isalpha():
+        elif self.current_char.isalpha():
             name_string, inv = self._next_name(sym)
             if inv:
                 sym.type = self.INVALID_CHAR
