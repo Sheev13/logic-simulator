@@ -86,11 +86,6 @@ class Parser:
                         )
                         if self.isEof():
                             break
-<<<<<<< HEAD
-=======
-                        # error recovery should look for devices
-                        # maybe user put devices after connections accidentally?
->>>>>>> 4d6935747237417618f834cdbf357451dea3804d
 
             elif self.symbol.id == self.scanner.MONITOR_ID:
                 if monitors_done:
