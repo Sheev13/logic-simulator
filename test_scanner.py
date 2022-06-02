@@ -189,7 +189,7 @@ def test_show_error(
     assert linestart_symbol_scanner.show_error(symb2) == (
         "# this is a comment #\n                     ^\n;",
         1,
-        22,
+        21,
     )
     symb3 = lfstart_symbol_scanner.get_symbol()
     assert lfstart_symbol_scanner.show_error(symb3) == (
