@@ -1,4 +1,3 @@
 {
-  "test_scanner.py::test__open_file": true,
-  "test_scanner.py::test_show_error": true
+  "test_scanner.py::test__open_file": true
 }
