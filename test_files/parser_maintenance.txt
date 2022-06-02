@@ -1,22 +1,22 @@
+
 DEVICES [
 {id: D1; kind: DTYPE;};
 {id: D2; kind: DTYPE; };
 {id: D3; kind: DTYPE; };
 {id: CLK1; kind: CLOCK; qual: 1;};
 
-{id: CONNECTIONS; kind: SWITCH; qual: 0;};
+{id: SW1; kind: SWITCH; qual: 0;};
 {id: SW2; kind: SWITCH; qual: 0;};
 {id: SW3; kind: SWITCH; qual: 0;};
 
 {id: RESET; kind: SWITCH; qual: 0;};
 
-  
-{id: INV1; kind: BEBOP; qual: 2;};
-{id: GAND; kind: AND; qual: 22;};
-{id: GOR; kind: OR; qual: holaboo;};
+
+{id: INV1; kind: NAND; qual: 2;};
+{id: GAND; kind: AND; qual: 3;};
+{id: GOR; kind: OR; qual: 2;};
 {id: INV2; kind: NOR; qual: 2;};
 {id: INV3; kind: NAND; qual: 2;};
-
 
 
 ];
@@ -26,12 +26,10 @@ CONNECTIONS[
     D1.QBAR: D1.DATA;
     SW1 : D1.SET;
     INV3 : D1.CLEAR;
-    
     D2.QBAR: D2.DATA;
     D1.QBAR: D2.CLK;
     SW2: D2.SET;
     INV3 : D2.CLEAR;
-
     D3.QBAR: D3.DATA;
     D2.QBAR: D3.CLK;
     SW3: D3.SET;

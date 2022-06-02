@@ -45,13 +45,30 @@ class Parser:
 
         self.symbol = None
 
+        self.error_message_list = []
+
     def parse_network(self):
         """Parse the circuit definition file."""
         devices_done = False
         connections_done = False
         monitors_done = False
         self.setNext()
+        if self.symbol.type == self.scanner.EOF :
+            # this is when we get an empty file - we would like to show
+            # an error
+            # oh no are my tests going to screw up?
+
+            self.error("Empty definition file was loaded.", [self.scanner.EOF])
+
+            # print("ERROR: Empty Definition File was loaded.")
+            # self.error_count += 1
+            # print(
+            #     f"Completely parsed the definition file. {self.error_count} "
+            #     f"error(s) found in total."
+            # )
+            #return False
         while True:
+
             if self.symbol.id == self.scanner.DEVICES_ID:
                 if devices_done:
                     self.error(
@@ -170,11 +187,37 @@ class Parser:
                     self.error(
                         "invalid character encountered", [
                             self.scanner.OPEN_CURLY])
+                elif self.symbol.type == self.scanner.EOF:
+                    # reached end of file through error recovery in inner loop
+                    #break
+                    return
                 else:
-                    # unknown problem
-                    print("unknown error has occurred")
-                    self.error_count += 1
-                    break
+                    # problem is not getting { or ] - i.e. device is missing
+                    # opening curly bracket perhaps, try and look for { or ],
+                    # if not those then look for connections/monitors
+                    # if not those then EOF
+
+                    self.strSymbol()
+                    self.error("Invalid input to a DEVICES list. Devices "
+                               "should start with '{', or the list should "
+                               "end with ']' ",
+                               [self.scanner.OPEN_CURLY,
+                                self.scanner.CLOSE_SQUARE,
+                                self.scanner.CONNECTIONS_ID,
+                                self.scanner.MONITOR_ID,
+                                self.scanner.EOF])
+
+                    if self.symbol.id == self.scanner.CLOSE_SQUARE:
+                        break
+                    elif self.symbol.id == self.scanner.OPEN_CURLY:
+                        continue
+                    elif self.end_of_file:
+                        # TODO: need to check this
+                        return
+                    elif self.symbol.id == self.scanner.CONNECTIONS_ID or \
+                            self.symbol.id == self.scanner.MONITOR_ID:
+                        break
+
 
             if (
                 self.symbol.id == self.scanner.MONITOR_ID
@@ -400,7 +443,7 @@ class Parser:
             self.setNext()
             if self.symbol.type != self.scanner.NAME:
                 self.error(
-                    "bad type provided syntactically",
+                    "Device type must be at least alphanumeric",
                     [self.scanner.QUAL_KEYWORD_ID, self.scanner.CLOSE_CURLY],
                 )
                 break
@@ -510,6 +553,24 @@ class Parser:
                     self.error(
                         "invalid character encountered", [
                             self.scanner.NAME])
+                    # i think this should be different error recvoery?
+                    # did i write this code?
+                else:
+                    self.error("what have we got here",
+                               [self.scanner.NAME,
+                                self.scanner.CLOSE_SQUARE,
+                                self.scanner.MONITOR_ID,
+                                self.scanner.EOF
+                                ])
+                    if self.symbol.id == self.scanner.CLOSE_SQUARE:
+                        break
+                    elif self.symbol.type == self.scanner.NAME:
+                        continue
+                    elif self.end_of_file:
+                        # TODO: need to check this
+                        return
+                    elif self.symbol.id == self.scanner.MONITOR_ID:
+                        break
 
             if self.end_of_file:
                 break
@@ -826,6 +887,14 @@ class Parser:
     def setNext(self):
         """Shift current symbol to next."""
         self.symbol = self.scanner.get_symbol()
+        if self.symbol.type == self.scanner.UNCLOSED:
+            self.error(
+                "Unclosed Comment Found - did you want to use '/' instead of "
+                "'#' for your comment?",
+                [
+                    self.scanner.EOF,
+                ],
+            )
         # added to deal with unclosed comments
         # if self.symbol.type == self.scanner.UNCLOSED:
         #     self.symbol = self.scanner.get_symbol()
@@ -839,21 +908,37 @@ class Parser:
 
     def error(self, msg, expect_next_list):
         """Print error message and recover from next semicolon."""
+        self.error_count += 1
+
+        if self.symbol.type == self.scanner.EOF:
+            full_error_message = "ERROR: " + msg
+            print()
+            return
+
         self.end_of_file = False
         carat_msg, line_num, col_num = self.scanner.show_error(self.symbol)
-        print(
-            f"\nERROR on line {line_num} index {col_num}: "
-            + msg
-            + f", received {self.strSymbol()}"
-        )
+
+        received_symbol = self.strSymbol()
+        if received_symbol == "NONE":
+            print(
+                f"\nERROR on line {line_num} index {col_num}: "
+                + msg
+            )
+        else:
+            print(
+                f"\nERROR on line {line_num} index {col_num}: "
+                + msg
+                + f", received {self.strSymbol()}"
+                )
         print(carat_msg)
-        self.error_count += 1
         while True:
             while self.symbol.id != self.scanner.SEMICOLON:
                 self.setNext()
                 self.strSymbol()
                 if self.isEof():
-                    print("reached end of file without another semicolon")
+                    print("Reached end of file without finding another "
+                          "semicolon - "
+                          "cannot perform error recovery")
                     self.end_of_file = True
                     break
             # found a semi colon, now need to check if the expected element
@@ -861,7 +946,8 @@ class Parser:
             self.setNext()
             self.strSymbol()
             if self.isEof():
-                print("reached end of file without finding expected symbol")
+                # print("Reached end of file without finding expected symbol "
+                #       "for error recovery")
                 self.end_of_file = True
                 break
             if (
