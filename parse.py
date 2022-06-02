@@ -48,6 +48,7 @@ class Parser:
 
         self.error_message_list = []
 
+
     def parse_network(self):
         """Parse the circuit definition file."""
         devices_done = False
@@ -57,6 +58,7 @@ class Parser:
 
         if self.symbol.type == self.scanner.EOF and not \
                 self.unclosed_comment:
+
             # this is when we get an empty file - we would like to show
             # an error
             # oh no are my tests going to screw up?
@@ -898,12 +900,14 @@ class Parser:
         """Shift current symbol to next."""
         self.symbol = self.scanner.get_symbol()
         if self.symbol.type == self.scanner.UNCLOSED:
+
             self.unclosed_comment = True
             self.error(
                 "Unclosed Comment Found - did you want to use '/' instead of "
                 "'#' for your comment?",
                 [],
             )
+
 
     def strSymbol(self):
         """More easily print current symbol string."""
@@ -915,6 +919,7 @@ class Parser:
     def error(self, msg, expect_next_list):
         """Print error message and recover from next semicolon."""
         self.error_count += 1
+
         carat_msg, line_num, col_num = self.scanner.show_error(self.symbol)
 
         # if len(expect_next_list) == 0:
@@ -951,16 +956,19 @@ class Parser:
                                   + msg + f", received {self.strSymbol()}"
             print(full_error_message)
             self.error_message_list.append(full_error_message)
+
         print(carat_msg)
         while True:
             while self.symbol.id != self.scanner.SEMICOLON:
                 self.setNext()
                 self.strSymbol()
                 if self.isEof():
+
                     message = "Reached end of file without finding another " \
                               "semicolon - cannot perform error recovery"
                     print(message)
                     self.error_message_list.append(message)
+
                     self.end_of_file = True
                     break
             # found a semi colon, now need to check if the expected element
@@ -968,6 +976,9 @@ class Parser:
             self.setNext()
             self.strSymbol()
             if self.isEof():
+                # print("Reached end of file without finding expected symbol "
+                #       "for error recovery")
+
                 self.end_of_file = True
                 break
             if (
@@ -987,9 +998,11 @@ class Parser:
     def semantic_error(self, msg):
         """Print semantic error with message."""
         carat_msg, line_num, col_num = self.scanner.show_error(self.symbol)
+
         err = f"\nERROR on line {line_num} index {col_num}: " + msg
 
         print(err)
         self.error_message_list.append(err)
+
         print(carat_msg[:-2]) #if time try to store semantic error symbol
         self.error_count += 1

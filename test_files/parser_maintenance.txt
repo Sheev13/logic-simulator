@@ -1,5 +1,7 @@
 
-DEVICES # [
+
+DEVICES [
+
 {id: D1; kind: DTYPE;};
 {id: D2; kind: DTYPE; };
 {id: D3; kind: DTYPE; };
@@ -58,6 +60,7 @@ MONITORS [
     D2.Q;
     SW1;
     D3.Q;
+    random;
 
 ]
 ;
