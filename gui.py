@@ -178,7 +178,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     def traceColour(self, device_kind):
         """Colour code trace based on device kind."""
-        gate_strings = ["AND", "OR", "NAND", "NOR", "XOR"]
+        gate_strings = ["AND", "NOT", "OR", "NAND", "NOR", "XOR"]
         if self.names.get_name_string(device_kind) in gate_strings:
             return [0, 0, 1]
         if self.names.get_name_string(device_kind) == "CLOCK":
@@ -315,6 +315,7 @@ class Gui(wx.Frame):
         fileMenu = wx.Menu()
         userGuideMenu = wx.Menu()
         menuBar = wx.MenuBar()
+        fileMenu.Append(wx.ID_OPEN, "&Open")
         fileMenu.Append(wx.ID_ABOUT, "&About")
         fileMenu.Append(wx.ID_EXIT, "&Exit")
         userGuideMenu.Append(wx.ID_HELP_COMMANDS, "&Command Line Guide")
@@ -337,7 +338,6 @@ class Gui(wx.Frame):
 
         # Canvas for drawing signals
         self.scrollable = wx.ScrolledCanvas(self, wx.ID_ANY)
-        self.scrollable.ShowScrollbars(wx.SHOW_SB_ALWAYS, wx.SHOW_SB_DEFAULT)
         self.scrollable.SetScrollbars(20, 20, 15, 10)
         self.canvas = MyGLCanvas(
             self.scrollable, wx.Size(1500, 1000), devices, monitors, names
@@ -367,7 +367,7 @@ class Gui(wx.Frame):
             wx.ID_ANY,
             "",
             style=wx.TE_PROCESS_ENTER,
-            size=wx.Size(175, 25)
+            size=wx.Size(150, 25)
         )
         self.monitor_input.SetHint("Add new monitor")
         self.monitor_input.SetFont(inputBoxFont)
@@ -501,15 +501,16 @@ class Gui(wx.Frame):
         self.file_name_sizer.AddStretchSpacer()
         self.file_name_sizer.Add(self.browse, 0, wx.ALIGN_CENTER, 5)
 
+        self.monitors_help_sizer.Add(self.monitors_text, 0, wx.ALL, 5)
         self.monitors_help_sizer.Add(self.monitor_input, 0, wx.ALIGN_CENTER, 2)
-        self.file_name_sizer.AddStretchSpacer()
+        self.monitors_help_sizer.AddStretchSpacer()
         self.monitors_help_sizer.Add(
             self.clear_all_monitors,
             0,
             wx.ALIGN_CENTER,
             2
         )
-        self.file_name_sizer.AddStretchSpacer()
+        self.monitors_help_sizer.AddStretchSpacer()
         self.monitors_help_sizer.Add(
             self.monitors_help_text, 0, wx.ALIGN_CENTER, 2
         )
@@ -537,7 +538,7 @@ class Gui(wx.Frame):
             wx.EXPAND | wx.ALL,
             5
         )
-        self.manual_settings_sizer.Add(self.monitors_text, 0, wx.ALL, 5)
+        #self.manual_settings_sizer.Add(self.monitors_text, 0, wx.ALL, 5)
         self.manual_settings_sizer.Add(self.monitors_help_sizer, 0, wx.ALL, 5)
         self.manual_settings_sizer.Add(
             self.monitors_window,
@@ -569,6 +570,8 @@ class Gui(wx.Frame):
                 "Logic Simulator\nCreated by pp490, tnr22, jt741\n2022",
                 "About Logsim", wx.ICON_INFORMATION | wx.OK
             )
+        if Id == wx.ID_OPEN:
+            self.choose_file()
         if Id == wx.ID_HELP_COMMANDS:
             wx.MessageBox(
                 self.help_string,
@@ -590,6 +593,10 @@ class Gui(wx.Frame):
             )
 
     def on_browse(self, event):
+        """Handle event when user clicks browse button."""
+        self.choose_file()
+
+    def choose_file(self):
         """Handle the event when user wants to find circuit definition file."""
         openFileDialog = wx.FileDialog(
             self, "Open txt file", "", "",
