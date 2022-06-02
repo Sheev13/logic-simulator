@@ -54,39 +54,59 @@ class Parser:
         while True:
             if self.symbol.id == self.scanner.DEVICES_ID:
                 if devices_done:
-                    print("Warning - multiple device lists found")
-                self.parse_devices_list()
-                devices_done = True
+                    self.error(
+                        "Multiple device lists found.",
+                        [
+                            self.scanner.CONNECTIONS_ID,
+                            self.scanner.MONITOR_ID,
+                            self.scanner.EOF
+                        ],
+                    )
+                else:
+                    self.parse_devices_list()
+                    devices_done = True
 
             elif self.symbol.id == self.scanner.CONNECTIONS_ID:
                 if connections_done:
-                    print("Warning - multiple connections lists found")
-                if devices_done:
-                    self.parse_connections_list(self.error_count)
-                    connections_done = True
-                else:
                     self.error(
-                        "can't parse connections if not done devices",
-                        [self.scanner.DEVICES_ID],
+                        "Multiple connections lists found.",
+                        [
+                            self.scanner.MONITOR_ID,
+                            self.scanner.EOF
+                        ],
                     )
-                    if self.isEof():
-                        break
-                    # error recovery should look for devices
-                    # maybe user put devices after connections accidentally?
+                else:
+                    if devices_done:
+                        self.parse_connections_list(self.error_count)
+                        connections_done = True
+                    else:
+                        self.error(
+                            "can't parse connections if not done devices",
+                            [self.scanner.DEVICES_ID],
+                        )
+                        if self.isEof():
+                            break
 
             elif self.symbol.id == self.scanner.MONITOR_ID:
                 if monitors_done:
-                    print("Warning - multiple monitors lists found")
-                if devices_done:
-                    self.parse_monitors_list(self.error_count)
-                    monitors_done = True
-                else:
                     self.error(
-                        "can't parse monitors if not done devices",
-                        [self.scanner.DEVICES_ID],
+                        "Multiple monitors lists found.",
+                        [
+                            self.scanner.CONNECTIONS_ID,
+                            self.scanner.EOF
+                        ],
                     )
-                    if self.isEof():
-                        break
+                else:
+                    if devices_done:
+                        self.parse_monitors_list(self.error_count)
+                        monitors_done = True
+                    else:
+                        self.error(
+                            "can't parse monitors if not done devices",
+                            [self.scanner.DEVICES_ID],
+                        )
+                        if self.isEof():
+                            break
             elif self.isEof():
                 break
             else:
