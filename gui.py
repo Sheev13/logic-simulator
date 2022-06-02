@@ -586,8 +586,12 @@ class Gui(wx.Frame):
             self.choose_file(first=True)
             success = True
 
-    def updateCurrentConnections(self):
+    def updateCurrentConnections(self, first=False):
         """Updates current connections after user changes."""
+        if not first:
+            self.connections_spinner.Destroy()
+            self.delete_connection.Destroy()
+
         self.connections = {}
         for device in self.devices.devices_list:
             device_id = device.device_id
@@ -602,6 +606,35 @@ class Gui(wx.Frame):
                 input,
                 output
             ])
+
+        self.connections_spinner = wx.Choice(
+            self,
+            wx.ID_ANY,
+            choices=[cnxn[0] for cnxn in self.connections_info],
+            name="Current Connections"
+        )
+        self.connections_spinner.SetSelection(0)
+
+        self.delete_connection = gb.GradientButton(
+            self,
+            wx.ID_ANY,
+            label="Delete Connection"
+        )
+        delete_font = wx.Font(wx.FontInfo(10).FaceName("Rockwell"))
+        self.delete_connection.SetCursor(self.click)
+        self.delete_connection.SetFont(wx.Font(delete_font))
+
+        self.devices_heading_sizer.Add(
+            self.connections_spinner, 0, wx.ALL, 5
+        )
+        self.devices_heading_sizer.Add(
+            self.delete_connection,
+            1,
+            wx.ALIGN_CENTER,
+            5
+        )
+        self.delete_connection.Bind(wx.EVT_BUTTON, self.on_delete_connection)
+        self.Layout()
 
     def setFileTitle(self, path):
         """Display name of open file at top of screen."""
@@ -707,38 +740,7 @@ class Gui(wx.Frame):
         self.setFileTitle(self.path)
         self.cycles_completed = 0
 
-        if not first:
-            self.connections_spinner.Destroy()
-            self.delete_connection.Destroy()
-
-        self.updateCurrentConnections()
-        self.connections_spinner = wx.Choice(
-            self,
-            wx.ID_ANY,
-            choices=[cnxn[0] for cnxn in self.connections_info],
-            name="Current Connections"
-        )
-        self.connections_spinner.SetSelection(0)
-
-        self.delete_connection = gb.GradientButton(
-            self,
-            wx.ID_ANY,
-            label="Delete Connection"
-        )
-        delete_font = wx.Font(wx.FontInfo(10).FaceName("Rockwell"))
-        self.delete_connection.SetCursor(self.click)
-        self.delete_connection.SetFont(wx.Font(delete_font))
-
-        self.devices_heading_sizer.Add(
-            self.connections_spinner, 0, wx.ALL, 5
-        )
-        self.devices_heading_sizer.Add(
-            self.delete_connection,
-            1,
-            wx.ALIGN_CENTER,
-            5
-        )
-        self.delete_connection.Bind(wx.EVT_BUTTON, self.on_delete_connection)
+        self.updateCurrentConnections(first)
 
         # find new switches
         switches = self.devices.find_devices(self.names.query("SWITCH"))
@@ -928,7 +930,7 @@ class Gui(wx.Frame):
                 text = "Successfully made new connection"
                 self.canvas.render(text)
         newConnection.Destroy()
-        self.updateNewCircuit()
+        self.updateCurrentConnections()
 
     def on_spin_cycles(self, event):
         """Handle the event when the user changes the number of cycles."""
