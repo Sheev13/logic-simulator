@@ -183,16 +183,17 @@ class Scanner:
 
         Assumes current character is either # or /.
         Open comments denoted by / , closed comments by #...#
-        Return if closed comment has not been closed.
+        Return True and comment start pos if closed comment has not been closed.
         """
         end = False
 
         if self.current_char == "#":
+            start = self.f.tell()
             self._next()
             while self.current_char != "#":
                 if self.current_char == "":
                     end = True
-                    return True
+                    return True, start
                 self._next()
             if not end:
                 self._next()
@@ -210,7 +211,7 @@ class Scanner:
         if self.current_char.isspace():
             self._next_non_ws()
 
-        return False
+        return False, None
 
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
@@ -223,10 +224,10 @@ class Scanner:
 
         # comment
         while self.current_char in ["#", "/"]:
-            unclosed_comment = self._skip_comment()
+            unclosed_comment, unclosed_start = self._skip_comment()
 
         if unclosed_comment:
-            sym.pos = self.f.tell()
+            sym.pos = unclosed_start
             sym.line = self.linecount
             sym.type = self.UNCLOSED
 
