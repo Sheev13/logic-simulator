@@ -44,6 +44,7 @@ class Parser:
         self.end_of_file = False
 
         self.symbol = None
+        self.unclosed_comment_at_start_of_file = False
 
         self.error_message_list = []
 
@@ -53,7 +54,9 @@ class Parser:
         connections_done = False
         monitors_done = False
         self.setNext()
-        if self.symbol.type == self.scanner.EOF :
+
+        if self.symbol.type == self.scanner.EOF and not \
+                self.unclosed_comment_at_start_of_file:
             # this is when we get an empty file - we would like to show
             # an error
             # oh no are my tests going to screw up?
@@ -163,6 +166,13 @@ class Parser:
             self.setNext()
             parsing_devices = True
             while parsing_devices:
+                if self.end_of_file:
+                    break
+
+                if self.symbol.id == self.scanner.CLOSE_SQUARE:
+                    # if empty DEVICES list
+                    break
+
                 missing_semicolon = self.parse_device(self.error_count)
                 if missing_semicolon:
                     print(
@@ -888,13 +898,13 @@ class Parser:
         """Shift current symbol to next."""
         self.symbol = self.scanner.get_symbol()
         if self.symbol.type == self.scanner.UNCLOSED:
+            self.unclosed_comment_at_start_of_file = True
             self.error(
                 "Unclosed Comment Found - did you want to use '/' instead of "
                 "'#' for your comment?",
-                [
-                    self.scanner.EOF,
-                ],
+                [],
             )
+
         # added to deal with unclosed comments
         # if self.symbol.type == self.scanner.UNCLOSED:
         #     self.symbol = self.scanner.get_symbol()
@@ -909,36 +919,51 @@ class Parser:
     def error(self, msg, expect_next_list):
         """Print error message and recover from next semicolon."""
         self.error_count += 1
+        carat_msg, line_num, col_num = self.scanner.show_error(self.symbol)
+
+        # if len(expect_next_list) == 0:
+        #     #for unclosed comments
+        #     full_error_message = f"\nERROR on line {line_num} " \
+        #                          f"index {col_num}: " + msg
+        #
+        #     print(full_error_message)
+        #     self.error_message_list.append(full_error_message)
+        #     return
+
 
         if self.symbol.type == self.scanner.EOF:
             full_error_message = "ERROR: " + msg
-            print()
+            print(full_error_message)
+            self.error_message_list.append(full_error_message)
+            self.end_of_file = True
             return
 
         self.end_of_file = False
-        carat_msg, line_num, col_num = self.scanner.show_error(self.symbol)
+
 
         received_symbol = self.strSymbol()
-        if received_symbol == "NONE":
-            print(
-                f"\nERROR on line {line_num} index {col_num}: "
-                + msg
-            )
+        if received_symbol == "NONE":  #the case if not in names list
+            full_error_message = f"\nERROR on line {line_num} " \
+                                 f"index {col_num}: " + msg
+
+            print(full_error_message)
+            self.error_message_list.append(full_error_message)
         else:
-            print(
-                f"\nERROR on line {line_num} index {col_num}: "
-                + msg
-                + f", received {self.strSymbol()}"
-                )
+            full_error_message =  f"\nERROR on line {line_num} index " \
+                                  f"{col_num}:" \
+                                  + msg + f", received {self.strSymbol()}"
+            print(full_error_message)
+            self.error_message_list.append(full_error_message)
         print(carat_msg)
         while True:
             while self.symbol.id != self.scanner.SEMICOLON:
                 self.setNext()
                 self.strSymbol()
                 if self.isEof():
-                    print("Reached end of file without finding another "
-                          "semicolon - "
-                          "cannot perform error recovery")
+                    message = "Reached end of file without finding another " \
+                              "semicolon - cannot perform error recovery"
+                    print(message)
+                    self.error_message_list.append(message)
                     self.end_of_file = True
                     break
             # found a semi colon, now need to check if the expected element
@@ -946,8 +971,6 @@ class Parser:
             self.setNext()
             self.strSymbol()
             if self.isEof():
-                # print("Reached end of file without finding expected symbol "
-                #       "for error recovery")
                 self.end_of_file = True
                 break
             if (
@@ -967,9 +990,9 @@ class Parser:
     def semantic_error(self, msg):
         """Print semantic error with message."""
         carat_msg, line_num, col_num = self.scanner.show_error(self.symbol)
-        print(
-            f"\nERROR on line {line_num} index {col_num}: "
-            + msg
-        )
+        err = f"\nERROR on line {line_num} index {col_num}: " + msg
+
+        print(err)
+        self.error_message_list.append(err)
         print(carat_msg[:-2]) #if time try to store semantic error symbol
         self.error_count += 1
