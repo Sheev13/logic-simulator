@@ -269,7 +269,7 @@ def test_execute_not(new_network):
     """Test if execute_network returns the correct output for NOT gates."""
     network = new_network
     devices = network.devices
-    names= devices.names
+    names = devices.names
 
     [SW1_ID, NOT1_ID, I1] = names.lookup(
         ["Sw1", "Not1", "I1"])
