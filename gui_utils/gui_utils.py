@@ -61,3 +61,4 @@ sidebar_guide_string = "The sidebar can be used to set device properties " \
                             "simulation."\
 
 parse_error_string = "Unable to parse file. Old file will remain loaded."
+first_parse_error_string = "Unable to parse file. Please choose a valid circuit file."

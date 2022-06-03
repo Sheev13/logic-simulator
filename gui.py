@@ -305,6 +305,7 @@ class Gui(wx.Frame):
         self.canvas_control_string = canvas_control_string
         self.sidebar_guide_string = sidebar_guide_string
         self.parse_error_string = parse_error_string
+        self.first_parse_error_string = first_parse_error_string
         self.click = wx.Cursor(wx.Image("gui_utils/smallclick.png"))
         self.standard_button_size = wx.Size(85, 36)
 
@@ -550,7 +551,27 @@ class Gui(wx.Frame):
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
         self.Layout()
-        self.updateNewCircuit(first=True)
+
+        self.path = path
+
+        # If path is None, prompt user to choose a valid file
+        if self.path is None:
+            self.choose_file(first=True)
+            success = True
+
+        # Parse file given from command line
+        else:
+            scanner = Scanner(path, names)
+            parser = Parser(names, devices, network, monitors, scanner)
+            success = parser.parse_network()
+            if success:
+                self.updateNewCircuit(first=True)
+
+        if not success:
+            # Display errors from file given from command line
+            self.displayErrors(parser.error_message_list, first=True)
+            self.choose_file(first=True)
+            success = True
 
     def setFileTitle(self, path):
         """Display name of open file at top of screen."""
@@ -596,41 +617,60 @@ class Gui(wx.Frame):
         """Handle event when user clicks browse button."""
         self.choose_file()
 
-    def choose_file(self):
-        """Handle the event when user wants to find circuit definition file."""
+    def choose_file(self, first=False):
+        """Allow user to find circuit definition file."""
         openFileDialog = wx.FileDialog(
             self, "Open txt file", "", "",
             wildcard="TXT files (*.txt)|*.txt",
             style=wx.FD_OPEN+wx.FD_FILE_MUST_EXIST
         )
         if openFileDialog.ShowModal() == wx.ID_CANCEL:
-            return
-        path = openFileDialog.GetPath()
+            if not first:
+                return
+            else:
+                # if this is the first time, must keep prompting
+                # until valid file is received
+                wx.MessageBox(
+                    "Must select a file to load GUI.",
+                    "Please select a valid circuit file.",
+                    wx.ICON_INFORMATION | wx.OK
+                )
+                self.choose_file(first)
+        
+        self.path = openFileDialog.GetPath()
         names = Names()
         devices = Devices(names)
         network = Network(names, devices)
         monitors = Monitors(names, devices, network)
-        scanner = Scanner(path, names)
+        scanner = Scanner(self.path, names)
         parser = Parser(names, devices, network, monitors, scanner)
         success = parser.parse_network()
         if success:
-            self.path = path
             self.names = names
             self.devices = devices
             self.network = network
             self.monitors = monitors
-            self.updateNewCircuit()
+            self.updateNewCircuit(first)
         else:
-            errors = ""
-            for error in parser.error_message_list[:-1]:
-                errors += f"\n{error}"
-            wx.MessageBox(
-                f"{errors} \n \n {self.parse_error_string}",
-                parser.error_message_list[-1],
-                wx.ICON_INFORMATION | wx.OK
-            )
+            self.displayErrors(parser.error_message_list, first)
+            if first:
+                self.choose_file(first)
 
         self.Layout()
+
+    def displayErrors(self, error_message_list, first=False):
+        errors = ""
+        for error in error_message_list[:-1]:
+            errors += f"\n{error}"
+        if first:
+            message = f"{errors} \n \n {self.first_parse_error_string}"
+        else:
+            message = f"{errors} \n \n {self.parse_error_string}"
+        wx.MessageBox(
+            message,
+            error_message_list[-1],
+            wx.ICON_INFORMATION | wx.OK
+        )
 
     def updateNewCircuit(self, first=False):
         """Configure widgets for new circuit and bind events."""
