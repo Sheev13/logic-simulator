@@ -335,6 +335,7 @@ class Gui(wx.Frame):
         self.subHeadingFont = wx.Font(wx.FontInfo(12).FaceName("Mono"))
         inputBoxFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL)
         go_font = wx.Font(wx.FontInfo(14).FaceName("Rockwell"))
+        self.delete_font = wx.Font(wx.FontInfo(10).FaceName("Rockwell"))
 
         # Canvas for drawing signals
         self.scrollable = wx.ScrolledCanvas(self, wx.ID_ANY)
@@ -388,10 +389,7 @@ class Gui(wx.Frame):
         self.run_button = gb.GradientButton(self, wx.ID_ANY, label="Run")
         self.run_button.SetCursor(self.click)
         self.run_button.SetFont(wx.Font(go_font))
-        self.run_button.SetTopStartColour(darkgreen)
-        self.run_button.SetTopEndColour(midgreen)
-        self.run_button.SetBottomStartColour(midgreen)
-        self.run_button.SetBottomEndColour(darkgreen)
+        self.changeButtonColours(self.run_button, darkgreen, midgreen)
 
         self.continue_button = gb.GradientButton(
             self,
@@ -399,10 +397,7 @@ class Gui(wx.Frame):
             label="Continue"
         )
         self.continue_button.SetFont(wx.Font(go_font))
-        self.continue_button.SetTopStartColour(darkpurple)
-        self.continue_button.SetTopEndColour(lightpurple)
-        self.continue_button.SetBottomStartColour(lightpurple)
-        self.continue_button.SetBottomEndColour(darkpurple)
+        self.changeButtonColours(self.continue_button, darkpurple, lightpurple)
         self.continue_button.SetCursor(self.click)
 
         self.clear_button = gb.GradientButton(
@@ -565,8 +560,153 @@ class Gui(wx.Frame):
         self.Layout()
         self.updateNewCircuit(first=True)
 
+    def updateNewCircuit(self, first=False):
+        """Configure widgets for new circuit and bind events."""
+        self.setFileTitle(self.path)
+        self.cycles_completed = 0
+
+        self.updateCurrentConnections(first)
+
+        # find new switches
+        switches = self.devices.find_devices(self.names.query("SWITCH"))
+        if len(switches) > 0:
+            self.switches_text.SetLabel("Switches (toggle on/off):")
+        else:
+            self.switches_text.SetLabel("No switches in this circuit.")
+
+        if not first:
+            # destroy current switch buttons
+            for switch in [pair[0] for pair in self.switch_buttons.values()]:
+                switch.Destroy()
+
+            # destroy current device list in sidebars
+            for button in self.device_buttons:
+                button.Destroy()
+
+            # destroy current monitor buttons
+            for monitor in self.monitor_buttons.values():
+                monitor.Destroy()
+
+        # add new switches
+        self.switch_buttons = {}
+        for s in switches:
+            name = self.names.get_name_string(s)
+            state = self.devices.get_device(s).switch_state
+            shortName = self.shorten(name)
+            button = gb.GradientButton(
+                self.switches_window,
+                s,
+                label=shortName,
+                size=self.standard_button_size
+            )
+            button.SetToolTip(name)
+            button.SetCursor(self.click)
+            if state == 0:
+                self.changeButtonColours(button, darkred, red)
+            else:
+                self.changeButtonColours(button, blue, lightblue)
+            self.switch_buttons[name] = [button, state]
+
+        # bind switch buttons to event
+        for switch in [pair[0] for pair in self.switch_buttons.values()]:
+            switch.Bind(wx.EVT_BUTTON, self.on_switch_button)
+
+        # add switches to sizer
+        for switch in [pair[0] for pair in self.switch_buttons.values()]:
+            self.switch_buttons_sizer.Add(
+                switch, 1, wx.ALL, 9
+            )
+
+        # find new devices
+        self.device_descs = []
+        for gate_type in self.devices.gate_types:
+            gates = self.devices.find_devices(gate_type)
+            for gateId in gates:
+                gate = self.devices.get_device(gateId)
+                label = self.shorten(
+                    self.names.get_name_string(gate.device_id)
+                )
+                extra = f": {str(len(gate.inputs.keys()))} inputs"
+                self.device_descs.append([gateId, label, extra])
+
+        for dev_type in self.devices.device_types:
+            other_devices = self.devices.find_devices(dev_type)
+            for id in other_devices:
+                d = self.devices.get_device(id)
+                label = self.shorten(self.names.get_name_string(d.device_id))
+                kind = self.names.get_name_string(d.device_kind)
+                extra = ""
+                if kind == "CLOCK":
+                    extra = f": half-period {d.clock_half_period}"
+                self.device_descs.append([id, label, extra])
+
+        # add new devices to displayed list
+        self.device_buttons = []
+        for d in self.device_descs:
+            [id, label, extra] = d
+            device_button = gb.GradientButton(
+                self.devices_window,
+                id,
+                label=self.shorten(f"{label}{extra}"),
+                size=self.standard_button_size
+            )
+            c = wx.Cursor(wx.Image('gui_utils/smallinfo.png'))
+            device_button.SetCursor(c)
+            kindId = self.devices.get_device(id).device_kind
+            kindLabel = self.names.get_name_string(kindId)
+            device_button.SetToolTip(f"{label}, {kindLabel}{extra}")
+            device_button.SetTopStartColour(self.getDeviceColour(kindId)[0])
+            device_button.SetBottomEndColour(self.getDeviceColour(kindId)[0])
+            device_button.Bind(
+                wx.EVT_ENTER_WINDOW,
+                self.on_enter_device_button
+            )
+
+            self.device_buttons.append(device_button)
+
+        # add new device list to sizer
+        for device in self.device_buttons:
+            self.devices_sizer.Add(device, 1, wx.ALL, 9)
+
+        # add new monitor buttons
+        self.monitor_buttons = {}
+        self.current_monitors = self.monitors.get_signal_names()[0]
+        for curr in self.current_monitors:
+            currId = self.names.lookup([curr])[0]
+            button = gb.GradientButton(
+                self.monitors_window,
+                currId,
+                label=curr,
+                size=self.standard_button_size
+            )
+            self.changeButtonColours(button, blue, lightblue)
+            button.SetCursor(self.click)
+            self.monitor_buttons[curr] = button
+
+        # bind monitor buttons to event
+        for name in self.monitor_buttons.keys():
+            self.monitor_buttons[name].Bind(
+                wx.EVT_BUTTON, self.on_monitor_button
+            )
+
+        # add new monitor buttons to sizer
+        for mon in self.monitor_buttons.values():
+            self.monitor_buttons_sizer.Add(mon, 1, wx.ALL, 9)
+
+        text = "New circuit loaded."
+
+        self.canvas.monitors = self.monitors
+        self.canvas.devices = self.devices
+        self.canvas.names = self.names
+
+        if not first:
+            self.canvas.render(text)
+        self.Layout()
+
     def updateCurrentConnections(self, first=False):
         """Updates current connections after user changes."""
+        # If this is not the first time a circuit is loaded,
+        # must destroy the existing widgets for connections
         if not first:
             self.connections_spinner.Destroy()
             self.delete_connection.Destroy()
@@ -599,9 +739,9 @@ class Gui(wx.Frame):
             wx.ID_ANY,
             label="Delete Connection"
         )
-        delete_font = wx.Font(wx.FontInfo(10).FaceName("Rockwell"))
+
         self.delete_connection.SetCursor(self.click)
-        self.delete_connection.SetFont(wx.Font(delete_font))
+        self.delete_connection.SetFont(wx.Font(self.delete_font))
 
         self.devices_heading_sizer.Add(
             self.connections_spinner, 0, wx.ALL, 5
@@ -690,158 +830,6 @@ class Gui(wx.Frame):
             )
         self.Layout()
 
-    def updateNewCircuit(self, first=False):
-        """Configure widgets for new circuit and bind events."""
-        self.setFileTitle(self.path)
-        self.cycles_completed = 0
-
-        self.updateCurrentConnections(first)
-
-        # find new switches
-        switches = self.devices.find_devices(self.names.query("SWITCH"))
-        if len(switches) > 0:
-            self.switches_text.SetLabel("Switches (toggle on/off):")
-        else:
-            self.switches_text.SetLabel("No switches in this circuit.")
-
-        if not first:
-            # destroy current switch buttons
-            for switch in [pair[0] for pair in self.switch_buttons.values()]:
-                switch.Destroy()
-
-            # destroy current device list in sidebars
-            for button in self.device_buttons:
-                button.Destroy()
-
-            # destroy current monitor buttons
-            for monitor in self.monitor_buttons.values():
-                monitor.Destroy()
-
-        # add new switches
-        self.switch_buttons = {}
-        for s in switches:
-            name = self.names.get_name_string(s)
-            state = self.devices.get_device(s).switch_state
-            shortName = self.shorten(name)
-            button = gb.GradientButton(
-                self.switches_window,
-                s,
-                label=shortName,
-                size=self.standard_button_size
-            )
-            button.SetToolTip(name)
-            button.SetCursor(self.click)
-            if state == 0:
-                button.SetTopStartColour(darkred)
-                button.SetTopEndColour(red)
-                button.SetBottomStartColour(red)
-                button.SetBottomEndColour(darkred)
-            else:
-                button.SetTopStartColour(blue)
-                button.SetTopEndColour(lightblue)
-                button.SetBottomStartColour(lightblue)
-                button.SetBottomEndColour(blue)
-            self.switch_buttons[name] = [button, state]
-
-        # bind switch buttons to event
-        for switch in [pair[0] for pair in self.switch_buttons.values()]:
-            switch.Bind(wx.EVT_BUTTON, self.on_switch_button)
-
-        # add switches to sizer
-        for switch in [pair[0] for pair in self.switch_buttons.values()]:
-            self.switch_buttons_sizer.Add(
-                switch, 1, wx.ALL, 9
-            )
-
-        # find new devices
-        self.device_descs = []
-        for gate_type in self.devices.gate_types:
-            gates = self.devices.find_devices(gate_type)
-            for gateId in gates:
-                gate = self.devices.get_device(gateId)
-                label = self.shorten(
-                    self.names.get_name_string(gate.device_id)
-                )
-                extra = f": {str(len(gate.inputs.keys()))} inputs"
-                self.device_descs.append([gateId, label, extra])
-
-        for dev_type in self.devices.device_types:
-            other_devices = self.devices.find_devices(dev_type)
-            for id in other_devices:
-                d = self.devices.get_device(id)
-                label = self.shorten(self.names.get_name_string(d.device_id))
-                kind = self.names.get_name_string(d.device_kind)
-                extra = ""
-                if kind == "CLOCK":
-                    extra = f": half-period {d.clock_half_period}"
-                self.device_descs.append([id, label, extra])
-
-        # add new devices to displayed list
-        self.device_buttons = []
-        for d in self.device_descs:
-            [id, label, extra] = d
-            device_button = gb.GradientButton(
-                self.devices_window,
-                id,
-                label=self.shorten(f"{label}{extra}"),
-                size=self.standard_button_size
-            )
-            c = wx.Cursor(wx.Image('gui_utils/smallinfo.png'))
-            device_button.SetCursor(c)
-            kindId = self.devices.get_device(id).device_kind
-            kindLabel = self.names.get_name_string(kindId)
-            device_button.SetToolTip(f"{label}, {kindLabel}{extra}")
-            device_button.SetTopStartColour(self.getDeviceColour(kindId)[0])
-            device_button.SetBottomEndColour(self.getDeviceColour(kindId)[0])
-            device_button.Bind(
-                wx.EVT_ENTER_WINDOW,
-                self.on_enter_device_button
-            )
-
-            self.device_buttons.append(device_button)
-
-        # add new device list to sizer
-        for device in self.device_buttons:
-            self.devices_sizer.Add(device, 1, wx.ALL, 9)
-
-        # add new monitor buttons
-        self.monitor_buttons = {}
-        self.current_monitors = self.monitors.get_signal_names()[0]
-        for curr in self.current_monitors:
-            currId = self.names.lookup([curr])[0]
-            button = gb.GradientButton(
-                self.monitors_window,
-                currId,
-                label=curr,
-                size=self.standard_button_size
-            )
-            button.SetTopStartColour(blue)
-            button.SetTopEndColour(lightblue)
-            button.SetBottomStartColour(lightblue)
-            button.SetBottomEndColour(blue)
-            button.SetCursor(self.click)
-            self.monitor_buttons[curr] = button
-
-        # bind monitor buttons to event
-        for name in self.monitor_buttons.keys():
-            self.monitor_buttons[name].Bind(
-                wx.EVT_BUTTON, self.on_monitor_button
-            )
-
-        # add new monitor buttons to sizer
-        for mon in self.monitor_buttons.values():
-            self.monitor_buttons_sizer.Add(mon, 1, wx.ALL, 9)
-
-        text = "New circuit loaded."
-
-        self.canvas.monitors = self.monitors
-        self.canvas.devices = self.devices
-        self.canvas.names = self.names
-
-        if not first:
-            self.canvas.render(text)
-        self.Layout()
-
     def on_delete_connection(self, event):
         """Handles event when user presses delete connection."""
         connectionIndex = self.connections_spinner.GetSelection()
@@ -878,7 +866,7 @@ class Gui(wx.Frame):
                 "You must select a new connection for this input.",
                 "Error - Connection Needed", wx.ICON_ERROR
             )
-            
+
         if newConnection.ShowModal() == wx.ID_OK:
             choice = newConnection.GetSelection()
             (dev, port) = allOutputIds[choice]
@@ -958,16 +946,10 @@ class Gui(wx.Frame):
         switchName = self.names.get_name_string(switchId)
 
         if self.switch_buttons[switchName][1] == 1:
-            button.SetTopStartColour(darkred)
-            button.SetTopEndColour(red)
-            button.SetBottomStartColour(red)
-            button.SetBottomEndColour(darkred)
+            self.changeButtonColours(button, darkred, red)
             self.switch_buttons[switchName][1] = 0
         else:
-            button.SetTopStartColour(blue)
-            button.SetTopEndColour(lightblue)
-            button.SetBottomStartColour(lightblue)
-            button.SetBottomEndColour(blue)
+            self.changeButtonColours(button, blue, lightblue)
             self.switch_buttons[switchName][1] = 1
         newStatus = self.switch_buttons[switchName][1]
         self.devices.set_switch(switchId, newStatus)
@@ -1073,15 +1055,9 @@ class Gui(wx.Frame):
         self.switch_buttons[switchName][1] = status
 
         if status == 0:
-            button.SetTopStartColour(darkred)
-            button.SetTopEndColour(red)
-            button.SetBottomStartColour(red)
-            button.SetBottomEndColour(darkred)
+            self.changeButtonColours(button, darkred, red)
         else:
-            button.SetTopStartColour(blue)
-            button.SetTopEndColour(lightblue)
-            button.SetBottomStartColour(lightblue)
-            button.SetBottomEndColour(blue)
+            self.changeButtonColours(button, blue, lightblue)
         self.Layout()
 
     def on_command_line_add_monitor(self, deviceId, portId):
@@ -1150,10 +1126,7 @@ class Gui(wx.Frame):
             label=shortName,
             size=self.standard_button_size
         )
-        newButton.SetTopStartColour(blue)
-        newButton.SetTopEndColour(lightblue)
-        newButton.SetBottomStartColour(lightblue)
-        newButton.SetBottomEndColour(blue)
+        self.changeButtonColours(newButton, blue, lightblue)
         newButton.Bind(wx.EVT_BUTTON, self.on_monitor_button)
         newButton.SetToolTip(name)
         newButton.SetCursor(self.click)
@@ -1183,3 +1156,9 @@ class Gui(wx.Frame):
             return [darkpink, lightpink]
         else:
             return white
+
+    def changeButtonColours(self, button, outer, inner):
+        button.SetTopStartColour(outer)
+        button.SetTopEndColour(inner)
+        button.SetBottomStartColour(inner)
+        button.SetBottomEndColour(outer)
