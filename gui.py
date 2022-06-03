@@ -612,7 +612,8 @@ class Gui(wx.Frame):
         monitors = Monitors(names, devices, network)
         scanner = Scanner(path, names)
         parser = Parser(names, devices, network, monitors, scanner)
-        if parser.parse_network():
+        success = parser.parse_network()
+        if success:
             self.path = path
             self.names = names
             self.devices = devices
@@ -620,11 +621,15 @@ class Gui(wx.Frame):
             self.monitors = monitors
             self.updateNewCircuit()
         else:
+            errors = ""
+            for error in parser.error_message_list[:-1]:
+                errors += f"\n{error}"
             wx.MessageBox(
-                self.parse_error_string,
-                "Unable to parse file.",
+                f"{errors} \n \n {self.parse_error_string}",
+                parser.error_message_list[-1],
                 wx.ICON_INFORMATION | wx.OK
             )
+
         self.Layout()
 
     def updateNewCircuit(self, first=False):

@@ -144,9 +144,10 @@ class Parser:
                 if self.isEof():
                     break
 
+        final_error_count = f"{self.error_count} error(s) found"
+        self.error_message_list.append(final_error_count)
         print(
-            f"Completely parsed the definition file. {self.error_count} "
-            f"error(s) found in total."
+            f"Completely parsed the definition file. {final_error_count} in total."
         )
         if self.error_count == 0:  # syn + sem errors = 0
             return True
@@ -952,7 +953,7 @@ class Parser:
             self.error_message_list.append(full_error_message)
         else:
             full_error_message =  f"\nERROR on line {line_num} index " \
-                                  f"{col_num}:" \
+                                  f"{col_num}: " \
                                   + msg + f", received {self.strSymbol()}"
             print(full_error_message)
             self.error_message_list.append(full_error_message)
@@ -967,7 +968,7 @@ class Parser:
                     message = "Reached end of file without finding another " \
                               "semicolon - cannot perform error recovery"
                     print(message)
-                    self.error_message_list.append(message)
+                    self.error_message_list.append(f"\n{message}")
 
                     self.end_of_file = True
                     break
