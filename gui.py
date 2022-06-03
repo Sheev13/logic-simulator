@@ -872,6 +872,13 @@ class Gui(wx.Frame):
             style=wx.CHOICEDLG_STYLE
         )
         newConnection.SetBackgroundColour(paleyellow)
+
+        while newConnection.ShowModal() == wx.ID_CANCEL:
+            wx.MessageBox(
+                "You must select a new connection for this input.",
+                "Error - Connection Needed", wx.ICON_ERROR
+            )
+            
         if newConnection.ShowModal() == wx.ID_OK:
             choice = newConnection.GetSelection()
             (dev, port) = allOutputIds[choice]
