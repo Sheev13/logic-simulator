@@ -66,8 +66,8 @@ class Network:
         self.devices = devices
 
         [self.NO_ERROR, self.INPUT_TO_INPUT, self.OUTPUT_TO_OUTPUT,
-         self.INPUT_CONNECTED, self.PORT_ABSENT,
-         self.DEVICE_ABSENT] = self.names.unique_error_codes(6)
+         self.INPUT_CONNECTED, self.PORT_ABSENT, self.CONNECTION_ABSENT,
+         self.DEVICE_ABSENT] = self.names.unique_error_codes(7)
         self.steady_state = True  # for checking if signals have settled
 
     def get_connected_output(self, device_id, input_id):
@@ -150,6 +150,30 @@ class Network:
                 error_type = self.PORT_ABSENT
 
         else:  # first_port_id not a valid input or output port
+            error_type = self.PORT_ABSENT
+
+        return error_type
+
+    def delete_connection(self, input_device_id, input_port_id):
+        """Delete a connection.
+
+        Return self.NO_ERROR if successful, or the corresponding error if not.
+        """
+        input_device = self.devices.get_device(input_device_id)
+
+        if input_device is None:
+            error_type = self.DEVICE_ABSENT
+
+        elif input_port_id in input_device.inputs:
+            if input_device.inputs[input_port_id] is None:
+                # Input is not in a connection
+                error_type = self.CONNECTION_ABSENT
+            else:
+                # Delete connection
+                input_device.inputs[input_port_id] = None
+                error_type = self.NO_ERROR
+
+        else:
             error_type = self.PORT_ABSENT
 
         return error_type

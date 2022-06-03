@@ -312,9 +312,9 @@ class Gui(wx.Frame):
         super().__init__(parent=None, title=title, size=(800, 600))
 
         # Configure the file menu
+        menuBar = wx.MenuBar()
         fileMenu = wx.Menu()
         userGuideMenu = wx.Menu()
-        menuBar = wx.MenuBar()
         fileMenu.Append(wx.ID_OPEN, "&Open")
         fileMenu.Append(wx.ID_ABOUT, "&About")
         fileMenu.Append(wx.ID_EXIT, "&Exit")
@@ -358,6 +358,7 @@ class Gui(wx.Frame):
 
         self.devices_heading = wx.StaticText(self, wx.ID_ANY, "Devices:")
         self.devices_heading.SetFont(self.subHeadingFont)
+
         self.device_buttons = []
 
         self.monitors_text = wx.StaticText(self, wx.ID_ANY, "Monitors:")
@@ -482,6 +483,7 @@ class Gui(wx.Frame):
         self.monitors_window.SetScrollRate(10, 10)
         self.monitors_window.SetAutoLayout(True)
 
+        self.devices_heading_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.monitors_help_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.cycles_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.command_line_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -501,18 +503,25 @@ class Gui(wx.Frame):
         self.file_name_sizer.AddStretchSpacer()
         self.file_name_sizer.Add(self.browse, 0, wx.ALIGN_CENTER, 5)
 
-        self.monitors_help_sizer.Add(self.monitors_text, 0, wx.ALL, 5)
-        self.monitors_help_sizer.Add(self.monitor_input, 0, wx.ALIGN_CENTER, 2)
+        self.devices_heading_sizer.Add(
+            self.devices_heading,
+            0,
+            wx.ALIGN_CENTER,
+            5
+        )
+        self.devices_heading_sizer.AddStretchSpacer()
+
+        self.monitors_help_sizer.Add(self.monitors_text, 0, wx.ALIGN_CENTER, 5)
+        self.monitors_help_sizer.Add(self.monitor_input, 0, wx.ALL, 5)
         self.monitors_help_sizer.AddStretchSpacer()
         self.monitors_help_sizer.Add(
             self.clear_all_monitors,
-            0,
+            1,
             wx.ALIGN_CENTER,
-            2
+            5
         )
-        self.monitors_help_sizer.AddStretchSpacer()
         self.monitors_help_sizer.Add(
-            self.monitors_help_text, 0, wx.ALIGN_CENTER, 2
+            self.monitors_help_text, 0, wx.ALIGN_CENTER, 5
         )
 
         self.cycles_sizer.Add(self.cycles_text, 0, wx.ALIGN_CENTER, 5)
@@ -524,7 +533,12 @@ class Gui(wx.Frame):
 
         self.command_line_sizer.Add(self.command_line_input, 1, wx.ALL, 5)
 
-        self.manual_settings_sizer.Add(self.devices_heading, 0, wx.ALL, 5)
+        self.manual_settings_sizer.Add(
+            self.devices_heading_sizer,
+            0,
+            wx.ALL,
+            5
+        )
         self.manual_settings_sizer.Add(
             self.devices_window,
             1,
@@ -538,7 +552,6 @@ class Gui(wx.Frame):
             wx.EXPAND | wx.ALL,
             5
         )
-        #self.manual_settings_sizer.Add(self.monitors_text, 0, wx.ALL, 5)
         self.manual_settings_sizer.Add(self.monitors_help_sizer, 0, wx.ALL, 5)
         self.manual_settings_sizer.Add(
             self.monitors_window,
@@ -551,6 +564,56 @@ class Gui(wx.Frame):
         self.SetSizer(main_sizer)
         self.Layout()
         self.updateNewCircuit(first=True)
+
+    def updateCurrentConnections(self, first=False):
+        """Updates current connections after user changes."""
+        if not first:
+            self.connections_spinner.Destroy()
+            self.delete_connection.Destroy()
+
+        self.connections = {}
+        for device in self.devices.devices_list:
+            device_id = device.device_id
+            for input in device.inputs.keys():
+                self.connections[(device_id, input)] = device.inputs[input]
+        self.connections_info = []
+        for input, output in self.connections.items():
+            inputName = self.getSignalName(input[0], input[1])
+            outputName = self.getSignalName(output[0], output[1])
+            self.connections_info.append([
+                f"{outputName} to {inputName}",
+                input,
+                output
+            ])
+
+        self.connections_spinner = wx.Choice(
+            self,
+            wx.ID_ANY,
+            choices=[cnxn[0] for cnxn in self.connections_info],
+            name="Current Connections"
+        )
+        self.connections_spinner.SetSelection(0)
+
+        self.delete_connection = gb.GradientButton(
+            self,
+            wx.ID_ANY,
+            label="Delete Connection"
+        )
+        delete_font = wx.Font(wx.FontInfo(10).FaceName("Rockwell"))
+        self.delete_connection.SetCursor(self.click)
+        self.delete_connection.SetFont(wx.Font(delete_font))
+
+        self.devices_heading_sizer.Add(
+            self.connections_spinner, 0, wx.ALL, 5
+        )
+        self.devices_heading_sizer.Add(
+            self.delete_connection,
+            1,
+            wx.ALIGN_CENTER,
+            5
+        )
+        self.delete_connection.Bind(wx.EVT_BUTTON, self.on_delete_connection)
+        self.Layout()
 
     def setFileTitle(self, path):
         """Display name of open file at top of screen."""
@@ -631,6 +694,8 @@ class Gui(wx.Frame):
         """Configure widgets for new circuit and bind events."""
         self.setFileTitle(self.path)
         self.cycles_completed = 0
+
+        self.updateCurrentConnections(first)
 
         # find new switches
         switches = self.devices.find_devices(self.names.query("SWITCH"))
@@ -777,6 +842,58 @@ class Gui(wx.Frame):
             self.canvas.render(text)
         self.Layout()
 
+    def on_delete_connection(self, event):
+        """Handles event when user presses delete connection."""
+        connectionIndex = self.connections_spinner.GetSelection()
+        [inputIds, outputIds] = self.connections_info[connectionIndex][1:3]
+        input_device_id = inputIds[0]
+        input_port_id = inputIds[1]
+        self.network.delete_connection(input_device_id, input_port_id)
+
+        print(
+            f"Deleted connection from "
+            f"{self.connections_info[connectionIndex][0]}"
+        )
+
+        allOutputNames = []
+        allOutputIds = []
+
+        for i in [(d.device_id, d.outputs) for d in self.devices.devices_list]:
+            for output in i[1]:
+                allOutputIds.append((i[0], output))
+                allOutputNames.append(self.getSignalName(i[0], output))
+
+        newConnection = wx.SingleChoiceDialog(
+            self,
+            "Choose a new output to connect input "
+            f"{self.getSignalName(input_device_id, input_port_id)}",
+            "Replace Connection",
+            allOutputNames,
+            style=wx.CHOICEDLG_STYLE
+        )
+        newConnection.SetBackgroundColour(paleyellow)
+
+        while newConnection.ShowModal() == wx.ID_CANCEL:
+            wx.MessageBox(
+                "You must select a new connection for this input.",
+                "Error - Connection Needed", wx.ICON_ERROR
+            )
+            
+        if newConnection.ShowModal() == wx.ID_OK:
+            choice = newConnection.GetSelection()
+            (dev, port) = allOutputIds[choice]
+            error_type = self.network.make_connection(
+                input_device_id,
+                input_port_id,
+                dev,
+                port
+            )
+            if error_type == self.network.NO_ERROR:
+                text = "Successfully made new connection"
+                self.canvas.render(text)
+        newConnection.Destroy()
+        self.updateCurrentConnections()
+
     def on_spin_cycles(self, event):
         """Handle the event when the user changes the number of cycles."""
         self.cycles_to_run = self.spin_cycles.GetValue()
@@ -789,6 +906,7 @@ class Gui(wx.Frame):
         deviceKindId = self.devices.get_device(btn.GetId()).device_kind
         btn.SetTopStartColour(self.getDeviceColour(deviceKindId)[0])
         btn.SetBottomEndColour(self.getDeviceColour(deviceKindId)[0])
+
         self.Layout()
 
     def on_run_button(self, event):
@@ -968,19 +1086,19 @@ class Gui(wx.Frame):
 
     def on_command_line_add_monitor(self, deviceId, portId):
         """Add monitor button based on command line input."""
-        monitorName = self.getMonitorName(deviceId, portId)
+        monitorName = self.getSignalName(deviceId, portId)
         if monitorName not in self.monitor_buttons.keys():
             self.addMonitorButton(monitorName)
 
     def on_command_line_zap_monitor(self, deviceId, portId):
         """Destroy monitor button based on command line input."""
-        monitorName = self.getMonitorName(deviceId, portId)
+        monitorName = self.getSignalName(deviceId, portId)
         button = self.monitor_buttons[monitorName]
         button.Destroy()
         self.monitor_buttons.pop(monitorName)
         self.Layout()
 
-    def getMonitorName(self, deviceId, portId):
+    def getSignalName(self, deviceId, portId):
         """Get name of monitor from device id and port id."""
         deviceName = self.names.get_name_string(deviceId)
         if portId is None:

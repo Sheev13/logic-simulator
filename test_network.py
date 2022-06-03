@@ -1,4 +1,5 @@
 """Test the network module."""
+from this import d
 import pytest
 
 from names import Names
@@ -27,6 +28,29 @@ def network_with_devices():
     new_devices.make_device(SW1_ID, new_devices.SWITCH, 0)
     new_devices.make_device(SW2_ID, new_devices.SWITCH, 0)
     new_devices.make_device(OR1_ID, new_devices.OR, 2)
+
+    return new_network
+
+
+@pytest.fixture
+def network_with_connections():
+    """Return a Network class instance with a connection in the network."""
+    new_names = Names()
+    new_devices = Devices(new_names)
+    new_network = Network(new_names, new_devices)
+
+    [SW1_ID, SW2_ID, OR1_ID, I1, I2] = new_names.lookup(
+        ["Sw1", "Sw2", "Or1", "I1", "I2"]
+    )
+
+    # Add devices
+    new_devices.make_device(SW1_ID, new_devices.SWITCH, 0)
+    new_devices.make_device(SW2_ID, new_devices.SWITCH, 0)
+    new_devices.make_device(OR1_ID, new_devices.OR, 2)
+
+    # Make connections
+    new_network.make_connection(SW1_ID, None, OR1_ID, I1)
+    new_network.make_connection(SW2_ID, None, OR1_ID, I2)
 
     return new_network
 
@@ -139,6 +163,32 @@ def test_make_connection(network_with_devices):
                           I2: (SW2_ID, None)}
 
 
+def test_delete_connection(network_with_connections):
+    """Test if delete_connection removes connections."""
+    network = network_with_connections
+    devices = network.devices
+    names = devices.names
+
+    OR1_ID = names.query("Or1")
+    SW1_ID = names.query("Sw1")
+    SW2_ID = names.query("Sw2")
+    I1 = names.query("I1")
+    I2 = names.query("I2")
+
+    or1 = devices.get_device(OR1_ID)
+
+    # or1 inputs should initially be connected
+    assert or1.inputs == {I1: (SW1_ID, None),
+                          I2: (SW2_ID, None)}
+
+    network.delete_connection(OR1_ID, I1)
+    network.delete_connection(OR1_ID, I2)
+
+    # or1 inputs are now unconnected
+    assert or1.inputs == {I1: None,
+                          I2: None}
+
+
 @pytest.mark.parametrize("function_args, error", [
     # I1 is not a valid device id
     ("(I1, I1, OR1_ID, I2)", "network.DEVICE_ABSENT"),
@@ -174,6 +224,43 @@ def test_make_connection_gives_error(network_with_devices,
 
     # left_expression is of the form: network.make_connection(...)
     left_expression = eval("".join(["network.make_connection", function_args]))
+    right_expression = eval(error)
+    assert left_expression == right_expression
+
+
+@pytest.mark.parametrize("function_args, error", [
+    # I1 is not a valid device id
+    ("(I1, I2)", "network.DEVICE_ABSENT"),
+
+    # Switch device does not have port I1
+    ("(SW1_ID, I1)", "network.PORT_ABSENT"),
+
+    # input not yet connected
+    ("(OR1_ID, I1)", "network.CONNECTION_ABSENT"),
+])
+def test_delete_connection_gives_error(
+    network_with_connections,
+    function_args,
+    error
+):
+    """Test if the delete_connection returns the correct errors."""
+    network = network_with_connections
+    devices = network.devices
+    names = devices.names
+
+    [SW1_ID, SW2_ID, OR1_ID, I1, I2] = names.lookup(["Sw1", "Sw2", "Or1", "I1",
+                                                     "I2"])
+
+    # Delete the connection to Or1.I1
+    network.delete_connection(OR1_ID, I1)
+
+    # left_expression is of the form: network.make_connection(...)
+    left_expression = eval(
+        "".join([
+            "network.delete_connection",
+            function_args
+        ])
+    )
     right_expression = eval(error)
     assert left_expression == right_expression
 
