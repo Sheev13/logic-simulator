@@ -10,8 +10,12 @@ Show help: logsim.py -h
 Command line user interface: logsim.py -c <file path>
 Graphical user interface: logsim.py <file path>
 """
+
 import getopt
 import sys
+import builtins
+
+import gettext
 
 import wx
 
@@ -23,6 +27,58 @@ from scanner import Scanner
 from parse import Parser
 from userint import UserInterface
 from gui import Gui
+
+# language domain
+langDomain = "LOGIC SIMULATOR"
+# languages you want to support
+supportedLangs = {
+    u"en": wx.LANGUAGE_ENGLISH,
+    u"es": wx.LANGUAGE_SPANISH
+}
+
+def _displayHook(obj):
+    if obj is not None:
+        print (repr(obj))
+
+# add translation macro to builtin similar to what gettext does
+builtins.__dict__['_'] = wx.GetTranslation
+
+class App(wx.App):
+    def OnInit(self):
+        #self.Init()
+        sys.displayhook = _displayHook
+        self.appName = "Logic Simulator"
+        return True
+
+    def updateLanguage(self, lang):
+        """
+        Update the language to the requested one.
+        Make *sure* any existing locale is deleted before the new
+        one is created.  The old C++ object needs to be deleted
+        before the new one is created, and if we just assign a new
+        instance to the old Python variable, the old C++ locale will
+        not be destroyed soon enough, likely causing a crash.
+        :param string `lang`: one of the supported language codes
+        """
+        # if an unsupported language is requested default to English
+        print(lang)
+        if lang in supportedLangs:
+            selLang = supportedLangs[lang]
+        else:
+            selLang = wx.LANGUAGE_ENGLISH
+        print(selLang)
+
+        if self.locale:
+            assert sys.getrefcount(self.locale) <= 2
+            del self.locale
+
+        # create a locale object for this language
+        self.locale = wx.Locale(selLang)
+        if self.locale.IsOk():
+            self.locale.AddCatalog(langDomain)
+        else:
+            self.locale = None
+
 
 
 def main(arg_list):
@@ -70,9 +126,15 @@ def main(arg_list):
         [path] = arguments
         scanner = Scanner(path, names)
         parser = Parser(names, devices, network, monitors, scanner)
+
         if parser.parse_network():
             # Initialise an instance of the gui.Gui() class
-            app = wx.App()
+            app = App()
+            builtins._ = wx.GetTranslation
+            locale = wx.Locale()
+            locale.Init(wx.LANGUAGE_DEFAULT)
+            locale.AddCatalogLookupPathPrefix('./locale')
+            locale.AddCatalog('po_file')
             gui = Gui("Logic Simulator", path, names, devices, network,
                       monitors)
             gui.Show(True)

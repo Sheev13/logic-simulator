@@ -198,8 +198,8 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.init_gl()
             self.init = True
 
-        text = "Welcome to the Logic Simulator! " \
-            "See User Guide for help."
+        text = _("Welcome to the Logic Simulator! ") + \
+                _("See User Guide for help.")
         self.render(text)
 
     def on_size(self, event):
@@ -301,10 +301,6 @@ class Gui(wx.Frame):
         self.userint = UserInterface(names, devices, network, monitors)
 
         """Initialise utils."""
-        self.help_string = help_string
-        self.canvas_control_string = canvas_control_string
-        self.sidebar_guide_string = sidebar_guide_string
-        self.parse_error_string = parse_error_string
         self.click = wx.Cursor(wx.Image("gui_utils/smallclick.png"))
         self.standard_button_size = wx.Size(85, 36)
 
@@ -315,14 +311,14 @@ class Gui(wx.Frame):
         menuBar = wx.MenuBar()
         fileMenu = wx.Menu()
         userGuideMenu = wx.Menu()
-        fileMenu.Append(wx.ID_OPEN, "&Open")
-        fileMenu.Append(wx.ID_ABOUT, "&About")
-        fileMenu.Append(wx.ID_EXIT, "&Exit")
-        userGuideMenu.Append(wx.ID_HELP_COMMANDS, "&Command Line Guide")
-        userGuideMenu.Append(wx.ID_CONTEXT_HELP, "&Canvas Controls")
-        userGuideMenu.Append(wx.ID_HELP_PROCEDURES, "&Sidebar Guide")
-        menuBar.Append(fileMenu, "&File")
-        menuBar.Append(userGuideMenu, "&User Guide")
+        fileMenu.Append(wx.ID_OPEN, "&" + _("Open"))
+        fileMenu.Append(wx.ID_ABOUT, "&" + _("About"))
+        fileMenu.Append(wx.ID_EXIT, "&" + _("Exit"))
+        userGuideMenu.Append(wx.ID_HELP_COMMANDS, "&" + _("Command Line Guide"))
+        userGuideMenu.Append(wx.ID_CONTEXT_HELP, "&" + _("Canvas Controls"))
+        userGuideMenu.Append(wx.ID_HELP_PROCEDURES, "&" + _("Sidebar Guide"))
+        menuBar.Append(fileMenu, "&" + _("File"))
+        menuBar.Append(userGuideMenu, "&" + _("User Guide"))
         self.SetMenuBar(menuBar)
 
         # Set background colour for GUI
@@ -349,7 +345,7 @@ class Gui(wx.Frame):
             self, wx.ID_ANY, f"", size=wx.Size(350, 30)
         )
         self.file_name.SetFont(fileFont)
-        self.browse = wx.Button(self, wx.ID_ANY, "Browse")
+        self.browse = wx.Button(self, wx.ID_ANY, _("Browse"))
         self.browse.SetFont(genBtnFont)
         self.browse.SetCursor(self.click)
 
@@ -357,12 +353,12 @@ class Gui(wx.Frame):
         self.switches_text.SetFont(self.subHeadingFont)
         self.switch_buttons = {}
 
-        self.devices_heading = wx.StaticText(self, wx.ID_ANY, "Devices:")
+        self.devices_heading = wx.StaticText(self, wx.ID_ANY, _("Devices:"))
         self.devices_heading.SetFont(self.subHeadingFont)
 
         self.device_buttons = []
 
-        self.monitors_text = wx.StaticText(self, wx.ID_ANY, "Monitors:")
+        self.monitors_text = wx.StaticText(self, wx.ID_ANY, _("Monitors:"))
         self.monitors_text.SetFont(self.subHeadingFont)
         self.monitor_input = wx.TextCtrl(
             self,
@@ -371,22 +367,22 @@ class Gui(wx.Frame):
             style=wx.TE_PROCESS_ENTER,
             size=wx.Size(150, 25)
         )
-        self.monitor_input.SetHint("Add new monitor")
+        self.monitor_input.SetHint(_("Add new monitor"))
         self.monitor_input.SetFont(inputBoxFont)
         self.monitors_help_text = wx.StaticText(
-            self, wx.ID_ANY, "(click to remove)"
+            self, wx.ID_ANY, _("(click to remove)")
         )
         self.monitors_help_text.SetFont(helpFont)
-        self.clear_all_monitors = wx.Button(self, wx.ID_ANY, "Clear All")
+        self.clear_all_monitors = wx.Button(self, wx.ID_ANY, _("Clear All"))
         self.clear_all_monitors.SetCursor(self.click)
         self.clear_all_monitors.SetFont(genBtnFont)
         self.monitor_buttons = {}
 
-        self.cycles_text = wx.StaticText(self, wx.ID_ANY, " Cycles: ")
+        self.cycles_text = wx.StaticText(self, wx.ID_ANY, _(" Cycles: "))
         self.cycles_text.SetFont(self.subHeadingFont)
         self.spin_cycles = wx.SpinCtrl(self, wx.ID_ANY, "10")
 
-        self.run_button = gb.GradientButton(self, wx.ID_ANY, label="Run")
+        self.run_button = gb.GradientButton(self, wx.ID_ANY, label=_("Run"))
         self.run_button.SetCursor(self.click)
         self.run_button.SetFont(wx.Font(go_font))
         self.changeButtonColours(self.run_button, darkgreen, midgreen)
@@ -394,7 +390,7 @@ class Gui(wx.Frame):
         self.continue_button = gb.GradientButton(
             self,
             wx.ID_ANY,
-            label="Continue"
+            label=_("Continue")
         )
         self.continue_button.SetFont(wx.Font(go_font))
         self.changeButtonColours(self.continue_button, darkpurple, lightpurple)
@@ -403,7 +399,7 @@ class Gui(wx.Frame):
         self.clear_button = gb.GradientButton(
             self,
             wx.ID_ANY,
-            label="Clear Canvas"
+            label=_("Clear Canvas")
         )
         self.clear_button.SetCursor(self.click)
         self.clear_button.SetFont(wx.Font(go_font))
@@ -412,7 +408,7 @@ class Gui(wx.Frame):
             self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER, size=(420, 25)
         )
         self.command_line_input.SetHint(
-            "Command line input. See User Guide for help."
+            _("Command line input. See User Guide for help.")
         )
         self.command_line_input.SetFont(inputBoxFont)
 
@@ -570,9 +566,9 @@ class Gui(wx.Frame):
         # find new switches
         switches = self.devices.find_devices(self.names.query("SWITCH"))
         if len(switches) > 0:
-            self.switches_text.SetLabel("Switches (toggle on/off):")
+            self.switches_text.SetLabel(_("Switches (toggle on/off):"))
         else:
-            self.switches_text.SetLabel("No switches in this circuit.")
+            self.switches_text.SetLabel(_("No switches in this circuit."))
 
         if not first:
             # destroy current switch buttons
@@ -626,7 +622,7 @@ class Gui(wx.Frame):
                 label = self.shorten(
                     self.names.get_name_string(gate.device_id)
                 )
-                extra = f": {str(len(gate.inputs.keys()))} inputs"
+                extra = f": {str(len(gate.inputs.keys()))} " + _("inputs")
                 self.device_descs.append([gateId, label, extra])
 
         for dev_type in self.devices.device_types:
@@ -637,7 +633,7 @@ class Gui(wx.Frame):
                 kind = self.names.get_name_string(d.device_kind)
                 extra = ""
                 if kind == "CLOCK":
-                    extra = f": half-period {d.clock_half_period}"
+                    extra = ": " + _("half-period") + f" {d.clock_half_period}"
                 self.device_descs.append([id, label, extra])
 
         # add new devices to displayed list
@@ -721,7 +717,7 @@ class Gui(wx.Frame):
             inputName = self.getSignalName(input[0], input[1])
             outputName = self.getSignalName(output[0], output[1])
             self.connections_info.append([
-                f"{outputName} to {inputName}",
+                _("from") + f" {outputName} " + _("to") + f" {inputName}",
                 input,
                 output
             ])
@@ -730,14 +726,14 @@ class Gui(wx.Frame):
             self,
             wx.ID_ANY,
             choices=[cnxn[0] for cnxn in self.connections_info],
-            name="Current Connections"
+            name=_("Current Connections")
         )
         self.connections_spinner.SetSelection(0)
 
         self.delete_connection = gb.GradientButton(
             self,
             wx.ID_ANY,
-            label="Delete Connection"
+            label=_("Delete Connection")
         )
 
         self.delete_connection.SetCursor(self.click)
@@ -770,28 +766,31 @@ class Gui(wx.Frame):
             self.Close(True)
         if Id == wx.ID_ABOUT:
             wx.MessageBox(
-                "Logic Simulator\nCreated by pp490, tnr22, jt741\n2022",
-                "About Logsim", wx.ICON_INFORMATION | wx.OK
+                _("Logic Simulator") + "\n" + _("Created by") 
+                + " Priyanka Patel (霹雳阳科), Tommy Rochussen "
+                "(托米), Jessye Tu (涂净兮)\n2022",
+                _("About Logsim"),
+                wx.ICON_INFORMATION | wx.OK
             )
         if Id == wx.ID_OPEN:
             self.choose_file()
         if Id == wx.ID_HELP_COMMANDS:
             wx.MessageBox(
-                self.help_string,
-                "Command Line Guide",
+                self.help_string(),
+                _("Command Line Guide"),
                 wx.ICON_INFORMATION | wx.OK
             )
         if Id == wx.ID_CONTEXT_HELP:
             wx.MessageBox(
-                self.canvas_control_string,
-                "Canvas Controls",
+                self.canvas_controls_string(),
+                _("Canvas Controls"),
                 wx.ICON_INFORMATION | wx.OK
             )
 
         if Id == wx.ID_HELP_PROCEDURES:
             wx.MessageBox(
-                self.sidebar_guide_string,
-                "Sidebar Guide",
+                self.sidebar_guide_string(),
+                _("Sidebar Guide"),
                 wx.ICON_INFORMATION | wx.OK
             )
 
@@ -802,7 +801,7 @@ class Gui(wx.Frame):
     def choose_file(self):
         """Handle the event when user wants to find circuit definition file."""
         openFileDialog = wx.FileDialog(
-            self, "Open txt file", "", "",
+            self, _("Open"), "", "",
             wildcard="TXT files (*.txt)|*.txt",
             style=wx.FD_OPEN+wx.FD_FILE_MUST_EXIST
         )
@@ -824,8 +823,8 @@ class Gui(wx.Frame):
             self.updateNewCircuit()
         else:
             wx.MessageBox(
-                self.parse_error_string,
-                "Unable to parse file.",
+                self.parse_error_string(),
+                _("Unable to parse file."),
                 wx.ICON_INFORMATION | wx.OK
             )
         self.Layout()
@@ -838,11 +837,6 @@ class Gui(wx.Frame):
         input_port_id = inputIds[1]
         self.network.delete_connection(input_device_id, input_port_id)
 
-        print(
-            f"Deleted connection from "
-            f"{self.connections_info[connectionIndex][0]}"
-        )
-
         allOutputNames = []
         allOutputIds = []
 
@@ -853,9 +847,9 @@ class Gui(wx.Frame):
 
         newConnection = wx.SingleChoiceDialog(
             self,
-            "Choose a new output to connect input "
+            _("Choose a new output to connect input ") +  
             f"{self.getSignalName(input_device_id, input_port_id)}",
-            "Replace Connection",
+            _("Replace Connection"),
             allOutputNames,
             style=wx.CHOICEDLG_STYLE
         )
@@ -863,8 +857,9 @@ class Gui(wx.Frame):
 
         while newConnection.ShowModal() == wx.ID_CANCEL:
             wx.MessageBox(
-                "You must select a new connection for this input.",
-                "Error - Connection Needed", wx.ICON_ERROR
+                _("You must select a new connection for this input."),
+                _("Error - Connection Needed"),
+                wx.ICON_ERROR
             )
 
         if newConnection.ShowModal() == wx.ID_OK:
@@ -877,7 +872,7 @@ class Gui(wx.Frame):
                 port
             )
             if error_type == self.network.NO_ERROR:
-                text = "Successfully made new connection"
+                text = _("Successfully made new connection")
                 self.canvas.render(text)
         newConnection.Destroy()
         self.updateCurrentConnections()
@@ -885,7 +880,7 @@ class Gui(wx.Frame):
     def on_spin_cycles(self, event):
         """Handle the event when the user changes the number of cycles."""
         self.cycles_to_run = self.spin_cycles.GetValue()
-        text = "".join(["Number of cycles: ", str(self.cycles_to_run)])
+        text = "".join([_("Number of cycles: "), str(self.cycles_to_run)])
         self.canvas.render(text)
 
     def on_enter_device_button(self, event):
@@ -936,7 +931,7 @@ class Gui(wx.Frame):
         text, cycles = int.run_command()
         self.cycles_completed = cycles
         self.canvas.render(text)
-        text = "Canvas cleared. Press run to start simulation again."
+        text = _("Canvas cleared. Press run to start simulation again.")
         self.canvas.render(text, clearAll=True)
 
     def on_switch_button(self, event):
@@ -954,7 +949,7 @@ class Gui(wx.Frame):
         newStatus = self.switch_buttons[switchName][1]
         self.devices.set_switch(switchId, newStatus)
 
-        text = f"{switchName} turned {newStatus}."
+        text = f"{switchName} " + _("turned") + " {newStatus}."
         self.canvas.render(text)
 
     def on_monitor_button(self, event):
@@ -982,7 +977,7 @@ class Gui(wx.Frame):
             [deviceId, portId] = commandint.read_signal_name()
             self.monitors.remove_monitor(deviceId, portId)
             self.monitor_buttons.pop(monitorName, "")
-        self.canvas.render("All monitors destroyed.")
+        self.canvas.render(_("All monitors destroyed."))
         self.Layout()
 
     def on_monitor_input(self, event):
@@ -990,12 +985,12 @@ class Gui(wx.Frame):
         name = self.monitor_input.GetValue()
         if self.isValidMonitor(name):
             if self.isMonitoring(name):
-                text = f"Already monitoring {name}"
+                text = _("Already monitoring") + f" {name}"
             else:
                 text = self.makeMonitor(name)
                 self.addMonitorButton(name)
         else:
-            text = "Invalid monitor"
+            text = _("Invalid monitor")
         self.canvas.render(text)
 
     def on_command_line_input(self, event):
@@ -1162,3 +1157,62 @@ class Gui(wx.Frame):
         button.SetTopEndColour(inner)
         button.SetBottomStartColour(inner)
         button.SetBottomEndColour(outer)
+
+    def help_string(self):
+        return _("Enter command line inputs in the bottom left of") \
+                    + _(" the interface.") + "\n" \
+                    "\n" + _("Possible commands:") + \
+                    "\n \nr N\n" + _("Run simulator for N cycles") \
+                    + "\n \nc N\n" + _("Continue running simulation")\
+                    + _(" for N cycles") + \
+                    "\n \ns X N\n" + ("Set switch X to N (0 or 1)") +\
+                    "\n \nm X\n" + _("Start monitoring output signal X")\
+                    +"\n \nz X\n" + _("Stop monitoring X")
+
+    def canvas_controls_string(self):
+        return _("Signals on the canvas can be manipulated to") \
+                    + _(" better view them.") + "\n" \
+                    "\n" + _("Scroll in to zoom in") + \
+                    "\n \n" + \
+                    _("Scroll out to zoom out - this may ") \
+                    + _("be useful if you have many monitors") \
+                    + "\n \n" \
+                    + _("Click and hold to drag the signals ")\
+                    +_("around the space")
+
+    def sidebar_guide_string(self):
+        return _("The sidebar can be used to adjust simulation ") \
+                    + _("settings") + ".\n\n" + \
+                    _("Click 'Browse' to load a new circuit file.") \
+                    + "\n \n" + \
+                    _("See the list of devices to decide what you ") \
+                    + _("want to monitor. Hover on a device to see ") \
+                    + _("its full name, kind and qualifier information.") \
+                    + "\n \n" +\
+                    _("To remove a connection before or during a ") \
+                    + _("simulation, choose from the dropdown list ") \
+                    + _("next to 'Devices' and click 'Delete Connection.") \
+                    + _("Select a new output ") \
+                    + _("to connect to the input from the deleted ") \
+                    + _("connection.") \
+                    + "\n \n" + \
+                    _("Click the switch buttons to toggle on or off.") \
+                    + "\n \n" + \
+                    _("Type the name of an output in the 'Add new ") \
+                    + _("monitor' box to add to monitors.") \
+                    +_(" Press 'Clear All' to remove all monitors.") \
+                    + _(" Click on an individual monitor button to ") \
+                    +_ ("remove it.")\
+                    + "\n \n" + \
+                    _("Adjust the number of cycles with the spinner.")\
+                    + "\n \n" + \
+                    _("Press 'Run' or 'Continue' to start the ") \
+                    + _("simulation.")\
+                    + "\n \n" + \
+                    _("Press 'Clear Canvas' to reset the ") \
+                    +_("simulation.")\
+
+    
+    def parse_error_string(self):
+        return _("Unable to parse file. Old file will remain loaded.")
+
