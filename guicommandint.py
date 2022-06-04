@@ -61,6 +61,12 @@ class GuiCommandInterface:
     run_command(self): Runs the simulation from scratch.
 
     continue_command(self): Continues a previously run simulation.
+
+    make_connection(self, input_device_id, input_port_id, dev, port): Make
+                                a new connection.
+
+    delete_connection(self, input_device_id, input_port_id): Delete a
+                                connection.
     """
 
     def __init__(self, line, names, devices, network, monitors, complete=0):
@@ -258,3 +264,21 @@ class GuiCommandInterface:
                 return " ".join(["Continuing for", str(cycles), "cycles.",
                                 "Total:", str(self.cycles_completed)]), cycles
         return "Error! Invalid number of cycles.", cycles
+
+    def make_connection(self, input_device_id, input_port_id,
+                        dev, port):
+        """Make a connection."""
+        connection_error = self.network.make_connection(
+            input_device_id,
+            input_port_id,
+            dev,
+            port
+        )
+        if connection_error == self.network.NO_ERROR:
+            return "Successfully made new connection.", True
+        else:
+            return "Could not make connection.", False
+
+    def delete_connection(self, input_device_id, input_port_id):
+        """Delete a connection."""
+        self.network.delete_connection(input_device_id, input_port_id)

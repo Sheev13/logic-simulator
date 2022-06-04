@@ -45,7 +45,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
     init_gl(self): Configures the OpenGL context.
 
     render(self, text): Handles all drawing operations.
-    
+
     on_paint(self, event): Handles the paint event.
 
     on_size(self, event): Handles the canvas resize event.
@@ -54,8 +54,6 @@ class MyGLCanvas(wxcanvas.GLCanvas):
 
     render_text(self, text, x_pos, y_pos): Handles text drawing
                                            operations.
-    
-    
     """
 
     def __init__(self, parent, size, devices, monitors, names):
@@ -283,33 +281,34 @@ class Gui(wx.Frame):
     on_browse(self, event): Event handler for browse button.
 
     on_delete_connection(self, event): Event handler for deleting a connection.
-    
+
     on_spin_cycles(self, event): Handle event when user changes cycles.
 
-    on_enter_device_button(self, event): Prevents colour change on hover of device.
-    
+    on_enter_device_button(self, event): Prevents colour change on hover of
+                                device.
+
     on_run_button(self, event): Event handler for when the user clicks the run
                                 button.
-    
+
     on_continue_button(self, event): Event handler for when the user clicks the
                                 continue button.
-    
+
     on_clear_button(self, event): Event handler for when the user clicks the
                                 Clear Canvas button.
-    
+
     on_switch_button(self, event): Event handler for when the user clicks a
                                 switch button.
-    
+
     on_monitor_button(self, event): Event handler for when the user clicks a
                                 monitor button.
-    
+
     on_clear_all_monitors_button(self, event): Event handler for when the user
                                 clears all monitors.
-    
+
     on_command_line_input(self, event): Handle user commands.
 
     on_monitor_input(self, event): Handle event when user adds a monitor.
-    
+
     on_command_line_input(self, event): Handle event when user enters command
                                 via command line box.
     """
@@ -426,7 +425,11 @@ class Gui(wx.Frame):
             label="Continue"
         )
         self.continue_button.SetFont(wx.Font(go_font))
-        self._change_button_colours(self.continue_button, darkpurple, lightpurple)
+        self._change_button_colours(
+            self.continue_button,
+            darkpurple,
+            lightpurple
+        )
         self.continue_button.SetCursor(self.click)
 
         self.clear_button = gb.GradientButton(
@@ -627,7 +630,7 @@ class Gui(wx.Frame):
                     wx.ICON_INFORMATION | wx.OK
                 )
                 self.Close(True)
-        
+
         self.path = openFileDialog.GetPath()
         names = Names()
         devices = Devices(names)
@@ -650,6 +653,7 @@ class Gui(wx.Frame):
         self.Layout()
 
     def display_errors(self, error_message_list, first=False):
+        """Display errors in dialog box."""
         errors = ""
         for error in error_message_list[:-1]:
             errors += f"\n{error}"
@@ -764,7 +768,9 @@ class Gui(wx.Frame):
             kindLabel = self.names.get_name_string(kindId)
             device_button.SetToolTip(f"{label}, {kindLabel}{extra}")
             device_button.SetTopStartColour(self._get_device_colour(kindId)[0])
-            device_button.SetBottomEndColour(self._get_device_colour(kindId)[0])
+            device_button.SetBottomEndColour(
+                self._get_device_colour(kindId)[0]
+            )
             device_button.Bind(
                 wx.EVT_ENTER_WINDOW,
                 self.on_enter_device_button
@@ -812,7 +818,7 @@ class Gui(wx.Frame):
         self.Layout()
 
     def _update_current_connections(self, first=False):
-        """Updates current connections after user changes."""
+        """Update current connections after user changes."""
         # If this is not the first time a circuit is loaded,
         # must destroy the existing widgets for connections
         if not first:
@@ -908,12 +914,23 @@ class Gui(wx.Frame):
         self._choose_file()
 
     def on_delete_connection(self, event):
-        """Handles event when user presses delete connection."""
+        """Handle event when user presses delete connection."""
         connectionIndex = self.connections_spinner.GetSelection()
         [inputIds, outputIds] = self.connections_info[connectionIndex][1:3]
         input_device_id = inputIds[0]
         input_port_id = inputIds[1]
-        self.network.delete_connection(input_device_id, input_port_id)
+
+        int = GuiCommandInterface(
+            "",
+            self.names,
+            self.devices,
+            self.network,
+            self.monitors
+        )
+        int.delete_connection(
+            input_device_id,
+            input_port_id,
+        )
 
         print(
             f"Deleted connection from "
@@ -947,17 +964,23 @@ class Gui(wx.Frame):
         if newConnection.ShowModal() == wx.ID_OK:
             choice = newConnection.GetSelection()
             (dev, port) = allOutputIds[choice]
-            error_type = self.network.make_connection(
+            int = GuiCommandInterface(
+                "",
+                self.names,
+                self.devices,
+                self.network,
+                self.monitors
+            )
+            text, success = int.make_connection(
                 input_device_id,
                 input_port_id,
                 dev,
                 port
             )
-            if error_type == self.network.NO_ERROR:
-                text = "Successfully made new connection"
-                self.canvas.render(text)
-        newConnection.Destroy()
-        self._update_current_connections()
+            self.canvas.render(text)
+            if success:
+                newConnection.Destroy()
+                self._update_current_connections()
 
     def on_spin_cycles(self, event):
         """Handle the event when the user changes the number of cycles."""
