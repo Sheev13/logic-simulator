@@ -28,7 +28,6 @@ from gui import Gui
 
 # language domain
 langDomain = "LOGIC SIMULATOR"
-
 supportedLangs = {
     u"en": wx.LANGUAGE_ENGLISH,
     u"es": wx.LANGUAGE_SPANISH
