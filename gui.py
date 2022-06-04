@@ -11,6 +11,7 @@ Gui - configures the main window and all the widgets.
 from matplotlib.ft2font import VERTICAL
 import wx
 import wx.lib.agw.gradientbutton as gb
+import wx.lib.dialogs as dlgs
 import os
 import wx.glcanvas as wxcanvas
 from OpenGL import GL, GLUT
@@ -363,6 +364,7 @@ class Gui(wx.Frame):
         inputBoxFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL)
         go_font = wx.Font(wx.FontInfo(14).FaceName("Rockwell"))
         self.delete_font = wx.Font(wx.FontInfo(10).FaceName("Rockwell"))
+        self.errorBoxFont = wx.Font(wx.FontInfo(10).FaceName("Consolas"))
 
         # Canvas for drawing signals
         self.scrollable = wx.ScrolledCanvas(self, wx.ID_ANY)
@@ -599,71 +601,13 @@ class Gui(wx.Frame):
             parser = Parser(names, devices, network, monitors, scanner)
             success = parser.parse_network()
             if success:
-                self.updateNewCircuit(first=True)
+                self._update_new_circuit(first=True)
 
         if not success:
             # Display errors from file given from command line
-            self.displayErrors(parser.error_message_list, first=True)
+            self.display_errors(parser.error_message_list, first=True)
             self.choose_file(first=True)
             success = True
-
-    def updateCurrentConnections(self, first=False):
-        """Updates current connections after user changes."""
-        if not first:
-            self.connections_spinner.Destroy()
-            self.delete_connection.Destroy()
-
-        self.connections = {}
-        for device in self.devices.devices_list:
-            device_id = device.device_id
-            for input in device.inputs.keys():
-                self.connections[(device_id, input)] = device.inputs[input]
-        self.connections_info = []
-        for input, output in self.connections.items():
-            inputName = self.getSignalName(input[0], input[1])
-            outputName = self.getSignalName(output[0], output[1])
-            self.connections_info.append([
-                f"{outputName} to {inputName}",
-                input,
-                output
-            ])
-
-        self.connections_spinner = wx.Choice(
-            self,
-            wx.ID_ANY,
-            choices=[cnxn[0] for cnxn in self.connections_info],
-            name="Current Connections"
-        )
-        self.connections_spinner.SetSelection(0)
-
-        self.delete_connection = gb.GradientButton(
-            self,
-            wx.ID_ANY,
-            label="Delete Connection"
-        )
-        delete_font = wx.Font(wx.FontInfo(10).FaceName("Rockwell"))
-        self.delete_connection.SetCursor(self.click)
-        self.delete_connection.SetFont(wx.Font(delete_font))
-
-        self.devices_heading_sizer.Add(
-            self.connections_spinner, 0, wx.ALL, 5
-        )
-        self.devices_heading_sizer.Add(
-            self.delete_connection,
-            1,
-            wx.ALIGN_CENTER,
-            5
-        )
-        self.delete_connection.Bind(wx.EVT_BUTTON, self.on_delete_connection)
-        self.Layout()
-
-    def setFileTitle(self, path):
-        """Display name of open file at top of screen."""
-        label = os.path.basename(os.path.splitext(path)[0])
-        if len(label) > 20:
-            label = f"\"{label[0:17]}...\""
-        self.file_name.SetLabel(label)
-        self.Layout()
 
     def on_menu(self, event):
         """Handle the event when the user selects a menu item."""
@@ -712,14 +656,13 @@ class Gui(wx.Frame):
             if not first:
                 return
             else:
-                # if this is the first time, must keep prompting
-                # until valid file is received
+                # if this is the first time, exit GUI
                 wx.MessageBox(
-                    "Must select a file to load GUI.",
-                    "Please select a valid circuit file.",
+                    "No file selected. Exiting GUI.",
+                    "Exiting GUI",
                     wx.ICON_INFORMATION | wx.OK
                 )
-                self.choose_file(first)
+                self.Close(True)
         
         self.path = openFileDialog.GetPath()
         names = Names()
@@ -734,29 +677,34 @@ class Gui(wx.Frame):
             self.devices = devices
             self.network = network
             self.monitors = monitors
-            self.updateNewCircuit(first)
+            self._update_new_circuit(first)
         else:
-            self.displayErrors(parser.error_message_list, first)
+            self.display_errors(parser.error_message_list, first)
             if first:
                 self.choose_file(first)
 
         self.Layout()
 
-    def displayErrors(self, error_message_list, first=False):
+    def display_errors(self, error_message_list, first=False):
         errors = ""
         for error in error_message_list[:-1]:
             errors += f"\n{error}"
         if first:
-            message = f"{errors} \n \n {self.first_parse_error_string}"
+            message = f"{errors} \n \n{self.first_parse_error_string}"
         else:
-            message = f"{errors} \n \n {self.parse_error_string}"
-        wx.MessageBox(
+            message = f"{errors} \n \n{self.parse_error_string}"
+        errorBox = dlgs.ScrolledMessageDialog(
+            self,
             message,
             error_message_list[-1],
-            wx.ICON_INFORMATION | wx.OK
+            style=wx.DEFAULT_DIALOG_STYLE+wx.RESIZE_BORDER,
+            size=wx.Size(750, 500)
         )
+        text = errorBox.GetChildren()[0]
+        text.SetFont(self.errorBoxFont)
+        errorBox.ShowModal()
 
-    def updateNewCircuit(self, first=False):
+    def _update_new_circuit(self, first=False):
         """Configure widgets for new circuit and bind events."""
         self._set_file_title(self.path)
         self.cycles_completed = 0
@@ -1019,11 +967,7 @@ class Gui(wx.Frame):
             self.monitors = monitors
             self._update_new_circuit()
         else:
-            wx.MessageBox(
-                self.parse_error_string,
-                "Unable to parse file.",
-                wx.ICON_INFORMATION | wx.OK
-            )
+            self.display_errors(parser.error_message_list)
         self.Layout()
 
     def on_delete_connection(self, event):

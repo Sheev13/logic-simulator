@@ -532,7 +532,7 @@ class TestParserErrorRecovery:
         parser_obj.symbol = Symbol()
 
         def mock_scanner_error(self, symbol):
-            return "carat message", "ln", "cn"
+            return "caret message", "ln", "cn"
         mocker.patch('scanner.Scanner.show_error', mock_scanner_error)
 
         spy_symbol_id = mocker.spy(parser_obj, "get_symbol_string")
@@ -557,7 +557,7 @@ class TestParserErrorRecovery:
         parser_obj.set_next()
 
         def mock_scanner_error(self, symbol):
-            return "carat message", "ln", "cn"
+            return "caret message", "ln", "cn"
         mocker.patch('scanner.Scanner.show_error', mock_scanner_error)
 
         spy_symbol_id = mocker.spy(parser_obj, "get_symbol_string")
