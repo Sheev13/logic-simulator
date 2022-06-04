@@ -592,7 +592,7 @@ class Gui(wx.Frame):
 
         # If path is None, prompt user to choose a valid file
         if self.path is None:
-            self.choose_file(first=True)
+            self._choose_file(first=True)
             success = True
 
         # Parse file given from command line
@@ -606,46 +606,10 @@ class Gui(wx.Frame):
         if not success:
             # Display errors from file given from command line
             self.display_errors(parser.error_message_list, first=True)
-            self.choose_file(first=True)
+            self._choose_file(first=True)
             success = True
 
-    def on_menu(self, event):
-        """Handle the event when the user selects a menu item."""
-        Id = event.GetId()
-        if Id == wx.ID_EXIT:
-            self.Close(True)
-        if Id == wx.ID_ABOUT:
-            wx.MessageBox(
-                "Logic Simulator\nCreated by pp490, tnr22, jt741\n2022",
-                "About Logsim", wx.ICON_INFORMATION | wx.OK
-            )
-        if Id == wx.ID_OPEN:
-            self.choose_file()
-        if Id == wx.ID_HELP_COMMANDS:
-            wx.MessageBox(
-                self.help_string,
-                "Command Line Guide",
-                wx.ICON_INFORMATION | wx.OK
-            )
-        if Id == wx.ID_CONTEXT_HELP:
-            wx.MessageBox(
-                self.canvas_control_string,
-                "Canvas Controls",
-                wx.ICON_INFORMATION | wx.OK
-            )
-
-        if Id == wx.ID_HELP_PROCEDURES:
-            wx.MessageBox(
-                self.sidebar_guide_string,
-                "Sidebar Guide",
-                wx.ICON_INFORMATION | wx.OK
-            )
-
-    def on_browse(self, event):
-        """Handle event when user clicks browse button."""
-        self.choose_file()
-
-    def choose_file(self, first=False):
+    def _choose_file(self, first=False):
         """Allow user to find circuit definition file."""
         openFileDialog = wx.FileDialog(
             self, "Open txt file", "", "",
@@ -681,7 +645,7 @@ class Gui(wx.Frame):
         else:
             self.display_errors(parser.error_message_list, first)
             if first:
-                self.choose_file(first)
+                self._choose_file(first)
 
         self.Layout()
 
@@ -942,33 +906,6 @@ class Gui(wx.Frame):
     def on_browse(self, event):
         """Handle event when user clicks browse button."""
         self._choose_file()
-
-    def _choose_file(self):
-        """Allow user to browse to find circuit definition file."""
-        openFileDialog = wx.FileDialog(
-            self, "Open txt file", "", "",
-            wildcard="TXT files (*.txt)|*.txt",
-            style=wx.FD_OPEN+wx.FD_FILE_MUST_EXIST
-        )
-        if openFileDialog.ShowModal() == wx.ID_CANCEL:
-            return
-        path = openFileDialog.GetPath()
-        names = Names()
-        devices = Devices(names)
-        network = Network(names, devices)
-        monitors = Monitors(names, devices, network)
-        scanner = Scanner(path, names)
-        parser = Parser(names, devices, network, monitors, scanner)
-        if parser.parse_network():
-            self.path = path
-            self.names = names
-            self.devices = devices
-            self.network = network
-            self.monitors = monitors
-            self._update_new_circuit()
-        else:
-            self.display_errors(parser.error_message_list)
-        self.Layout()
 
     def on_delete_connection(self, event):
         """Handles event when user presses delete connection."""
