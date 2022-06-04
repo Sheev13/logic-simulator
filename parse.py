@@ -929,17 +929,7 @@ class Parser:
     def set_next(self):
         """Shift current symbol to next."""
         self.symbol = self.scanner.get_symbol()
-        if self.symbol.type == self.scanner.UNCLOSED:
-            self.error(
-                "Unclosed Comment Found - did you want to use '/' instead of "
-                "'#' for your comment?",
-                [
-                    self.scanner.EOF,
-                ],
-            )
-        # added to deal with unclosed comments
-        # if self.symbol.type == self.scanner.UNCLOSED:
-        #     self.symbol = self.scanner.get_symbol()
+
 
         if self.symbol.type == self.scanner.UNCLOSED:
 
