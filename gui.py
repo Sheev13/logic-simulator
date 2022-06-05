@@ -200,7 +200,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.init = True
 
         text = _("Welcome to the Logic Simulator! ") + \
-                _("See User Guide for help.")
+            _("See User Guide for help.")
         self.render(text)
 
     def on_size(self, event):
@@ -305,12 +305,10 @@ class Gui(wx.Frame):
     on_clear_all_monitors_button(self, event): Event handler for when the user
                                 clears all monitors.
 
-    on_command_line_input(self, event): Handle user commands.
-
     on_monitor_input(self, event): Handle event when user adds a monitor.
 
-    on_command_line_input(self, event): Handle event when user enters command
-                                via command line box.
+    on_command_line_input(self, event): Handle user commands.
+
     """
 
     def __init__(self, title, path, names, devices, network, monitors):
@@ -336,15 +334,15 @@ class Gui(wx.Frame):
         # Configure the file menu
         menuBar = wx.MenuBar()
         fileMenu = wx.Menu()
-        userGuideMenu = wx.Menu()
+        guideMenu = wx.Menu()
         fileMenu.Append(wx.ID_OPEN, "&" + _("Open"))
         fileMenu.Append(wx.ID_ABOUT, "&" + _("About"))
         fileMenu.Append(wx.ID_EXIT, "&" + _("Exit"))
-        userGuideMenu.Append(wx.ID_HELP_COMMANDS, "&" + _("Command Line Guide"))
-        userGuideMenu.Append(wx.ID_CONTEXT_HELP, "&" + _("Canvas Controls"))
-        userGuideMenu.Append(wx.ID_HELP_PROCEDURES, "&" + _("Sidebar Guide"))
+        guideMenu.Append(wx.ID_HELP_COMMANDS, "&" + _("Command Line Guide"))
+        guideMenu.Append(wx.ID_CONTEXT_HELP, "&" + _("Canvas Controls"))
+        guideMenu.Append(wx.ID_HELP_PROCEDURES, "&" + _("Sidebar Guide"))
         menuBar.Append(fileMenu, "&" + _("File"))
-        menuBar.Append(userGuideMenu, "&" + _("User Guide"))
+        menuBar.Append(guideMenu, "&" + _("User Guide"))
         self.SetMenuBar(menuBar)
 
         # Set background colour for GUI
@@ -535,7 +533,7 @@ class Gui(wx.Frame):
 
         self.monitors_help_sizer.Add(self.monitors_text, 0, wx.ALIGN_CENTER, 5)
         self.monitors_help_sizer.Add(self.monitor_input, 0, wx.ALL, 5)
-        #self.monitors_help_sizer.AddStretchSpacer()
+
         self.monitors_help_sizer.Add(
             self.clear_all_monitors,
             1,
@@ -603,7 +601,7 @@ class Gui(wx.Frame):
 
         if not success:
             # Display errors from file given from command line
-            self.display_errors(parser.error_message_list, first=True)
+            self._display_errors(parser.error_message_list, first=True)
             self._choose_file(first=True)
             success = True
 
@@ -641,13 +639,13 @@ class Gui(wx.Frame):
             self.monitors = monitors
             self._update_new_circuit(first)
         else:
-            self.display_errors(parser.error_message_list, first)
+            self._display_errors(parser.error_message_list, first)
             if first:
                 self._choose_file(first)
 
         self.Layout()
 
-    def display_errors(self, error_message_list, first=False):
+    def _display_errors(self, error_message_list, first=False):
         """Display errors in dialog box."""
         errors = ""
         for error in error_message_list:
@@ -878,7 +876,7 @@ class Gui(wx.Frame):
             self.Close(True)
         if Id == wx.ID_ABOUT:
             wx.MessageBox(
-                _("Logic Simulator") + "\n" + _("Created by") 
+                _("Logic Simulator") + "\n" + _("Created by")
                 + " Priyanka Patel (霹雳阳科), Tommy Rochussen "
                 "(托米), Jessye Tu (涂净兮)\n2022",
                 _("About Logsim"),
@@ -939,7 +937,7 @@ class Gui(wx.Frame):
 
         newConnection = wx.SingleChoiceDialog(
             self,
-            _("Choose a new output to connect input ") +  
+            _("Choose a new output to connect input ") +
             f"{self.getSignalName(input_device_id, input_port_id)}",
             _("Replace Connection"),
             allOutputNames,
@@ -1264,7 +1262,7 @@ class Gui(wx.Frame):
                     + _(" for N cycles") + \
                     "\n \ns X N\n" + _("Set switch X to N (0 or 1)") +\
                     "\n \nm X\n" + _("Start monitoring output signal X")\
-                    +"\n \nz X\n" + _("Stop monitoring X")
+                    + "\n \nz X\n" + _("Stop monitoring X")
 
     def canvas_controls_string(self):
         return _("Signals on the canvas can be manipulated to") \
@@ -1275,7 +1273,7 @@ class Gui(wx.Frame):
                     + _("be useful if you have many monitors") \
                     + "\n \n" \
                     + _("Click and hold to drag the signals ")\
-                    +_("around the space")
+                    + _("around the space")
 
     def sidebar_guide_string(self):
         return _("The sidebar can be used to adjust simulation ") \
@@ -1297,9 +1295,9 @@ class Gui(wx.Frame):
                     + "\n \n" + \
                     _("Type the name of an output in the 'Add new ") \
                     + _("monitor' box to add to monitors.") \
-                    +_(" Press 'Clear All' to remove all monitors.") \
+                    + _(" Press 'Clear All' to remove all monitors.") \
                     + _(" Click on an individual monitor button to ") \
-                    +_("remove it.")\
+                    + _("remove it.")\
                     + "\n \n" + \
                     _("Adjust the number of cycles with the spinner.")\
                     + "\n \n" + \
@@ -1307,12 +1305,11 @@ class Gui(wx.Frame):
                     + _("simulation.")\
                     + "\n \n" + \
                     _("Press 'Clear Canvas' to reset the ") \
-                    +_("simulation.")\
+                    + _("simulation.")\
 
-    
+
     def parse_error_string(self):
         return _("Unable to load file. Old file will remain loaded.")
 
     def first_parse_error_string(self):
         return _("Unable to load file. Please choose valid file.")
-

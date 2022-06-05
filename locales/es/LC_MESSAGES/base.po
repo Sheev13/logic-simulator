@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2022-06-05 09:51+0100\n"
-"PO-Revision-Date: 2022-06-05 20:59+0100\n"
+"PO-Revision-Date: 2022-06-05 21:44+0100\n"
 "Last-Translator: \n"
 "Language-Team: GROUP 4\n"
 "Language: es\n"
@@ -105,135 +105,135 @@ msgstr "¡Bienvenido al simulador de lógica! "
 msgid "See User Guide for help."
 msgstr "Consulte el manual de uso del programa para obtener consejos."
 
-#: gui.py:340 gui.py:613
+#: gui.py:338 gui.py:615
 msgid "Open"
 msgstr "Abre"
 
-#: gui.py:341
+#: gui.py:339
 msgid "About"
 msgstr "Acerca de"
 
-#: gui.py:342
+#: gui.py:345
 msgid "Exit"
 msgstr "Salir"
 
-#: gui.py:343 gui.py:892
+#: gui.py:345 gui.py:894
 msgid "Command Line Guide"
 msgstr "Manual de la línea de comandos"
 
-#: gui.py:344 gui.py:898
+#: gui.py:346 gui.py:900
 msgid "Canvas Controls"
 msgstr "Controles del lienzo"
 
-#: gui.py:345 gui.py:905
+#: gui.py:347 gui.py:907
 msgid "Sidebar Guide"
 msgstr "Manual de la columna anexa"
 
-#: gui.py:346
+#: gui.py:348
 msgid "File"
 msgstr "Archivo"
 
-#: gui.py:347
+#: gui.py:349
 msgid "User Guide"
 msgstr "Manual de uso del programa"
 
-#: gui.py:375
+#: gui.py:377
 msgid "Browse"
 msgstr "Navegar"
 
-#: gui.py:383
+#: gui.py:385
 msgid "Devices:"
 msgstr "Dispositivos:"
 
-#: gui.py:388
+#: gui.py:390
 msgid "Monitors:"
 msgstr "Monitores:"
 
-#: gui.py:397
+#: gui.py:399
 msgid "Add new monitor"
 msgstr "Añadir nuevo monitor"
 
-#: gui.py:400
+#: gui.py:402
 msgid "(click to remove)"
 msgstr "(clic para eliminar)"
 
-#: gui.py:403
+#: gui.py:405
 msgid "Clear All"
 msgstr "Borrar todos"
 
-#: gui.py:408
+#: gui.py:410
 msgid " Cycles: "
 msgstr " Ciclos: "
 
-#: gui.py:412
+#: gui.py:414
 msgid "Run"
 msgstr "Ejecutar"
 
-#: gui.py:420
+#: gui.py:422
 msgid "Continue"
 msgstr "Continuar"
 
-#: gui.py:433
+#: gui.py:435
 msgid "Clear Canvas"
 msgstr "Borrar lienzo"
 
-#: gui.py:442
+#: gui.py:444
 msgid "Command line input. See User Guide for help."
 msgstr "Línea de comandos. Consulte el manual para obtener consejos."
 
-#: gui.py:623
+#: gui.py:625
 msgid "No file selected. Exiting GUI."
 msgstr "Nada archivo eligido. Saliendo de GUI."
 
-#: gui.py:624
+#: gui.py:626
 msgid "Exiting GUI"
 msgstr "Saliendo de GUI"
 
-#: gui.py:679
+#: gui.py:681
 msgid "Switches (toggle on/off):"
 msgstr "Interruptores (haga clic para cambiar):"
 
-#: gui.py:681
+#: gui.py:683
 msgid "No switches in this circuit."
 msgstr "No hay interruptores en este circuito."
 
-#: gui.py:735
+#: gui.py:737
 msgid "inputs"
 msgstr "insumos"
 
-#: gui.py:746
+#: gui.py:748
 msgid "half-period"
 msgstr "semiperíodo"
 
-#: gui.py:804
+#: gui.py:806
 msgid "New circuit loaded."
 msgstr "Nuevo circuito cargado."
 
-#: gui.py:832
+#: gui.py:834
 msgid "from"
 msgstr "de"
 
-#: gui.py:832
+#: gui.py:834
 msgid "to"
 msgstr "a"
 
-#: gui.py:841
+#: gui.py:843
 msgid "Current Connections"
 msgstr "Conexiones actuales"
 
-#: gui.py:848
+#: gui.py:850
 msgid "Delete Connection"
 msgstr "Eliminar conexión"
 
-#: gui.py:881
+#: gui.py:883
 msgid "Created by"
 msgstr "Creado por"
 
-#: gui.py:881
+#: gui.py:883
 msgid "Logic Simulator"
 msgstr "El simulador de lógica"
 
-#: gui.py:884
+#: gui.py:886
 msgid "About Logsim"
 msgstr "Acerca de logsim"
 
