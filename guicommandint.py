@@ -250,7 +250,7 @@ class GuiCommandInterface:
             self.devices.cold_startup()
             if self.run_network(cycles):
                 self.cycles_completed += cycles
-            return "".join([_("Running for "), str(cycles), _("cycles.")]), cycles
+            return "".join([_("Running for "), str(cycles)," " , _("cycles.")]), cycles
         return _("Invalid number of cycles."), cycles
 
     def continue_command(self):
