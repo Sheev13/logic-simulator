@@ -610,7 +610,7 @@ class Gui(wx.Frame):
     def _choose_file(self, first=False):
         """Allow user to find circuit definition file."""
         openFileDialog = wx.FileDialog(
-            self, "Open txt file", "", "",
+            self, _("Open"), "", "",
             wildcard="TXT files (*.txt)|*.txt",
             style=wx.FD_OPEN+wx.FD_FILE_MUST_EXIST
         )
@@ -1082,7 +1082,7 @@ class Gui(wx.Frame):
         name = self.monitor_input.GetValue()
         if self._is_valid_monitor(name):
             if self._is_monitoring(name):
-                text = f"Already monitoring {name}"
+                text = _("Already monitoring") + " {name}"
             else:
                 text = self._make_monitor(name)
                 self._add_monitor_button(name)
@@ -1299,7 +1299,7 @@ class Gui(wx.Frame):
                     + _("monitor' box to add to monitors.") \
                     +_(" Press 'Clear All' to remove all monitors.") \
                     + _(" Click on an individual monitor button to ") \
-                    +_ ("remove it.")\
+                    +_("remove it.")\
                     + "\n \n" + \
                     _("Adjust the number of cycles with the spinner.")\
                     + "\n \n" + \

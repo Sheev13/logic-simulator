@@ -17,338 +17,334 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: gui.py:201
+#: gui.py:202
 msgid "Welcome to the Logic Simulator! "
 msgstr "¡Bienvenido al simulador de lógica! "
 
-#: gui.py:202
+#: gui.py:203
 msgid "See User Guide for help."
 msgstr "Consulte el manual de uso del programa para obtener consejos."
 
-#: gui.py:314 gui.py:804
+#: gui.py:340 gui.py:613
 msgid "Open"
 msgstr "Abre"
 
-#: gui.py:315
+#: gui.py:341
 msgid "About"
 msgstr "Acerca de"
 
-#: gui.py:316
+#: gui.py:342
 msgid "Exit"
 msgstr "Salir"
 
-#: gui.py:317 gui.py:780
+#: gui.py:343 gui.py:892
 msgid "Command Line Guide"
 msgstr "Manual de la línea de comandos"
 
-#: gui.py:318 gui.py:786
+#: gui.py:344 gui.py:898
 msgid "Canvas Controls"
 msgstr "Controles del lienzo"
 
-#: gui.py:319 gui.py:793
+#: gui.py:345 gui.py:905
 msgid "Sidebar Guide"
 msgstr "Manual de la columna anexa"
 
-#: gui.py:320
+#: gui.py:346
 msgid "File"
 msgstr "Archivo"
 
-#: gui.py:321
+#: gui.py:347
 msgid "User Guide"
 msgstr "Manual de uso del programa"
 
-#: gui.py:348
+#: gui.py:375
 msgid "Browse"
 msgstr "Navegar"
 
-#: gui.py:356
+#: gui.py:383
 msgid "Devices:"
 msgstr "Dispositivos:"
 
-#: gui.py:361
+#: gui.py:388
 msgid "Monitors:"
 msgstr "Monitores:"
 
-#: gui.py:370
+#: gui.py:397
 msgid "Add new monitor"
 msgstr "Añadir nuevo monitor"
 
-#: gui.py:373
+#: gui.py:400
 msgid "(click to remove)"
 msgstr "(haga clic para eliminar)"
 
-#: gui.py:376
+#: gui.py:403
 msgid "Clear All"
 msgstr "Borrar todos"
 
-#: gui.py:381
+#: gui.py:408
 msgid " Cycles: "
 msgstr " Ciclos: "
 
-#: gui.py:385
+#: gui.py:412
 msgid "Run"
 msgstr "Ejecutar"
 
-#: gui.py:393
+#: gui.py:420
 msgid "Continue"
 msgstr "Continuar"
 
-#: gui.py:402
+#: gui.py:433
 msgid "Clear Canvas"
 msgstr "Borrar lienzo"
 
-#: gui.py:411
+#: gui.py:442
 msgid "Command line input. See User Guide for help."
 msgstr "Línea de comandos. Consulte el manual para obtener consejos."
 
-#: gui.py:569
+#: gui.py:679
 msgid "Switches (toggle on/off):"
 msgstr "Interruptores (haga clic para cambiar):"
 
-#: gui.py:571
+#: gui.py:681
 msgid "No switches in this circuit."
 msgstr "No hay interruptores en este circuito."
 
-#: gui.py:625
+#: gui.py:735
 msgid "inputs"
 msgstr "insumos"
 
-#: gui.py:636
+#: gui.py:746
 msgid "half-period"
 msgstr "semiperíodo"
 
-#: gui.py:692
+#: gui.py:804
 msgid "New circuit loaded."
 msgstr "Nuevo circuito cargado."
 
-#: gui.py:720
+#: gui.py:832
 msgid "from"
 msgstr "de"
 
-#: gui.py:720
+#: gui.py:832
 msgid "to"
 msgstr "a"
 
-#: gui.py:729
+#: gui.py:841
 msgid "Current Connections"
 msgstr "Conexiones actuales"
 
-#: gui.py:736
+#: gui.py:848
 msgid "Delete Connection"
 msgstr "Eliminar conexión"
 
-#: gui.py:769
+#: gui.py:881
 msgid "Created by"
 msgstr "Creado por"
 
-#: gui.py:769
+#: gui.py:881
 msgid "Logic Simulator"
 msgstr "El simulador de lógica"
 
-#: gui.py:772
+#: gui.py:884
 msgid "About Logsim"
 msgstr "Acerca de logsim"
 
-#: gui.py:827
-msgid "Unable to parse file."
-msgstr "No puede analizar el archivo."
-
-#: gui.py:850
+#: gui.py:942
 msgid "Choose a new output to connect input "
 msgstr "Elige una nueva valor para conectar a "
 
-#: gui.py:852
+#: gui.py:944
 msgid "Replace Connection"
 msgstr "Reemplazar conexión"
 
-#: gui.py:860
+#: gui.py:952
 msgid "You must select a new connection for this input."
 msgstr "Debes elegir una conexión nuevo."
 
-#: gui.py:861
+#: gui.py:953
 msgid "Error - Connection Needed"
 msgstr "Error - conexión necesaria"
 
-#: gui.py:875
-msgid "Successfully made new connection"
-msgstr "Conexión nueva realizada con éxito"
-
-#: gui.py:883
+#: gui.py:981
 msgid "Number of cycles: "
 msgstr "Número de ciclos: "
 
-#: gui.py:934
+#: gui.py:1031
 msgid "Canvas cleared. Press run to start simulation again."
 msgstr "El lienzo borrado. Haga clic 'Ejecutar' para iniciar la simulación otra vez."
 
-#: gui.py:952
+#: gui.py:1049
 msgid "turned"
 msgstr "es"
 
-#: gui.py:980
+#: gui.py:1077
 msgid "All monitors destroyed."
 msgstr "Todos monitores eliminados."
 
-#: gui.py:988
+#: gui.py:1085
 msgid "Already monitoring"
 msgstr "Ya monitoreando"
 
-#: gui.py:993
+#: gui.py:1090
 msgid "Invalid monitor"
 msgstr "Monitor inválido"
 
-#: gui.py:1162
+#: gui.py:1259
 msgid "Enter command line inputs in the bottom left of"
 msgstr "Ingrese en la línea de comandos en el parte inferior izquierda del"
 
-#: gui.py:1163
+#: gui.py:1260
 msgid " the interface."
 msgstr " interfaz."
 
-#: gui.py:1164
+#: gui.py:1261
 msgid "Possible commands:"
 msgstr "Comandos posibles:"
 
-#: gui.py:1165
+#: gui.py:1262
 msgid "Run simulator for N cycles"
 msgstr "Ejecutar el simulador por N ciclos"
 
-#: gui.py:1166
+#: gui.py:1263
 msgid "Continue running simulation"
 msgstr "Continuar la simulación"
 
-#: gui.py:1167
+#: gui.py:1264
 msgid " for N cycles"
 msgstr " por N ciclos"
 
-#: gui.py:1168
+#: gui.py:1265
 msgid "Set switch X to N (0 or 1)"
 msgstr "Poner interruptor X a N (0 o 1)"
 
-#: gui.py:1169
+#: gui.py:1266
 msgid "Start monitoring output signal X"
 msgstr "Empezar a monitorizar X"
 
-#: gui.py:1170
+#: gui.py:1267
 msgid "Stop monitoring X"
 msgstr "Dejar de monitorear X"
 
-#: gui.py:1173
+#: gui.py:1270
 msgid "Signals on the canvas can be manipulated to"
 msgstr "Las señales en el lienzo se pueden manipular para"
 
-#: gui.py:1174
+#: gui.py:1271
 msgid " better view them."
 msgstr " verlas mejor."
 
-#: gui.py:1175
+#: gui.py:1272
 msgid "Scroll in to zoom in"
 msgstr "Desplácese para acercar"
 
-#: gui.py:1177
+#: gui.py:1274
 msgid "Scroll out to zoom out - this may "
 msgstr "Desplácese para alejar - esto puede "
 
-#: gui.py:1178
+#: gui.py:1275
 msgid "be useful if you have many monitors"
 msgstr "ser útil si hay muchos monitores"
 
-#: gui.py:1180
+#: gui.py:1277
 msgid "Click and hold to drag the signals "
 msgstr "Haga clic y mantenga presionado para arrastrar las señales "
 
-#: gui.py:1181
+#: gui.py:1278
 msgid "around the space"
 msgstr "alrededor del espacio"
 
-#: gui.py:1184
+#: gui.py:1281
 msgid "The sidebar can be used to adjust simulation "
 msgstr "La columna anexa puede utilizar "
 
-#: gui.py:1185
+#: gui.py:1282
 msgid "settings"
 msgstr "ajustar la simulación"
 
-#: gui.py:1186
+#: gui.py:1283
 msgid "Click 'Browse' to load a new circuit file."
 msgstr "Haga clic 'Navegar' para cargar un archivo nuevo."
 
-#: gui.py:1188
+#: gui.py:1285
 msgid "See the list of devices to decide what you "
 msgstr "Consulte la lista de los dispositivos para decider lo que "
 
-#: gui.py:1189
+#: gui.py:1286
 msgid "want to monitor. Hover on a device to see "
 msgstr "quieres monitorizar. Pase el cursor sobre un dispositivo para ver "
 
-#: gui.py:1190
+#: gui.py:1287
 msgid "its full name, kind and qualifier information."
 msgstr "su nombre, tipo y más información."
 
-#: gui.py:1192
+#: gui.py:1289
 msgid "To remove a connection before or during a "
 msgstr "Para eliminar una conexión antes de o durando una "
 
-#: gui.py:1193
+#: gui.py:1290
 msgid "simulation, choose from the dropdown list "
 msgstr "simulación, elige de la lista desplegable "
 
-#: gui.py:1194
+#: gui.py:1291
 msgid "next to 'Devices' and click 'Delete Connection."
 msgstr "al lado de 'Dispositivos' y haga clic 'Eliminar conexión'."
 
-#: gui.py:1195
+#: gui.py:1292
 msgid "Select a new output "
 msgstr "Elige una nueva valor "
 
-#: gui.py:1196
+#: gui.py:1293
 msgid "to connect to the input from the deleted "
 msgstr "para conectar al insumo de la conexión "
 
-#: gui.py:1197
+#: gui.py:1294
 msgid "connection."
 msgstr "eliminada."
 
-#: gui.py:1199
+#: gui.py:1296
 msgid "Click the switch buttons to toggle on or off."
 msgstr "Haga clic en los butones de los interruptores para cambiar."
 
-#: gui.py:1201
+#: gui.py:1298
 msgid "Type the name of an output in the 'Add new "
 msgstr "Escribe el nombre de una valor en el cuadro 'Añadir nueva "
 
-#: gui.py:1202
+#: gui.py:1299
 msgid "monitor' box to add to monitors."
 msgstr "monitor' para añadir a la lista de monitores."
 
-#: gui.py:1203
+#: gui.py:1300
 msgid " Press 'Clear All' to remove all monitors."
 msgstr " Haga clic 'Borrar todos' para eliminar todos monitores."
 
-#: gui.py:1204
+#: gui.py:1301
 msgid " Click on an individual monitor button to "
 msgstr " Haga clic en un monitor individual para "
 
-#: gui.py:1205
+#: gui.py:1302
 msgid "remove it."
 msgstr "eliminarlo."
 
-#: gui.py:1207
+#: gui.py:1304
 msgid "Adjust the number of cycles with the spinner."
 msgstr "Adjusta el número de ciclos con la ruleta."
 
-#: gui.py:1209
+#: gui.py:1306
 msgid "Press 'Run' or 'Continue' to start the "
 msgstr "Haga clic 'Ejecutar' o 'Continuar' para iniciar la "
 
-#: gui.py:1210 gui.py:1213
+#: gui.py:1307 gui.py:1310
 msgid "simulation."
 msgstr "simulación."
 
-#: gui.py:1212
+#: gui.py:1309
 msgid "Press 'Clear Canvas' to reset the "
 msgstr "Haga clic 'Borrar lienzo' para restablacer la "
 
-#: gui.py:1217
-msgid "Unable to parse file. Old file will remain loaded."
+#: gui.py:1314
+msgid "Unable to load file. Old file will remain loaded."
 msgstr "No puede analizar el archivo. El archivo antiguo permanecerá cargado."
+
+#: gui.py:1317
+msgid "Unable to load file. Please choose valid file."
+msgstr "No puede analizar el archivo. Elige un archivo válido."
