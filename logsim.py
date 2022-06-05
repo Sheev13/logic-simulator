@@ -15,8 +15,6 @@ import getopt
 import sys
 import builtins
 
-import gettext
-
 import wx
 
 from names import Names
@@ -30,13 +28,13 @@ from gui import Gui
 
 # language domain
 langDomain = "LOGIC SIMULATOR"
-# languages you want to support
+
 supportedLangs = {
     u"en": wx.LANGUAGE_ENGLISH,
     u"es": wx.LANGUAGE_SPANISH
 }
 
-def _displayHook(obj):
+def _hook(obj):
     if obj is not None:
         print (repr(obj))
 
@@ -46,7 +44,7 @@ builtins.__dict__['_'] = wx.GetTranslation
 class App(wx.App):
     def OnInit(self):
         #self.Init()
-        sys.displayhook = _displayHook
+        sys.displayhook = _hook
         self.appName = "Logic Simulator"
         return True
 
@@ -59,17 +57,17 @@ class App(wx.App):
         # if an unsupported language is requested default to English
         print(lang)
         if lang in supportedLangs:
-            selLang = supportedLangs[lang]
+            setLang = supportedLangs[lang]
         else:
-            selLang = wx.LANGUAGE_ENGLISH
-        print(selLang)
+            setLang = wx.LANGUAGE_ENGLISH
+        print(setLang)
 
         if self.locale:
             assert sys.getrefcount(self.locale) <= 2
             del self.locale
 
         # create a locale object for this language
-        self.locale = wx.Locale(selLang)
+        self.locale = wx.Locale(setLang)
         if self.locale.IsOk():
             self.locale.AddCatalog(langDomain)
         else:
