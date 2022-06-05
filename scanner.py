@@ -311,7 +311,7 @@ class Scanner:
                 self.f.seek(prev_linestart - 1)
                 errorline1 = self._get_error_line()
 
-                caratline = " " * len(errorline1) + "^"
+                caretline = " " * len(errorline1) + "^"
                 self.f.seek(error_linestart - 1)
                 errorline2 = self._get_error_line()
                 message = errorline1 + "\n" + caretline + "\n" + errorline2 + "\n"
@@ -320,14 +320,14 @@ class Scanner:
             else:  # "if no previous line or symbol is unclosed comment"
                 self.f.seek(error_linestart - 1)
                 errorline = self._get_error_line()
-                caratline = "^"
-                message = errorline + "\n" + caratline
+                caretline = "^"
+                message = errorline + "\n" + caretline
                 col = error_pos - error_linestart
         else:
             self.f.seek(error_linestart - 1)
             errorline = self._get_error_line()
-            caratline = " " * (error_pos - error_linestart) + "^"
-            message = errorline + "\n" + caratline
+            caretline = " " * (error_pos - error_linestart) + "^"
+            message = errorline + "\n" + caretline
             col = error_pos - error_linestart
 
         # return file object pointers to prior settings
