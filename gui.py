@@ -655,7 +655,7 @@ class Gui(wx.Frame):
     def display_errors(self, error_message_list, first=False):
         """Display errors in dialog box."""
         errors = ""
-        for error in error_message_list[:-1]:
+        for error in error_message_list:
             errors += f"\n{error}"
         if first:
             message = f"{errors} \n \n{self.first_parse_error_string}"

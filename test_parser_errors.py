@@ -147,7 +147,8 @@ class TestParserDevices:
             "test_files/parse_device_missing_semicolon_handling.txt")
         parser_obj.set_next()
 
-        mocker.patch('parse.Parser.parse_device_id', return_value=(True, None))
+        mocker.patch('parse.Parser.parse_device_id', return_value=(True,
+                                                                   None, None))
 
         spy_id = mocker.spy(parser_obj, "parse_device_id")
         spy_kind = mocker.spy(parser_obj, "parse_device_kind")
@@ -209,8 +210,8 @@ class TestParserDevices:
         spy_error = mocker.spy(parser_obj, "error")
 
         parser_obj.parse_device_id()
-        assert spy_parse_device_id.spy_return == (
-            missing_semicolon, device_name)
+        assert spy_parse_device_id.spy_return[0] == missing_semicolon
+        assert spy_parse_device_id.spy_return[1] == device_name
         assert spy_error.call_count == error_calls
 
     @pytest.mark.parametrize("text_file, missing_semicolon, "

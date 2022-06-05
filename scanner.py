@@ -301,20 +301,20 @@ class Scanner:
                 caretline = " " * len(errorline1) + "^"
                 self.f.seek(linestart - 1)
                 errorline2 = self._get_error_line()
-                message = errorline1 + "\n" + caretline + "\n" + errorline2
+                message = errorline1 + "\n" + caretline + "\n" + errorline2 + "\n"
                 error_line_num -= 1
                 col = len(errorline1)
             else:  # if there is no previous line
                 self.f.seek(linestart - 1)
                 errorline = self._get_error_line()
                 caretline = "^"
-                message = errorline + "\n" + caretline
+                message = errorline + "\n" + caretline + "\n"
                 col = error_pos - linestart
         else:
             self.f.seek(linestart - 1)
             errorline = self._get_error_line()
             caretline = " " * (error_pos - linestart) + "^"
-            message = errorline + "\n" + caretline
+            message = errorline + "\n" + caretline + "\n"
             col = error_pos - linestart
 
         # return file object pointers to prior settings
