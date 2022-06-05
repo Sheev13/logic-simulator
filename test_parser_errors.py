@@ -135,6 +135,21 @@ class TestParserDevices:
         assert spy_semantic.call_count == 1  # semantic error is detected
         assert spy_syntactic.call_count == 0  # no syntax error detected
 
+    def test_device_already_present(self, mocker):
+        """Test if specific device semantic errors will be handled
+        appropriately"""
+
+        #if time, add more tests to parametise and figure out how to access
+        # error_type / use stdout capture to assert?
+
+        parser_obj = \
+            new_parser("test_files/device_semantic_testing/device_present.txt")
+
+
+        spy_semantic = mocker.spy(parser_obj, "semantic_error")
+        parser_obj.parse_network()
+        spy_semantic.assert_called_once()
+
     def test_parse_device_missing_semicolon_handling(self, mocker):
         """Test if one of parse_device_id/parse_device_kind/parse_device_qual
         return a missing semicolon, the next device is skipped
