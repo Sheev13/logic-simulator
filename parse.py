@@ -180,8 +180,6 @@ class Parser:
         print(final_msg)
         self.error_message_list.append(final_msg)
 
-        #TODO: this is not getting picked up by the GUI?
-
 
         if self.error_count == 0:  # syn + sem errors = 0
             return True
@@ -203,7 +201,7 @@ class Parser:
 
             self.set_next()
             if self.unclosed_comment:
-                return
+                break
 
             parsing_devices = True
             while parsing_devices:
@@ -243,7 +241,7 @@ class Parser:
                 elif self.symbol.type == self.scanner.EOF:
                     # reached end of file through error recovery in inner loop
                     #break
-                    return
+                    break
                 else:
                     # problem is not getting { or ] - i.e. device is missing
                     # opening curly bracket perhaps, try and look for { or ],
@@ -288,7 +286,7 @@ class Parser:
 
             self.set_next()
             if self.unclosed_comment:
-                return
+                break
 
             if self.symbol.id != self.scanner.SEMICOLON:
                 self.error(
@@ -306,7 +304,9 @@ class Parser:
 
             return True  # no meaning to boolean
 
-        if (
+        if self.end_of_file:
+            pass
+        elif (
             self.symbol.id != self.scanner.MONITOR_ID
             and self.symbol.id != self.scanner.CONNECTIONS_ID
         ):
@@ -639,8 +639,6 @@ class Parser:
     def parse_connections_list(self, previous_errors):
         """Parse list of connections."""
         self.set_next()
-        if self.unclosed_comment:
-            return
 
         while True:
             if self.end_of_file:
@@ -746,7 +744,9 @@ class Parser:
 
             return True
 
-        if self.symbol.id != self.scanner.MONITOR_ID:
+        if self.end_of_file:
+            pass
+        elif self.symbol.id != self.scanner.MONITOR_ID:
             self.set_next()
             if self.unclosed_comment:
                 return
@@ -965,6 +965,8 @@ class Parser:
                             self.scanner.NAME])
                 else:
                     # unknown problem
+                    # TODO try and solve!
+                    # occurs when we don't get a correct monitor?
                     print("unknown error has occurred")
                     self.error_count += 1
                     break
@@ -983,6 +985,9 @@ class Parser:
                 break
 
             self.set_next()
+            if self.unclosed_comment:
+                break  # ooh so i think break is better than return but only
+                # within parse_*_list
 
             if self.symbol.id != self.scanner.SEMICOLON:
                 self.error(
