@@ -67,8 +67,7 @@ class Parser:
                         [self.scanner.EOF])
 
             final_err = (
-                    f"\n" + _(
-                "Completely parsed the definition file.") +
+                    f"\n" + _("Completely parsed the definition file.") +
                     f" {self.error_count} "
                     + _("error(s) found in total.")
             )
@@ -553,7 +552,7 @@ class Parser:
             break
 
         return missing_semicolon, device_kind_string, device_kind_id, \
-               symbol_for_device_kind
+            symbol_for_device_kind
 
     def _parse_device_qual(self):
         """Parse a device qualifier."""
@@ -1141,8 +1140,8 @@ class Parser:
             caret_msg = caret_msg[:-2]  # don't show uninformative caret
 
         err = _("ERROR on line ") + \
-              f"{line_num} " + _("index ") + \
-              f"{col_num}: {msg} "
+            f"{line_num} " + _("index ") + \
+            f"{col_num}: {msg} "
 
         print(err)
         print(caret_msg)
