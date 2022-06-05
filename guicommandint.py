@@ -96,7 +96,7 @@ class GuiCommandInterface:
         elif command == "c":
             text, extra = self.continue_command()
         else:
-            text, extra = "Invalid command. See User Guide for help.", None
+            text, extra = _("Invalid command. See User Guide for help."), None
         return [
             command,
             text,

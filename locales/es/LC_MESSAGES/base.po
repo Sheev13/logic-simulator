@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2022-06-05 09:51+0100\n"
-"PO-Revision-Date: 2022-06-05 18:11+0100\n"
+"PO-Revision-Date: 2022-06-05 18:51+0100\n"
 "Last-Translator: \n"
 "Language-Team: GROUP 4\n"
 "Language: es\n"
@@ -16,6 +16,10 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: pygettext.py 1.5\n"
 "X-Generator: Poedit 3.0.1\n"
+
+#: guicommandint.py:99
+msgid "Invalid command. See User Guide for help."
+msgstr "El comando es inválido. Consulte el manual de uso del programa para obtener consejos."
 
 #: gui.py:202
 msgid "Welcome to the Logic Simulator! "
@@ -75,7 +79,7 @@ msgstr "Añadir nuevo monitor"
 
 #: gui.py:400
 msgid "(click to remove)"
-msgstr "(haga clic para eliminar)"
+msgstr "(clic para eliminar)"
 
 #: gui.py:403
 msgid "Clear All"

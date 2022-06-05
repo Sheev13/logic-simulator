@@ -10,12 +10,13 @@ Show help: logsim.py -h
 Command line user interface: logsim.py -c <file path>
 Graphical user interface: logsim.py <file path>
 """
-
 import getopt
+import os
 import sys
 import builtins
 
 import wx
+from wx.lib.mixins.inspection import InspectionMixin
 
 from names import Names
 from devices import Devices
@@ -37,15 +38,45 @@ def _hook(obj):
     if obj is not None:
         print (repr(obj))
 
-# add translation macro to builtin similar to what gettext does
 builtins.__dict__['_'] = wx.GetTranslation
 
-class App(wx.App):
+class App(wx.App, InspectionMixin):
     def OnInit(self):
-        #self.Init()
+        self.Init()
         sys.displayhook = _hook
         self.appName = "Logic Simulator"
+        self.doConfig()
+
+        self.locale = None
+        wx.Locale.AddCatalogLookupPathPrefix('locale')
+        self.updateLanguage(self.appConfig.Read(u"Language"))
+
         return True
+
+    def doConfig(self):
+        """Setup an application configuration file"""
+        # configuration folder
+        sp = wx.StandardPaths.Get()
+        self.configLoc = sp.GetUserConfigDir()
+        self.configLoc = os.path.join(self.configLoc, self.appName)
+        # win: C:\Users\userid\AppData\Roaming\appName
+        # nix: \home\userid\appName
+
+        if not os.path.exists(self.configLoc):
+            os.mkdir(self.configLoc)
+
+        # AppConfig stuff is here
+        self.appConfig = wx.FileConfig(appName=self.appName,
+                                       vendorName=u'who you wish',
+                                       localFilename=os.path.join(
+                                       self.configLoc, "AppConfig"))
+    
+        if not self.appConfig.HasEntry(u'Language'):
+            # on first run we default to German
+            self.appConfig.Write(key=u'Language', value=u'en')
+            
+        self.appConfig.Flush()
+
 
     def updateLanguage(self, lang):
         """
@@ -54,7 +85,6 @@ class App(wx.App):
         one is created.
         """
         # if an unsupported language is requested default to English
-        print(lang)
         if lang in supportedLangs:
             setLang = supportedLangs[lang]
         else:
