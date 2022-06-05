@@ -54,11 +54,7 @@ class App(wx.App):
         """
         Update the language to the requested one.
         Make *sure* any existing locale is deleted before the new
-        one is created.  The old C++ object needs to be deleted
-        before the new one is created, and if we just assign a new
-        instance to the old Python variable, the old C++ locale will
-        not be destroyed soon enough, likely causing a crash.
-        :param string `lang`: one of the supported language codes
+        one is created.
         """
         # if an unsupported language is requested default to English
         print(lang)
@@ -123,7 +119,12 @@ def main(arg_list):
         else:
             [path] = arguments
         # Initialise an instance of the gui.Gui() class
-        app = wx.App()
+        app = App()
+        builtins._ = wx.GetTranslation
+        locale = wx.Locale()
+        locale.Init(wx.LANGUAGE_DEFAULT)
+        locale.AddCatalogLookupPathPrefix('/locale')
+        locale.AddCatalog('base')
         gui = Gui("Logic Simulator", path, names, devices, network,
                     monitors)
         gui.Show(True)
