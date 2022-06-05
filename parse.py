@@ -29,36 +29,9 @@ class Parser:
 
     Public methods
     --------------
-    parse_network(self): Parses the circuit definition file.
-
-    parse_devices_list(self): Parses the devices list.
-    
-    parse_device(self, previous_errors): Parses a device.
-    
-    parse_device_id(self): Parses a device id.
-
-    parse_device_kind(self): Parses a device kind.
-
-    parse_device_qual(self): Parses a device qualifier.
-
-    parse_connections_list(self, previous_errors): Parses a 
-                            connections list.
-
-    parse_connection(self, previous_errors): Parses a connection.
-    
-    parse_signal(self): Parses the name of a signal.
-    
-    parse_monitors_list(self, previous_errors): Parses monitors list.
-
-    parse_monitors_list(self, previous_errors): Parses a single monitor.
-    
-    set_next(self): Shifts current symbol to the next.
-
-    get_symbol_string(self): Gets the string of current symbol.
-
-    error(self): Produces error message and recovers from next ';'.
-    
-    semantic_error(self, msg): Prints semantic error with message.
+    parse_network(self): Parses the circuit definition file. Returns True
+                         only if no syntax or semantic errors are found,
+                         otherwise returns False.
     """
 
     def __init__(self, names, devices, network, monitors, scanner):
@@ -70,33 +43,34 @@ class Parser:
         self.scanner = scanner
 
         self.error_count = 0
-        self.end_of_file = False
+        self.end_of_file = False  # if the end of file is reached
 
         self.symbol = None
-        self.unclosed_comment = False
+        self.unclosed_comment = False  # if an unclosed comment is detected
 
-        self.error_message_list = []
-
+        self.error_message_list = []  # list of terminal output to be passed
+        # to GUI
 
     def parse_network(self):
         """Parse the circuit definition file."""
         devices_done = False
         connections_done = False
         monitors_done = False
-        self.set_next()
-
+        self._set_next()
 
         if self.symbol.type == self.scanner.EOF and not \
                 self.unclosed_comment:
-
             # this is when we get an empty file - we would like to show
             # an error
 
-            self.error(_("Empty definition file was loaded."), [self.scanner.EOF])
+            self._error(_("Empty definition file was loaded."),
+                        [self.scanner.EOF])
 
             final_err = (
-                f"\n" + _("Completely parsed the definition file.") + f" {self.error_count} "
-                + _("error(s) found in total.")
+                    f"\n" + _(
+                "Completely parsed the definition file.") +
+                    f" {self.error_count} "
+                    + _("error(s) found in total.")
             )
             print(final_err)
             self.error_message_list.append(final_err)
@@ -107,7 +81,7 @@ class Parser:
 
             if self.symbol.id == self.scanner.DEVICES_ID:
                 if devices_done:
-                    self.error(
+                    self._error(
                         _("Multiple device lists found."),
                         [
                             self.scanner.CONNECTIONS_ID,
@@ -116,12 +90,12 @@ class Parser:
                         ],
                     )
                 else:
-                    self.parse_devices_list()
+                    self._parse_devices_list()
                     devices_done = True
 
             elif self.symbol.id == self.scanner.CONNECTIONS_ID:
                 if connections_done:
-                    self.error(
+                    self._error(
                         _("Multiple connections lists found."),
                         [
                             self.scanner.MONITOR_ID,
@@ -130,10 +104,10 @@ class Parser:
                     )
                 else:
                     if devices_done:
-                        self.parse_connections_list(self.error_count)
+                        self._parse_connections_list(self.error_count)
                         connections_done = True
                     else:
-                        self.error(
+                        self._error(
                             _("can't parse connections if not done devices"),
                             [self.scanner.DEVICES_ID],
                         )
@@ -142,7 +116,7 @@ class Parser:
 
             elif self.symbol.id == self.scanner.MONITOR_ID:
                 if monitors_done:
-                    self.error(
+                    self._error(
                         _("Multiple monitors lists found."),
                         [
                             self.scanner.CONNECTIONS_ID,
@@ -151,10 +125,10 @@ class Parser:
                     )
                 else:
                     if devices_done:
-                        self.parse_monitors_list(self.error_count)
+                        self._parse_monitors_list(self.error_count)
                         monitors_done = True
                     else:
-                        self.error(
+                        self._error(
                             _("can't parse monitors if not done devices"),
                             [self.scanner.DEVICES_ID],
                         )
@@ -163,7 +137,7 @@ class Parser:
             elif self._is_eof():
                 break
             else:
-                self.error(
+                self._error(
                     _("not DEVICES, CONNECTIONS, MONITORS nor EOF"),
                     [
                         self.scanner.DEVICES_ID,
@@ -176,30 +150,29 @@ class Parser:
                     break
 
         final_msg = (_("Completely parsed the definition file.") +
-            f" {self.error_count} " + _("error(s) found in total."))
+                     f" {self.error_count} " + _("error(s) found in total."))
         print(final_msg)
         self.error_message_list.append(final_msg)
-
 
         if self.error_count == 0:  # syn + sem errors = 0
             return True
         else:
             return False
 
-    def parse_devices_list(self):
+    def _parse_devices_list(self):
         """Parse list of devices."""
-        self.set_next()
+        self._set_next()
         if self.unclosed_comment:
             return
 
         while True:
             if self.symbol.id != self.scanner.OPEN_SQUARE:
-                self.error(
+                self._error(
                     _("expected") + " [", [
                         self.scanner.CONNECTIONS_ID, self.scanner.MONITOR_ID])
                 break
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 break
 
@@ -212,35 +185,33 @@ class Parser:
                     # if empty DEVICES list
                     break
 
-                missing_semicolon = self.parse_device(self.error_count)
+                missing_semicolon = self._parse_device(self.error_count)
                 if missing_semicolon:
                     if self.end_of_file:
                         break
 
                     print(
                         _("missed semicolon at end of device definition, ")
-                        +_("will end up skipping the device after")
+                        + _("will end up skipping the device after")
                     )
-
 
                 if self.symbol.id == self.scanner.OPEN_CURLY:
                     parsing_devices = True
                 elif self.symbol.id == self.scanner.CLOSE_SQUARE:
                     parsing_devices = False
                 elif (
-                    self.symbol.id == self.scanner.MONITOR_ID
-                    or self.symbol.id == self.scanner.CONNECTIONS_ID
+                        self.symbol.id == self.scanner.MONITOR_ID
+                        or self.symbol.id == self.scanner.CONNECTIONS_ID
                 ):
                     # error skips to end of devices
                     break
                 elif self.symbol.type == self.scanner.INVALID_CHAR:
                     # unknown character encountered
-                    self.error(
+                    self._error(
                         _("invalid character encountered"), [
                             self.scanner.OPEN_CURLY])
                 elif self.symbol.type == self.scanner.EOF:
                     # reached end of file through error recovery in inner loop
-                    #break
                     break
                 else:
                     # problem is not getting { or ] - i.e. device is missing
@@ -248,15 +219,16 @@ class Parser:
                     # if not those then look for connections/monitors
                     # if not those then EOF
 
-                    self.get_symbol_string()
-                    self.error(_("Invalid input to a DEVICES list. Devices ")
-                               + _("should start with '{', or the list should ")
-                               + _("end with ']' "),
-                               [self.scanner.OPEN_CURLY,
-                                self.scanner.CLOSE_SQUARE,
-                                self.scanner.CONNECTIONS_ID,
-                                self.scanner.MONITOR_ID,
-                                self.scanner.EOF])
+                    self._get_symbol_string()
+                    self._error(_("Invalid input to a DEVICES list. Devices ")
+                                + _(
+                        "should start with '{', or the list should ")
+                                + _("end with ']' "),
+                                [self.scanner.OPEN_CURLY,
+                                 self.scanner.CLOSE_SQUARE,
+                                 self.scanner.CONNECTIONS_ID,
+                                 self.scanner.MONITOR_ID,
+                                 self.scanner.EOF])
 
                     if self.symbol.id == self.scanner.CLOSE_SQUARE:
                         break
@@ -268,27 +240,26 @@ class Parser:
                             self.symbol.id == self.scanner.MONITOR_ID:
                         break
 
-
             if (
-                self.symbol.id == self.scanner.MONITOR_ID
-                or self.symbol.id == self.scanner.CONNECTIONS_ID
+                    self.symbol.id == self.scanner.MONITOR_ID
+                    or self.symbol.id == self.scanner.CONNECTIONS_ID
             ):
                 break
 
             # no longer parsing devices
             if (self.symbol.id != self.scanner.CLOSE_SQUARE and
                     not self._is_eof()):
-                self.error(
+                self._error(
                     _("expected") + " ]",
-                        [self.scanner.CONNECTIONS_ID, self.scanner.MONITOR_ID])
+                    [self.scanner.CONNECTIONS_ID, self.scanner.MONITOR_ID])
                 break
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 break
 
             if self.symbol.id != self.scanner.SEMICOLON:
-                self.error(
+                self._error(
                     _("expected") + " ;", [
                         self.scanner.MONITOR_ID, self.scanner.CONNECTIONS_ID])
                 break
@@ -297,7 +268,7 @@ class Parser:
                 break
 
             print(_("Successfully parsed the DEVICES list! \n"))
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return
 
@@ -306,41 +277,41 @@ class Parser:
         if self.end_of_file:
             pass
         elif (
-            self.symbol.id != self.scanner.MONITOR_ID
-            and self.symbol.id != self.scanner.CONNECTIONS_ID
+                self.symbol.id != self.scanner.MONITOR_ID
+                and self.symbol.id != self.scanner.CONNECTIONS_ID
         ):
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return
 
-        #print("Did not manage to parse the DEVICES list perfectly.")
+        # print("Did not manage to parse the DEVICES list perfectly.")
         if self.error_count != 0:
             err = f"{self.error_count} " + _("error(s) found ") \
-                  +_("when parsing the DEVICES list \n")
+                  + _("when parsing the DEVICES list \n")
             print(err)
             self.error_message_list.append(err)
             return False
 
-    def parse_device(self, previous_errors):
+    def _parse_device(self, previous_errors):
         """Parse a single device."""
-        #print("Parsing a single device.")
+        # print("Parsing a single device.")
         missing_device_semicolon = False
         device_qual_symbol = None  # initialising for semantic reporting
         device_kind_symbol = None  # initialising for semantic reporting
         device_name = None
         while True:
             if self.symbol.id != self.scanner.OPEN_CURLY:
-                self.error(
+                self._error(
                     _("expected") + " {", [
                         self.scanner.OPEN_CURLY, self.scanner.CLOSE_CURLY])
                 break
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True
 
             missing_semicolon, device_name, device_name_symbol = \
-                self.parse_device_id()
+                self._parse_device_id()
 
             if missing_semicolon:
                 if self.end_of_file:
@@ -357,7 +328,7 @@ class Parser:
                 device_kind_string,
                 device_kind_id,
                 device_kind_symbol
-            ) = self.parse_device_kind()
+            ) = self._parse_device_kind()
 
             if missing_semicolon:
                 if self.end_of_file:
@@ -369,29 +340,29 @@ class Parser:
 
             if self.symbol.id == self.scanner.QUAL_KEYWORD_ID:
                 missing_semicolon, device_qual, device_qual_symbol = \
-                    self.parse_device_qual()
+                    self._parse_device_qual()
                 if missing_semicolon:
                     if self.end_of_file:
                         return True
                     print(
                         _("missed a semicolon in device qual, ")
-                        +_("will skip to next device"))
+                        + _("will skip to next device"))
                     break
             else:
                 device_qual = None
 
             if self.symbol.id != self.scanner.CLOSE_CURLY:
-                self.error(
+                self._error(
                     _("expected") + " }", [
                         self.scanner.OPEN_CURLY, self.scanner.CLOSE_CURLY])
                 break
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True
 
             if self.symbol.id != self.scanner.SEMICOLON:
-                self.error(
+                self._error(
                     _("expected") + " ;",
                     [
                         self.scanner.OPEN_CURLY,
@@ -403,130 +374,124 @@ class Parser:
                 missing_device_semicolon = True
                 break
 
-            # if we get here we have done a whole device!
-            # for each device there are no new errors
+            # if we get here we have done a whole device
+            # for each device there are no new syntax errors
             if self.error_count - previous_errors == 0:
-                # print(
-                #     f"syntactically parsed the device: "
-                #     f"{device_name}-{device_kind_string}-{device_qual}"
-                # )
 
                 error_type = self.devices.make_device(
                     self.names.query(device_name), device_kind_id, device_qual
                 )
+
+                # if there is a semantic error
                 if error_type != self.devices.NO_ERROR:
                     if error_type == self.devices.NO_QUALIFIER:
-                        self.semantic_error(
-                            f"{device_kind_string} " + _("qualifier not present."),
+                        self._semantic_error(
+                            f"{device_kind_string} " + _(
+                                "qualifier not present."),
                             device_qual_symbol
                         )
                     elif error_type == self.devices.INVALID_QUALIFIER:
-                        self.semantic_error(
-                            f"{device_kind_string} " + _("qualifier is invalid."),
+                        self._semantic_error(
+                            f"{device_kind_string} " + _(
+                                "qualifier is invalid."),
                             device_kind_symbol
                         )
                     elif error_type == self.devices.QUALIFIER_PRESENT:
-                        self.semantic_error(
-                            _("Qualifier provided for ") + f"{device_kind_string} "
-                            + _("when there should be none."), device_qual_symbol
+                        self._semantic_error(
+                            _(
+                                "Qualifier provided for ") +
+                            f"{device_kind_string} "
+                            + _("when there should be none."),
+                            device_qual_symbol
                         )
                     elif error_type == self.devices.BAD_DEVICE:
-                        self.semantic_error(
+                        self._semantic_error(
                             _("Device kind") + f" {device_kind_string} "
-                            +("not recognised."), device_kind_symbol
+                            + ("not recognised."), device_kind_symbol
                         )
                     elif error_type == self.devices.DEVICE_PRESENT:
-                        self.semantic_error(
-                            _("Device ") + f"{device_name} " + _("already present."),
+                        self._semantic_error(
+                            _("Device ") + f"{device_name} " + _(
+                                "already present."),
                             device_name_symbol
                         )
-                #else:
-                    # print(
-                    #     f"semantically parsed & built the device:"
-                    #     f" {device_name}-"
-                    #     f"{device_kind_string}-{device_qual}"
-                    # )
 
-                self.set_next()
+                self._set_next()
                 if self.unclosed_comment:
                     return True
 
                 break
             else:
-                # print(
-                #     f"did not syntactically parse the device: "
-                #     f"{device_name}-{device_kind_string}-{device_qual}"
-                # )
-                # print("no attempts to build/check semantics will occur")
-                self.set_next()
+                # syntactic errors found when parsing the device
+                self._set_next()
                 if self.unclosed_comment:
                     return True
                 break
 
         return missing_device_semicolon
 
-    def parse_device_id(self):
+    def _parse_device_id(self):
         """Parse a device id."""
         missing_semicolon = False
         device_name = None
         symbol_for_device_name = None
         while True:
             if self.symbol.id != self.scanner.ID_KEYWORD_ID:
-                self.error(
+                self._error(
                     _("expected id keyword here"), [
                         self.scanner.KIND_KEYWORD_ID])
                 break
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True, device_name, symbol_for_device_name
 
             if self.symbol.id != self.scanner.COLON:
-                self.error(_("expected") + " :", [self.scanner.KIND_KEYWORD_ID])
+                self._error(_("expected") + " :",
+                            [self.scanner.KIND_KEYWORD_ID])
                 break
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True, device_name, symbol_for_device_name
 
             if self.symbol.type != self.scanner.NAME:
                 # name provided is syntactically incorrect for a name
                 if self.symbol.type == self.scanner.KEYWORD:
-                    self.error(
-                    _("Invalid name provided - ") + 
-                    _("a keyword cannot be used as a device name"), [
-                        self.scanner.KIND_KEYWORD_ID])
+                    self._error(
+                        _("Invalid name provided - ") +
+                        _("a keyword cannot be used as a device name"), [
+                            self.scanner.KIND_KEYWORD_ID])
                     break
                 else:
-                    self.error(
-                    _("Invalid name provided - ") +
-                    _("a device name should be alphanumeric"), [
-                        self.scanner.KIND_KEYWORD_ID])
+                    self._error(
+                        _("Invalid name provided - ") +
+                        _("a device name should be alphanumeric"), [
+                            self.scanner.KIND_KEYWORD_ID])
                     break
             else:
-                device_name = self.get_symbol_string()
+                device_name = self._get_symbol_string()
                 symbol_for_device_name = self.symbol
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True, device_name, symbol_for_device_name
 
             if self.symbol.id != self.scanner.SEMICOLON:
-                self.error(_("Missing semicolon"), [self.scanner.OPEN_CURLY])
+                self._error(_("Missing semicolon"), [self.scanner.OPEN_CURLY])
                 missing_semicolon = True
-                #print(self.get_symbol_string())
                 break
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True, device_name, symbol_for_device_name
 
             break
 
-        self.get_symbol_string()
+        self._get_symbol_string()
         return missing_semicolon, device_name, symbol_for_device_name
 
-    def parse_device_kind(self):
+    def _parse_device_kind(self):
         """Parse a device kind."""
         missing_semicolon = False
         device_kind_string = None  # may cause sem errors when creating devices
@@ -534,7 +499,7 @@ class Parser:
         symbol_for_device_kind = None
         while True:
             if self.symbol.id != self.scanner.KIND_KEYWORD_ID:
-                self.error(
+                self._error(
                     _("expected") + " 'kind'",
                     [self.scanner.QUAL_KEYWORD_ID, self.scanner.CLOSE_CURLY],
                 )
@@ -542,46 +507,46 @@ class Parser:
                 # this causes small issue with error counting for unclosed
                 # comments - deal with if time
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True, None, None, None
 
             if self.symbol.id != self.scanner.COLON:
-                self.error(
+                self._error(
                     _("expected") + " :",
                     [self.scanner.QUAL_KEYWORD_ID, self.scanner.CLOSE_CURLY],
                 )
                 break
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True, None, None, None
 
             if self.symbol.type != self.scanner.NAME:
-                self.error(
+                self._error(
                     _("Device type must be alphanumeric"),
                     [self.scanner.QUAL_KEYWORD_ID, self.scanner.CLOSE_CURLY],
                 )
                 break
             else:
-                device_kind_string = self.get_symbol_string()
+                device_kind_string = self._get_symbol_string()
                 [device_kind_id] = self.devices.names.lookup(
                     [device_kind_string])
                 symbol_for_device_kind = self.symbol
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True, None, None, None
 
             if self.symbol.id != self.scanner.SEMICOLON:
-                self.error(
+                self._error(
                     _("Missing semicolon"),
                     [self.scanner.OPEN_CURLY, self.scanner.CLOSE_SQUARE],
                 )
                 missing_semicolon = True
                 break
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True, None, None, None
 
@@ -590,34 +555,34 @@ class Parser:
         return missing_semicolon, device_kind_string, device_kind_id, \
                symbol_for_device_kind
 
-    def parse_device_qual(self):
+    def _parse_device_qual(self):
         """Parse a device qualifier."""
         missing_semicolon = False
         device_qual = None
         symbol_for_device_qual = None
         while True:
             if self.symbol.id != self.scanner.QUAL_KEYWORD_ID:
-                self.error(
+                self._error(
                     _("expected") + " 'qual",
                     [self.scanner.CLOSE_CURLY])
                 break
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True, None, None
 
             if self.symbol.id != self.scanner.COLON:
-                self.error(
+                self._error(
                     _("expected") + " :",
                     [self.scanner.CLOSE_CURLY])
                 break
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True, None, None
 
             if self.symbol.type != self.scanner.NUMBER:
-                self.error(
+                self._error(
                     _("unsupported qualifier input"), [
                         self.scanner.CLOSE_CURLY])
                 break
@@ -625,19 +590,19 @@ class Parser:
                 device_qual = self.symbol.id
                 symbol_for_device_qual = self.symbol
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True, None, None
 
             if self.symbol.id != self.scanner.SEMICOLON:
-                self.error(
+                self._error(
                     "Missing semicolon",
                     [self.scanner.OPEN_CURLY, self.scanner.CLOSE_SQUARE],
                 )
                 missing_semicolon = True
                 break
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True, None, None
 
@@ -645,21 +610,20 @@ class Parser:
 
         return missing_semicolon, device_qual, symbol_for_device_qual
 
-    def parse_connections_list(self, previous_errors):
+    def _parse_connections_list(self, previous_errors):
         """Parse list of connections."""
-        self.set_next()
+        self._set_next()
 
         while True:
             if self.end_of_file:
                 break
             if self.symbol.id != self.scanner.OPEN_SQUARE:
-                self.error(
+                self._error(
                     _("expected") + " [", [
                         self.scanner.MONITOR_ID, self.scanner.EOF])
                 # it could also be end of file, connections not necessary
                 break
-            self.set_next()
-            # if statement not need here because of check within while loop
+            self._set_next()
 
             parsing_connections = True
             while parsing_connections:
@@ -670,17 +634,18 @@ class Parser:
                     parsing_connections = False
                     break
 
-                missing_semicolon = self.parse_connection(self.error_count)
-                if self.end_of_file:   # if there has been an error within
+                missing_semicolon = self._parse_connection(self.error_count)
+                if self.end_of_file:
+                    # if there has been an error within
                     # parse_connection that causes us to reach the end of
                     # the file we can break here
                     break
                 if missing_semicolon:
-                    # TODO: worth printing a warning?
-                    # print(
-                    #     "missed semicolon at end of connection definition, "
-                    #     "will end up skipping the connection after"
-                    # )
+                    # to improve, print a warning about how missing a
+                    # semicolon at the end of a connection definition will
+                    # cause the connection afterwards to be skipped due to
+                    # error recovery strategy - same for devices and monitors
+
                     if self.symbol.id == self.scanner.MONITOR_ID:
                         break
                     continue
@@ -695,28 +660,25 @@ class Parser:
                     break
                 elif self.symbol.type == self.scanner.INVALID_CHAR:
                     # unknown character encountered
-                    self.error(
+                    self._error(
                         _("invalid character encountered"), [
                             self.scanner.NAME])
-                    # i think this should be different error recovery?
-                    # did i write this code?
                 elif self.symbol.type == self.scanner.KEYWORD:
-                    self.error(_("Cannot use a KEYWORD for a signal name"),
-                               [self.scanner.NAME])
+                    self._error(_("Cannot use a KEYWORD for a signal name"),
+                                [self.scanner.NAME])
                 else:
-                    self.error(_("Unknown Error"),
-                               [self.scanner.NAME,
-                                self.scanner.CLOSE_SQUARE,
-                                self.scanner.MONITOR_ID,
-                                self.scanner.EOF
-                                ])
+                    self._error(_("Unknown Error"),
+                                [self.scanner.NAME,
+                                 self.scanner.CLOSE_SQUARE,
+                                 self.scanner.MONITOR_ID,
+                                 self.scanner.EOF
+                                 ])
                     if self.symbol.id == self.scanner.CLOSE_SQUARE:
                         break
                     elif self.symbol.type == self.scanner.NAME:
                         continue
                     elif self.end_of_file:
-                        # TODO: need to check this
-                        return
+                        break
                     elif self.symbol.id == self.scanner.MONITOR_ID:
                         break
 
@@ -728,17 +690,17 @@ class Parser:
 
             # no longer parsing connections
             if self.symbol.id != self.scanner.CLOSE_SQUARE:
-                self.error(
+                self._error(
                     _("expected") + " ]", [
                         self.scanner.MONITOR_ID, self.scanner.EOF])
                 break
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return
 
             if self.symbol.id != self.scanner.SEMICOLON:
-                self.error(
+                self._error(
                     _("expected") + " ;", [
                         self.scanner.MONITOR_ID, self.scanner.EOF])
                 break
@@ -747,7 +709,7 @@ class Parser:
                 break
 
             print(_("Successfully parsed the CONNECTIONS list! \n"))
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return
 
@@ -756,17 +718,15 @@ class Parser:
         if self.end_of_file:
             pass
         elif self.symbol.id != self.scanner.MONITOR_ID:
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return
 
-        #print("Did not manage to parse the connections list perfectly")
-
         if self.error_count - previous_errors != 0:
             err = (
-                f"{self.error_count - previous_errors} " +
-                _("error(s) found when parsing the ") +
-                _("CONNECTIONS list \n")
+                    f"{self.error_count - previous_errors} " +
+                    _("error(s) found when parsing the ") +
+                    _("CONNECTIONS list \n")
             )
 
             print(err)
@@ -774,16 +734,15 @@ class Parser:
             self.error_message_list.append(err)
             return False
 
-    def parse_connection(self, previous_errors):
+    def _parse_connection(self, previous_errors):
         """Parse a single connection."""
-        #print("Parsing a single connection.")
         missing_signal_end_marker = False
-        symbol_store_right = {}
+        symbol_store_right = {}  # initialising for semantic error reporting
         while True:
             if self.symbol.id == self.scanner.SEMICOLON:
-                self.error(
+                self._error(
                     _("No connection found before semicolon"),
-                        [self.scanner.NAME])
+                    [self.scanner.NAME])
                 break
             (
                 missing_signal_end_marker,
@@ -791,7 +750,7 @@ class Parser:
                 leftPortId,
                 leftSignalName,
                 symbol_store_left
-            ) = self.parse_signal()
+            ) = self._parse_signal()
             if self.end_of_file:
                 break
             if missing_signal_end_marker:
@@ -799,7 +758,7 @@ class Parser:
                     _("missed colon in connection, ") +
                     _("will skip to next connection"))
                 break
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True
 
@@ -809,56 +768,45 @@ class Parser:
                 rightPortId,
                 rightSignalName,
                 symbol_store_right
-            ) = self.parse_signal()
+            ) = self._parse_signal()
             if self.end_of_file:
                 break
             if missing_signal_end_marker:
-                # print(
-                #     "missed semicolon at end of connection, will skip "
-                #     "to next connection"
-                # )
+                # if time, print a warning
                 break
 
             if self.error_count - previous_errors == 0:
-                # print("No errors when parsing connection -->" +
-                #       "proceed to build.")
+                # no syntax errors found when parsing connection
                 error_type = self.network.make_connection(
                     leftOutputId, leftPortId, rightOutputId, rightPortId
                 )
 
                 if error_type != self.network.NO_ERROR:
                     if error_type == self.network.DEVICE_ABSENT:
-                        self.semantic_error(
+                        self._semantic_error(
                             _("Either left or right device is absent"))
                     elif error_type == self.network.INPUT_CONNECTED:
-                        self.semantic_error(
+                        self._semantic_error(
                             f"{rightSignalName} " +
                             _("input is already connected."),
                             symbol_store_right.get("device_id")
                         )
                     elif error_type == self.network.INPUT_TO_INPUT:
-                        self.semantic_error(_("Both ports are inputs."))
+                        self._semantic_error(_("Both ports are inputs."))
                     elif error_type == self.network.PORT_ABSENT:
-                        self.semantic_error(_("Right port id is invalid."),
-                                            symbol_store_right.get("port_id"))
+                        self._semantic_error(_("Right port id is invalid."),
+                                             symbol_store_right.get("port_id"))
                     elif error_type == self.network.OUTPUT_TO_OUTPUT:
-                        self.semantic_error(_("Both ports are outputs."))
-                
-                # else:
-                #     print(
-                #         f"Successfully built connection from "
-                #         f"{leftSignalName} to {rightSignalName}."
-                #     )
+                        self._semantic_error(_("Both ports are outputs."))
 
-                self.set_next()
+                self._set_next()
                 if self.unclosed_comment:
                     return True
                 break
 
             else:
-                # print(f"Could not syntactically parse the connection.")
-                # print("No attempts to build/check semantics will occur.")
-                self.set_next()
+                # syntax errors found in connection
+                self._set_next()
                 if self.unclosed_comment:
                     return True
 
@@ -866,7 +814,7 @@ class Parser:
 
         return missing_signal_end_marker
 
-    def parse_signal(self):
+    def _parse_signal(self):
         """Parse a signal name."""
         missing_end_marker = False
         signalName = ""
@@ -876,7 +824,7 @@ class Parser:
 
         while True:
             if self.symbol.type != self.scanner.NAME:
-                self.error(
+                self._error(
                     _("Expected an output name here"),
                     [self.scanner.NAME]
                 )
@@ -885,18 +833,18 @@ class Parser:
             signalName += self.names.get_name_string(self.symbol.id)
             deviceId = self.symbol.id
             symbol_store["device_id"] = self.symbol
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return True, None, None, None, None
 
             if self.symbol.id == self.scanner.DOT:
                 signalName += "."
-                self.set_next()
+                self._set_next()
                 if self.unclosed_comment:
                     return True, None, None, None, None
 
                 if self.symbol.type != self.scanner.NAME:
-                    self.error(
+                    self._error(
                         _("expected a port name here"), [
                             self.scanner.NAME])
                     break
@@ -905,16 +853,16 @@ class Parser:
                 portId = self.symbol.id
                 symbol_store["port_id"] = self.symbol
 
-                self.set_next()
+                self._set_next()
                 if self.unclosed_comment:
                     return True, None, None, None, None
 
             if (
-                self.symbol.id != self.scanner.COLON
-                and self.symbol.id != self.scanner.SEMICOLON
+                    self.symbol.id != self.scanner.COLON
+                    and self.symbol.id != self.scanner.SEMICOLON
             ):
                 missing_end_marker = True
-                self.error(
+                self._error(
                     _("missing ':' or ';'"),
                     [
                         self.scanner.NAME,
@@ -928,19 +876,18 @@ class Parser:
 
         return missing_end_marker, deviceId, portId, signalName, symbol_store
 
-    def parse_monitors_list(self, previous_errors):
+    def _parse_monitors_list(self, previous_errors):
         """Parse list of monitors."""
-        self.set_next()
+        self._set_next()
         while True:
             if self.end_of_file:
                 break
             if self.symbol.id != self.scanner.OPEN_SQUARE:
-                self.error(
+                self._error(
                     _("expected") + " [", [
                         self.scanner.CONNECTIONS_ID, self.scanner.EOF])
-                # it could also be end of file, monitors not necessary
                 break
-            self.set_next()
+            self._set_next()
 
             parsing_monitors = True
             while parsing_monitors:
@@ -951,15 +898,14 @@ class Parser:
                     parsing_monitors = False
                     break
 
-                missing_semicolon = self.parse_monitor(self.error_count)
+                missing_semicolon = self._parse_monitor(self.error_count)
 
                 if self.end_of_file:
                     break
                 if missing_semicolon:
-                    # print(
-                    #     "missed semicolon at end of monitor, "
-                    #     "will end up skipping the monitor after"
-                    # )
+                    # will skip next monitor due to error recovery strategy
+                    # if an error is found in _parse_monitor we should break
+                    # here
                     if self.symbol.id == self.scanner.CONNECTIONS_ID:
                         break
                     continue
@@ -973,13 +919,11 @@ class Parser:
                     break
                 elif self.symbol.type == self.scanner.INVALID_CHAR:
                     # unknown character encountered
-                    self.error(
+                    self._error(
                         _("invalid character encountered"), [
                             self.scanner.NAME])
                 else:
-                    # unknown problem
-                    # TODO try and solve!
-                    # occurs when we don't get a correct monitor?
+                    # To be tested further - kept now to prevent infinite loops
                     print(_("Unknown Error"))
                     self.error_count += 1
                     break
@@ -992,18 +936,17 @@ class Parser:
 
             # no longer parsing monitors
             if self.symbol.id != self.scanner.CLOSE_SQUARE:
-                self.error(
+                self._error(
                     _("expected") + " ]", [
                         self.scanner.CONNECTIONS_ID, self.scanner.EOF])
                 break
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
-                break  # ooh so i think break is better than return but only
-                # within parse_*_list
+                break  # break instead of return to get error count
 
             if self.symbol.id != self.scanner.SEMICOLON:
-                self.error(
+                self._error(
                     _("expected") + " ;", [
                         self.scanner.EOF, self.scanner.CONNECTIONS_ID])
                 break
@@ -1012,22 +955,20 @@ class Parser:
                 break
 
             print(_("Successfully parsed the MONITORS list! \n"))
-            self.set_next()
+            self._set_next()
             return True
 
-        # print("Did not manage to parse the MONITORS list perfectly")
-
         if (
-            self.symbol.id != self.scanner.CONNECTIONS_ID
-            and self.symbol.id != self.scanner.EOF
+                self.symbol.id != self.scanner.CONNECTIONS_ID
+                and self.symbol.id != self.scanner.EOF
         ):
-            self.set_next()
+            self._set_next()
 
         if self.error_count - previous_errors != 0:
             err = (
-                f"{self.error_count - previous_errors} " +
-                _("error(s) found when parsing the ") +
-                _("MONITORS list \n")
+                    f"{self.error_count - previous_errors} " +
+                    _("error(s) found when parsing the ") +
+                    _("MONITORS list \n")
             )
 
             print(err)
@@ -1035,66 +976,62 @@ class Parser:
             self.error_message_list.append(err)
             return False
 
-    def parse_monitor(self, previous_errors):
+    def _parse_monitor(self, previous_errors):
         """Parse a single monitor."""
-        # print("Parsing a monitor.")
         missing_semicolon = False
         symbol_store = {}
         while True:
             if self.symbol.id == self.scanner.SEMICOLON:
-                self.error(
+                self._error(
                     _("No signal found before semicolon"), [
                         self.scanner.NAME])
                 break
             (missing_semicolon, deviceId,
-                portId, signalName, symbol_store) = self.parse_signal()
+             portId, signalName, symbol_store) = self._parse_signal()
             if self.end_of_file:
                 break
             if missing_semicolon:
-                # print("missed a semicolon, will skip to next monitor")
+                # skip to next monitor
                 break
 
             if self.error_count - previous_errors == 0:
-                # print("No errors when parsing monitor --> proceed to build.")
+                # no syntax errors found when parsing monitor
                 error_type = self.monitors.make_monitor(deviceId, portId)
 
                 if error_type != self.monitors.NO_ERROR:
                     if error_type == self.network.DEVICE_ABSENT:
-                        self.semantic_error(
+                        self._semantic_error(
                             _("Device you are trying to monitor is absent."),
                             symbol_store.get("device_id")
                         )
                     elif error_type == self.monitors.NOT_OUTPUT:
-                        self.semantic_error(
+                        self._semantic_error(
                             f"{signalName} " +
                             _("is not an output."))
                     elif error_type == self.monitors.MONITOR_PRESENT:
-                        self.semantic_error(
+                        self._semantic_error(
                             _("Already monitoring") + f" {signalName}.",
                             symbol_store.get("device_id"))
 
-                self.set_next()
-                # else:
-                #     print(f"Successfully built monitor {signalName}.")
+                self._set_next()
+                # semantically correct
                 break
 
             else:
-                # print(f"Could not syntactically parse the monitor.")
-                # print("No attempts to build/check semantics will occur.")
-                self.set_next()
+                # syntax errors found, no checking of semantics will occur
+                self._set_next()
                 break
 
         return missing_semicolon
 
-    def set_next(self):
+    def _set_next(self):
         """Shift current symbol to next."""
         self.symbol = self.scanner.get_symbol()
 
         if self.symbol.type == self.scanner.UNCLOSED:
-
             self.unclosed_comment = True
 
-            self.error(
+            self._error(
                 "Unclosed comment found - did you want to use "
                 "'/' instead of '#' for your comment?",
                 [],
@@ -1102,14 +1039,14 @@ class Parser:
 
             self.end_of_file = True
 
-    def get_symbol_string(self):
+    def _get_symbol_string(self):
         """More easily print current symbol string."""
         try:
             return self.names.get_name_string(self.symbol.id)
         except TypeError:
             return "NONE"
 
-    def error(self, msg, expect_next_list):
+    def _error(self, msg, expect_next_list):
         """Print error message and recover from next semicolon."""
         self.error_count += 1
 
@@ -1127,7 +1064,7 @@ class Parser:
 
         self.end_of_file = False
 
-        received_symbol = self.get_symbol_string()
+        received_symbol = self._get_symbol_string()
         if received_symbol == "NONE":  # the case if not in names list,
             # i.e unclosed comment
             full_error_message = _("ERROR on line") + \
@@ -1141,7 +1078,7 @@ class Parser:
                                  f"{line_num} " + _("index ") + \
                                  f"{col_num}: {msg} " + \
                                  _(", received ") + \
-                                 f"{self.get_symbol_string()} "
+                                 f"{self._get_symbol_string()} "
             print(full_error_message)
             self.error_message_list.append(full_error_message)
 
@@ -1151,14 +1088,15 @@ class Parser:
         while True:
             while self.symbol.id != self.scanner.SEMICOLON:
 
-                self.set_next()
+                self._set_next()
                 if self.unclosed_comment:
                     return
 
-                self.get_symbol_string()
+                self._get_symbol_string()
                 if self._is_eof():
                     message = _("Reached end of file without finding another")\
-                              + _(" semicolon - cannot perform error recovery.")
+                              + \
+                              _(" semicolon - cannot perform error recovery.")
                     print(message)
                     self.error_message_list.append(f"\n{message}")
 
@@ -1168,32 +1106,29 @@ class Parser:
             # found a semi colon, now need to check if the expected element
             # is next
 
-            self.set_next()
+            self._set_next()
             if self.unclosed_comment:
                 return
 
-            # for testing purposes
-            self.get_symbol_string()
+            self._get_symbol_string()  # for pytest mocking
             if self._is_eof():
-                # print("Reached end of file without finding expected symbol "
-                #       "for error recovery")
-
+                # end of file is found before the error recovery symbol is
+                # found
                 break
             if (
-                self.symbol.id in expect_next_list
-                or self.symbol.type in expect_next_list
+                    self.symbol.id in expect_next_list
+                    or self.symbol.type in expect_next_list
             ):
                 # found the character we want to keep parsing, therefore we
                 # resume in the parsing
-                self.get_symbol_string()
-                # necessary for unit testing of error recovery
+                self._get_symbol_string()  # for pytest mocking
                 break
 
     def _is_eof(self):
         """Check if current symbol is end of file."""
         return self.symbol.type == self.scanner.EOF
 
-    def semantic_error(self, msg, offending_symbol=None):
+    def _semantic_error(self, msg, offending_symbol=None):
         """Print semantic error with message."""
         self.error_count += 1
         if offending_symbol:
@@ -1203,11 +1138,11 @@ class Parser:
         else:
             caret_msg, line_num, col_num = \
                 self.scanner.show_error(self.symbol)
-            caret_msg = caret_msg[:-2]   # don't show uninformative caret
+            caret_msg = caret_msg[:-2]  # don't show uninformative caret
 
         err = _("ERROR on line ") + \
-            f"{line_num} " + _("index ") + \
-            f"{col_num}: {msg} "
+              f"{line_num} " + _("index ") + \
+              f"{col_num}: {msg} "
 
         print(err)
         print(caret_msg)
