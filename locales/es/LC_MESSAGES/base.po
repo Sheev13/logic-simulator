@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2022-06-05 09:51+0100\n"
-"PO-Revision-Date: 2022-06-05 19:33+0100\n"
+"PO-Revision-Date: 2022-06-05 20:59+0100\n"
 "Last-Translator: \n"
 "Language-Team: GROUP 4\n"
 "Language: es\n"
@@ -186,8 +186,8 @@ msgid "No file selected. Exiting GUI."
 msgstr "Nada archivo eligido. Saliendo de GUI."
 
 #: gui.py:624
-msgid "Exiting GUI."
-msgstr "Saliendo de GUI."
+msgid "Exiting GUI"
+msgstr "Saliendo de GUI"
 
 #: gui.py:679
 msgid "Switches (toggle on/off):"
@@ -269,7 +269,7 @@ msgstr "es"
 msgid "All monitors destroyed."
 msgstr "Todos monitores eliminados."
 
-#: gui.py:1085
+#: gui.py:1085 parse.py:1073
 msgid "Already monitoring"
 msgstr "Ya monitoreando"
 
@@ -363,7 +363,7 @@ msgstr "quieres monitorizar. Pase el cursor sobre un dispositivo para ver "
 
 #: gui.py:1287
 msgid "its full name, kind and qualifier information."
-msgstr "su nombre, tipo y más información."
+msgstr "su nombre, tipo y información de calificador."
 
 #: gui.py:1289
 msgid "To remove a connection before or during a "
@@ -431,8 +431,275 @@ msgstr "Haga clic 'Borrar lienzo' para restablacer la "
 
 #: gui.py:1314
 msgid "Unable to load file. Old file will remain loaded."
-msgstr "No puede analizar el archivo. El archivo antiguo permanecerá cargado."
+msgstr "No puede cargar el archivo. El archivo antiguo permanecerá cargado."
 
 #: gui.py:1317
 msgid "Unable to load file. Please choose valid file."
-msgstr "No puede analizar el archivo. Elige un archivo válido."
+msgstr "No puede cargar el archivo. Elige un archivo válido."
+
+#: parse.py:95
+msgid "Empty definition file was loaded."
+msgstr "El archivo es vacío."
+
+#: parse.py:98 parse.py:178
+msgid "Completely parsed the definition file."
+msgstr "El archivo es analizado completamente."
+
+#: parse.py:99 parse.py:179
+msgid "error(s) found in total."
+msgstr "error(es) encontrados en total."
+
+#: parse.py:111
+msgid "Multiple device lists found."
+msgstr "Varias listas de dispositivos encontrados."
+
+#: parse.py:125
+msgid "Multiple connections lists found."
+msgstr "Varias listas de conexiones encontrados."
+
+#: parse.py:137
+msgid "can't parse connections if not done devices"
+msgstr "no puede analizar las conexiones si los dispositivos no están analizados"
+
+#: parse.py:146
+msgid "Multiple monitors lists found."
+msgstr "Varias listas de monitores encontrados."
+
+#: parse.py:158
+msgid "can't parse monitors if not done devices"
+msgstr "no puede analizar los monitores si los dispositivos no están analizados"
+
+#: parse.py:167
+msgid "not DEVICES, CONNECTIONS, MONITORS nor EOF"
+msgstr "no es DEVICES, CONNECTIONS, MONITORS, ni EOF"
+
+#: parse.py:198 parse.py:282 parse.py:292 parse.py:334 parse.py:385
+#: parse.py:295 parse.py:485 parse.py:538 parse.py:551 parse.py:601
+#: parse.py:611 parse.py:657 parse.py:732 parse.py:742 parse.py:939
+#: parse.py:996 parse.py:1007
+msgid "expected"
+msgstr "esparado"
+
+#: parse.py:221
+msgid "missed semicolon at end of device definition, "
+msgstr "falta el punto y coma después de la definición del dispositivo, "
+
+#: parse.py:222
+msgid "will end up skipping the device after"
+msgstr "saltará el siguiente dispositivo"
+
+#: parse.py:239 parse.py:699 parse.py:977
+msgid "invalid character encountered"
+msgstr "carácter inválido encontrado"
+
+#: parse.py:252
+msgid "Invalid input to a DEVICES list. Devices "
+msgstr "Insumo inválido en una lista 'DEVICES'. Un dispositivo "
+
+#: parse.py:253
+msgid "should start with '{', or the list should "
+msgstr "debe empezar con '{', o la lista debe "
+
+#: parse.py:254
+msgid "end with ']' "
+msgstr "finir con ']' "
+
+#: parse.py:299
+msgid "Successfully parsed the DEVICES list! \n"
+msgstr "¡La lista DEVICES es analizada! \n"
+
+#: parse.py:749
+msgid "Successfully parsed the CONNECTIONS list! \n"
+msgstr "¡La lista CONNECTIONS es analizada! \n"
+
+#: parse.py:1014
+msgid "Successfully parsed the MONITORS list! \n"
+msgstr "¡La lista MONITORS es analizada! \n"
+
+#: parse.py:318
+msgid "error(s) found "
+msgstr "error(es) encontrados "
+
+#: parse.py:319
+msgid "when parsing the DEVICES list \n"
+msgstr "cuando analizando la lista DEVICES \n"
+
+#: parse.py:351
+msgid "missed a semicolon in device id, "
+msgstr "falta un punto y coma en 'device id', "
+
+#: parse.py:352 parse.py:266 parse.py:378
+msgid "will skip to next device"
+msgstr "saltará al siguiente dispositivo"
+
+#: parse.py:367
+msgid "missed a semicolon in device kind, "
+msgstr "falta un punto y coma en 'device kind', "
+
+#: parse.py:377
+msgid "missed a semicolon in device qual, "
+msgstr "falta un punto y coma en 'device qual', "
+
+#: parse.py:420
+msgid "qualifier not present."
+msgstr "calificador no está presente."
+
+#: parse.py:425
+msgid "qualifier is invalid."
+msgstr "calificador es inválido."
+
+#: parse.py:430
+msgid "Qualifier provided for "
+msgstr "El calificador por "
+
+#: parse.py:431
+msgid "when there should be none."
+msgstr "no se debe estar presente."
+
+#: parse.py:435
+msgid "Device kind"
+msgstr "Tipo de dispositivo"
+
+#: parse.py:436
+msgid "not recognised."
+msgstr "no es reconocido."
+
+#: parse.py:440
+msgid "Device "
+msgstr "El dispositivo "
+
+#: parse.py:440
+msgid "already present."
+msgstr "ya es presente."
+
+#: parse.py:476
+msgid "expected id keyword here"
+msgstr "'id keyword' esparado"
+
+#: parse.py:496 parse.py:502
+msgid "Invalid name provided - "
+msgstr "Nombre es inválido - "
+
+#: parse.py:497
+msgid "a keyword cannot be used as a device name"
+msgstr "un nombre de dispositivo no puede ser un 'keyword'"
+
+#: parse.py:503
+msgid "a device name should be alphanumeric"
+msgstr "un nombre de dispositivo debe ser alfanumérico"
+
+#: parse.py:515 parse.py:578 parse.py:634
+msgid "Missing semicolon"
+msgstr "Falta un punto y coma"
+
+#: parse.py:562
+msgid "Device type must be alphanumeric"
+msgstr "El tipo de dispositivo debe ser alfanumérico"
+
+#: parse.py:621
+msgid "unsupported qualifier input"
+msgstr "este calificador no permitido"
+
+#: parse.py:704
+msgid "Cannot use a KEYWORD for a signal name"
+msgstr "Un nombre de señal no puede ser un 'keyword'"
+
+#: parse.py:707 parse.py:983
+msgid "Unknown Error"
+msgstr "Error desconocido"
+
+#: parse.py:768 parse.py:1029
+msgid "error(s) found when parsing the "
+msgstr "error(es) encontrados cuando analizando "
+
+#: parse.py:769
+msgid "CONNECTIONS list \n"
+msgstr "la lista CONNECTIONS \n"
+
+#: parse.py:1030
+msgid "MONITORS list \n"
+msgstr "la lista MONITORS \n"
+
+#: parse.py:785
+msgid "No connection found before semicolon"
+msgstr "Ninguna conexión encontrado antes de punto y coma"
+
+#: parse.py:799
+msgid "missed colon in connection, "
+msgstr "falta colon en conexión, "
+
+#: parse.py:800
+msgid "will skip to next connection"
+msgstr "saltará a la siguiente conexión"
+
+#: parse.py:832
+msgid "Either left or right device is absent"
+msgstr "Un dispositivo no es presente"
+
+#: parse.py:836
+msgid "input is already connected."
+msgstr "insumo ya esta conectado."
+
+#: parse.py:840
+msgid "Both ports are inputs."
+msgstr "Los dos puertos son insumos."
+
+#: parse.py:842
+msgid "Right port id is invalid."
+msgstr "'id' del puerto a la derecha es inválido."
+
+#: parse.py:845
+msgid "Both ports are outputs."
+msgstr "Los dos puertos son valores."
+
+#: parse.py:880
+msgid "Expected an output name here"
+msgstr "Un nombre de valor esparado"
+
+#: parse.py:900
+msgid "expected an output name here"
+msgstr "un nombre de puerto esparado"
+
+#: parse.py:918
+msgid "missing ':' or ';'"
+msgstr "falta ':' o ';'"
+
+#: parse.py:1046
+msgid "No signal found before semicolon"
+msgstr "Ninguna señal encontrada antes de punto y coma"
+
+#: parse.py:1064
+msgid "Device you are trying to monitor is absent."
+msgstr "El dispositivo no es presente."
+
+#: parse.py:1070
+msgid "is not an output."
+msgstr "no es una valor."
+
+#: parse.py:1098
+msgid "Unclosed comment found - did you want to use "
+msgstr "Un comentario no cerrado encontrado. ¿Quieres usar "
+
+#: parse.py:1099
+msgid "'/' instead of '#' for your comment?"
+msgstr "'/', no '#', para tu comentario?"
+
+#: parse.py:1120 parse.py:1133 parse.py:1140 parse.py:1208
+msgid "ERROR on line "
+msgstr "ERROR en línea "
+
+#: parse.py:1121 parse.py:1134 parse.py:1141 parse.py:1209
+msgid "index "
+msgstr "índice "
+
+#: parse.py:1143
+msgid ", received "
+msgstr ", recibido "
+
+#: parse.py:1160
+msgid "Reached end of file without finding another"
+msgstr "Llegó al final del archivo sin encontrar"
+
+#: parse.py:1161
+msgid " semicolon - cannot perform error recovery."
+msgstr " otra punto y coma - no se puede recuperar."
