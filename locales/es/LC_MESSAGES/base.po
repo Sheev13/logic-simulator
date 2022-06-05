@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2022-06-05 09:51+0100\n"
-"PO-Revision-Date: 2022-06-05 18:51+0100\n"
+"PO-Revision-Date: 2022-06-05 19:12+0100\n"
 "Last-Translator: \n"
 "Language-Team: GROUP 4\n"
 "Language: es\n"
@@ -20,6 +20,82 @@ msgstr ""
 #: guicommandint.py:99
 msgid "Invalid command. See User Guide for help."
 msgstr "El comando es inválido. Consulte el manual de uso del programa para obtener consejos."
+
+#: guicommandint.py:134
+msgid "Error! Expected a name."
+msgstr "¡Error! Esperaba un nombre."
+
+#: guicommandint.py:152
+msgid "Error! Unknown name."
+msgstr "¡Error! Nombre desconocido."
+
+#: guicommandint.py:180
+msgid "Error! Expected a number."
+msgstr "¡Error! Esperaba un número."
+
+#: guicommandint.py:189 guicommandint.py:194
+msgid "Number out of range."
+msgstr "El número está fuera de rango."
+
+#: guicommandint.py:207
+msgid "Successfully set switch."
+msgstr "El interruptor es puesto."
+
+#: guicommandint.py:208
+msgid "Error! Invalid switch."
+msgstr "¡Error! El interruptor es inválido."
+
+#: guicommandint.py:218
+msgid "Successfully made monitor."
+msgstr "El monitor es creado."
+
+#: guicommandint.py:219
+msgid "Error! Could not make monitor."
+msgstr "¡Error! No puede añadir el monitor."
+
+#: guicommandint.py:227
+msgid "Successfully zapped monitor."
+msgstr "El monitor es eliminado."
+
+#: guicommandint.py:228
+msgid "Error! Could not zap monitor."
+msgstr "¡Error! No puede eliminar el monitor."
+
+#: guicommandint.py:239
+msgid "Error! Network oscillating."
+msgstr "¡Error! La red está oscilando."
+
+#: guicommandint.py:253
+msgid "Running for "
+msgstr "En ejecución por "
+
+#: guicommandint.py:253 guicommandint.py:264
+msgid "cycles."
+msgstr "ciclos."
+
+#: guicommandint.py:254
+msgid "Invalid number of cycles."
+msgstr "Número de ciclos es inválido."
+
+#: guicommandint.py:261
+msgid "Error! Nothing to continue. Run first."
+msgstr "¡Error! Debes ejecutar antes de continuar."
+
+#: guicommandint.py:264
+msgid "Continuing for"
+msgstr "Continuando por"
+
+#: guicommandint.py:266
+msgid "Error! Invalid number of cycles."
+msgstr "¡Error! Número de ciclos es inválido."
+
+#: guicommandint.py:278
+msgid "Successfully made new connection."
+msgstr "La conexión nuevo es creado."
+
+#: guicommandint.py:280
+msgid "Could not make connection."
+msgstr "No puede crear la conexión."
 
 #: gui.py:202
 msgid "Welcome to the Logic Simulator! "
