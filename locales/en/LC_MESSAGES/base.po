@@ -1,0 +1,346 @@
+# ENGLISH TRANSLATIONS.
+# Copyright (C) 2022 PP490 TNR22 JT741
+# PRIYANKA PATEL <PP490@CAM.AC.UK>, 2022.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2022-06-05 09:51+0100\n"
+"PO-Revision-Date: 2022-06-05 11:00+0100\n"
+"Last-Translator: \n"
+"Language-Team: GROUP 4\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: gui.py:201
+msgid "Welcome to the Logic Simulator! "
+msgstr "Welcome to the Logic Simulator! "
+
+#: gui.py:202
+msgid "See User Guide for help."
+msgstr "See User Guide for help."
+
+#: gui.py:314 gui.py:804
+msgid "Open"
+msgstr "Open"
+
+#: gui.py:315
+msgid "About"
+msgstr "About"
+
+#: gui.py:316
+msgid "Exit"
+msgstr "Exit"
+
+#: gui.py:317 gui.py:780
+msgid "Command Line Guide"
+msgstr "Command Line Guide"
+
+#: gui.py:318 gui.py:786
+msgid "Canvas Controls"
+msgstr "Canvas Controls"
+
+#: gui.py:319 gui.py:793
+msgid "Sidebar Guide"
+msgstr "Sidebar Guide"
+
+#: gui.py:320
+msgid "File"
+msgstr "File"
+
+#: gui.py:321
+msgid "User Guide"
+msgstr "User Guide"
+
+#: gui.py:348
+msgid "Browse"
+msgstr "Browse"
+
+#: gui.py:356
+msgid "Devices:"
+msgstr "Devices:"
+
+#: gui.py:361
+msgid "Monitors:"
+msgstr "Monitors:"
+
+#: gui.py:370
+msgid "Add new monitor"
+msgstr "Add new monitor"
+
+#: gui.py:373
+msgid "(click to remove)"
+msgstr "(click to remove)"
+
+#: gui.py:376
+msgid "Clear All"
+msgstr "Clear All"
+
+#: gui.py:381
+msgid " Cycles: "
+msgstr " Cycles: "
+
+#: gui.py:385
+msgid "Run"
+msgstr "Run"
+
+#: gui.py:393
+msgid "Continue"
+msgstr "Continue"
+
+#: gui.py:402
+msgid "Clear Canvas"
+msgstr "Clear Canvas"
+
+#: gui.py:411
+msgid "Command line input. See User Guide for help."
+msgstr "Command line input. See User Guide for help."
+
+#: gui.py:569
+msgid "Switches (toggle on/off):"
+msgstr "Switches (toggle on/off):"
+
+#: gui.py:571
+msgid "No switches in this circuit."
+msgstr "No switches in this circuit."
+
+#: gui.py:625
+msgid "inputs"
+msgstr "inputs"
+
+#: gui.py:636
+msgid "half-period"
+msgstr "half-period"
+
+#: gui.py:720
+msgid "from"
+msgstr "from"
+
+#: gui.py:720
+msgid "to"
+msgstr "to"
+
+#: gui.py:729
+msgid "Current Connections"
+msgstr "Current Connections"
+
+#: gui.py:736
+msgid "Delete Connection"
+msgstr "Delete Connection"
+
+#: gui.py:769
+msgid "Created by"
+msgstr "Created by"
+
+#: gui.py:769
+msgid "Logic Simulator"
+msgstr "Logic Simulator"
+
+#: gui.py:772
+msgid "About Logsim"
+msgstr "About Logsim"
+
+#: gui.py:827
+msgid "Unable to parse file."
+msgstr "Unable to parse file."
+
+#: gui.py:850
+msgid "Choose a new output to connect input "
+msgstr "Choose a new output to connect input "
+
+#: gui.py:852
+msgid "Replace Connection"
+msgstr "Replace Connection"
+
+#: gui.py:860
+msgid "You must select a new connection for this input."
+msgstr "You must select a new connection for this input."
+
+#: gui.py:861
+msgid "Error - Connection Needed"
+msgstr "Error - Connection Needed"
+
+#: gui.py:875
+msgid "Successfully made new connection"
+msgstr "Successfully made new connection"
+
+#: gui.py:883
+msgid "Number of cycles: "
+msgstr "Number of cycles: "
+
+#: gui.py:934
+msgid "Canvas cleared. Press run to start simulation again."
+msgstr "Canvas cleared. Press run to start simulation again."
+
+#: gui.py:952
+msgid "turned"
+msgstr "turned"
+
+#: gui.py:980
+msgid "All monitors destroyed."
+msgstr "All monitors destroyed."
+
+#: gui.py:988
+msgid "Already monitoring"
+msgstr "Already monitoring"
+
+#: gui.py:993
+msgid "Invalid monitor"
+msgstr "Invalid monitor"
+
+#: gui.py:1162
+msgid "Enter command line inputs in the bottom left of"
+msgstr "Enter command line inputs in the bottom left of"
+
+#: gui.py:1163
+msgid " the interface."
+msgstr " the interface."
+
+#: gui.py:1164
+msgid "Possible commands:"
+msgstr "Possible commands:"
+
+#: gui.py:1165
+msgid "Run simulator for N cycles"
+msgstr "Run simulator for N cycles"
+
+#: gui.py:1166
+msgid "Continue running simulation"
+msgstr "Continue running simulation"
+
+#: gui.py:1167
+msgid " for N cycles"
+msgstr " for N cycles"
+
+#: gui.py:1169
+msgid "Start monitoring output signal X"
+msgstr "Start monitoring output signal X"
+
+#: gui.py:1170
+msgid "Stop monitoring X"
+msgstr "Stop monitoring X"
+
+#: gui.py:1173
+msgid "Signals on the canvas can be manipulated to"
+msgstr "Signals on the canvas can be manipulated to"
+
+#: gui.py:1174
+msgid " better view them."
+msgstr " better view them."
+
+#: gui.py:1175
+msgid "Scroll in to zoom in"
+msgstr "Scroll in to zoom in"
+
+#: gui.py:1177
+msgid "Scroll out to zoom out - this may "
+msgstr "Scroll out to zoom out - this may "
+
+#: gui.py:1178
+msgid "be useful if you have many monitors"
+msgstr "be useful if you have many monitors"
+
+#: gui.py:1180
+msgid "Click and hold to drag the signals "
+msgstr "Click and hold to drag the signals "
+
+#: gui.py:1181
+msgid "around the space"
+msgstr "around the space"
+
+#: gui.py:1184
+msgid "The sidebar can be used to adjust simulation "
+msgstr "The sidebar can be used to adjust simulation "
+
+#: gui.py:1185
+msgid "settings"
+msgstr "settings"
+
+#: gui.py:1186
+msgid "Click 'Browse' to load a new circuit file."
+msgstr "Click 'Browse' to load a new circuit file."
+
+#: gui.py:1188
+msgid "See the list of devices to decide what you "
+msgstr "See the list of devices to decide what you "
+
+#: gui.py:1189
+msgid "want to monitor. Hover on a device to see "
+msgstr "want to monitor. Hover on a device to see "
+
+#: gui.py:1190
+msgid "its full name, kind and qualifier information."
+msgstr "its full name, kind and qualifier information."
+
+#: gui.py:1192
+msgid "To remove a connection before or during a "
+msgstr "To remove a connection before or during a "
+
+#: gui.py:1193
+msgid "simulation, choose from the dropdown list "
+msgstr "simulation, choose from the dropdown list "
+
+#: gui.py:1194
+msgid "next to 'Devices' and click 'Delete Connection."
+msgstr "next to 'Devices' and click 'Delete Connection."
+
+#: gui.py:1195
+msgid "Select a new output "
+msgstr "Select a new output "
+
+#: gui.py:1196
+msgid "to connect to the input from the deleted "
+msgstr "to connect to the input from the deleted "
+
+#: gui.py:1197
+msgid "connection."
+msgstr "connection."
+
+#: gui.py:1199
+msgid "Click the switch buttons to toggle on or off."
+msgstr "Click the switch buttons to toggle on or off."
+
+#: gui.py:1201
+msgid "Type the name of an output in the 'Add new "
+msgstr "Type the name of an output in the 'Add new "
+
+#: gui.py:1202
+msgid "monitor' box to add to monitors."
+msgstr "monitor' box to add to monitors."
+
+#: gui.py:1203
+msgid " Press 'Clear All' to remove all monitors."
+msgstr " Press 'Clear All' to remove all monitors."
+
+#: gui.py:1204
+msgid " Click on an individual monitor button to "
+msgstr " Click on an individual monitor button to "
+
+#: gui.py:1205
+msgid "remove it."
+msgstr "remove it."
+
+#: gui.py:1207
+msgid "Adjust the number of cycles with the spinner."
+msgstr "Adjust the number of cycles with the spinner."
+
+#: gui.py:1209
+msgid "Press 'Run' or 'Continue' to start the "
+msgstr "Press 'Run' or 'Continue' to start the "
+
+#: gui.py:1210 gui.py:1213
+msgid "simulation."
+msgstr "simulation."
+
+#: gui.py:1212
+msgid "Press 'Clear Canvas' to reset the "
+msgstr "Press 'Clear Canvas' to reset the "
+
+#: gui.py:1217
+msgid "Unable to parse file. Old file will remain loaded."
+msgstr "Unable to parse file. Old file will remain loaded."

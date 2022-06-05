@@ -689,7 +689,7 @@ class Gui(wx.Frame):
         for mon in self.monitor_buttons.values():
             self.monitor_buttons_sizer.Add(mon, 1, wx.ALL, 9)
 
-        text = "New circuit loaded."
+        text = _("New circuit loaded.")
 
         self.canvas.monitors = self.monitors
         self.canvas.devices = self.devices
@@ -1165,7 +1165,7 @@ class Gui(wx.Frame):
                     "\n \nr N\n" + _("Run simulator for N cycles") \
                     + "\n \nc N\n" + _("Continue running simulation")\
                     + _(" for N cycles") + \
-                    "\n \ns X N\n" + ("Set switch X to N (0 or 1)") +\
+                    "\n \ns X N\n" + _("Set switch X to N (0 or 1)") +\
                     "\n \nm X\n" + _("Start monitoring output signal X")\
                     +"\n \nz X\n" + _("Stop monitoring X")
 
