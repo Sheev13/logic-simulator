@@ -11,6 +11,7 @@ Gui - configures the main window and all the widgets.
 from matplotlib.ft2font import VERTICAL
 import wx
 import wx.lib.agw.gradientbutton as gb
+import wx.lib.dialogs as dlgs
 import os
 import wx.glcanvas as wxcanvas
 from OpenGL import GL, GLUT
@@ -126,9 +127,9 @@ class MyGLCanvas(wxcanvas.GLCanvas):
                     margin = len(desc)*10
                     Y = [axis+y for y in Y]
                     X = [x+margin+10 for x in X]
-                    rgb = self.traceColour(device_kind)
+                    rgb = self._trace_colour(device_kind)
                     self.render_text(desc, X[0]-margin, axis+12)
-                    self.drawTrace(X, Y, axis, rgb)
+                    self._draw_trace(X, Y, axis, rgb)
                     axis -= 100
 
         # We have been drawing to the back buffer, flush the graphics pipeline
@@ -136,7 +137,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
         GL.glFlush()
         self.SwapBuffers()
 
-    def drawTrace(self, X, Y, axis, rgb):
+    def _draw_trace(self, X, Y, axis, rgb):
         """Draw a signal trace."""
         # Draw trace
         GL.glShadeModel(GL.GL_FLAT)
@@ -176,7 +177,7 @@ class MyGLCanvas(wxcanvas.GLCanvas):
             self.render_text(str(int(t/2)), X[t], axis-14)
             t += 4
 
-    def traceColour(self, device_kind):
+    def _trace_colour(self, device_kind):
         """Colour code trace based on device kind."""
         gate_strings = ["AND", "NOT", "OR", "NAND", "NOR", "XOR"]
         if self.names.get_name_string(device_kind) in gate_strings:
@@ -277,14 +278,39 @@ class Gui(wx.Frame):
     --------------
     on_menu(self, event): Event handler for the file menu.
 
+    on_browse(self, event): Event handler for browse button.
+
+    on_delete_connection(self, event): Event handler for deleting a connection.
+
     on_spin_cycles(self, event): Handle event when user changes cycles.
+
+    on_enter_device_button(self, event): Prevents colour change on hover of
+                                device.
 
     on_run_button(self, event): Event handler for when the user clicks the run
                                 button.
 
+    on_continue_button(self, event): Event handler for when the user clicks the
+                                continue button.
+
+    on_clear_button(self, event): Event handler for when the user clicks the
+                                Clear Canvas button.
+
+    on_switch_button(self, event): Event handler for when the user clicks a
+                                switch button.
+
+    on_monitor_button(self, event): Event handler for when the user clicks a
+                                monitor button.
+
+    on_clear_all_monitors_button(self, event): Event handler for when the user
+                                clears all monitors.
+
     on_command_line_input(self, event): Handle user commands.
 
     on_monitor_input(self, event): Handle event when user adds a monitor.
+
+    on_command_line_input(self, event): Handle event when user enters command
+                                via command line box.
     """
 
     def __init__(self, title, path, names, devices, network, monitors):
@@ -305,6 +331,7 @@ class Gui(wx.Frame):
         self.canvas_control_string = canvas_control_string
         self.sidebar_guide_string = sidebar_guide_string
         self.parse_error_string = parse_error_string
+        self.first_parse_error_string = first_parse_error_string
         self.click = wx.Cursor(wx.Image("gui_utils/smallclick.png"))
         self.standard_button_size = wx.Size(85, 36)
 
@@ -336,6 +363,7 @@ class Gui(wx.Frame):
         inputBoxFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL)
         go_font = wx.Font(wx.FontInfo(14).FaceName("Rockwell"))
         self.delete_font = wx.Font(wx.FontInfo(10).FaceName("Rockwell"))
+        self.errorBoxFont = wx.Font(wx.FontInfo(10).FaceName("Consolas"))
 
         # Canvas for drawing signals
         self.scrollable = wx.ScrolledCanvas(self, wx.ID_ANY)
@@ -389,7 +417,7 @@ class Gui(wx.Frame):
         self.run_button = gb.GradientButton(self, wx.ID_ANY, label="Run")
         self.run_button.SetCursor(self.click)
         self.run_button.SetFont(wx.Font(go_font))
-        self.changeButtonColours(self.run_button, darkgreen, midgreen)
+        self._change_button_colours(self.run_button, darkgreen, midgreen)
 
         self.continue_button = gb.GradientButton(
             self,
@@ -397,7 +425,11 @@ class Gui(wx.Frame):
             label="Continue"
         )
         self.continue_button.SetFont(wx.Font(go_font))
-        self.changeButtonColours(self.continue_button, darkpurple, lightpurple)
+        self._change_button_colours(
+            self.continue_button,
+            darkpurple,
+            lightpurple
+        )
         self.continue_button.SetCursor(self.click)
 
         self.clear_button = gb.GradientButton(
@@ -558,14 +590,93 @@ class Gui(wx.Frame):
         self.SetSizeHints(600, 600)
         self.SetSizer(main_sizer)
         self.Layout()
-        self.updateNewCircuit(first=True)
 
-    def updateNewCircuit(self, first=False):
+        self.path = path
+
+        # If path is None, prompt user to choose a valid file
+        if self.path is None:
+            self._choose_file(first=True)
+            success = True
+
+        # Parse file given from command line
+        else:
+            scanner = Scanner(path, names)
+            parser = Parser(names, devices, network, monitors, scanner)
+            success = parser.parse_network()
+            if success:
+                self._update_new_circuit(first=True)
+
+        if not success:
+            # Display errors from file given from command line
+            self.display_errors(parser.error_message_list, first=True)
+            self._choose_file(first=True)
+            success = True
+
+    def _choose_file(self, first=False):
+        """Allow user to find circuit definition file."""
+        openFileDialog = wx.FileDialog(
+            self, "Open txt file", "", "",
+            wildcard="TXT files (*.txt)|*.txt",
+            style=wx.FD_OPEN+wx.FD_FILE_MUST_EXIST
+        )
+        if openFileDialog.ShowModal() == wx.ID_CANCEL:
+            if not first:
+                return
+            else:
+                # if this is the first time, exit GUI
+                wx.MessageBox(
+                    "No file selected. Exiting GUI.",
+                    "Exiting GUI",
+                    wx.ICON_INFORMATION | wx.OK
+                )
+                self.Close(True)
+
+        self.path = openFileDialog.GetPath()
+        names = Names()
+        devices = Devices(names)
+        network = Network(names, devices)
+        monitors = Monitors(names, devices, network)
+        scanner = Scanner(self.path, names)
+        parser = Parser(names, devices, network, monitors, scanner)
+        success = parser.parse_network()
+        if success:
+            self.names = names
+            self.devices = devices
+            self.network = network
+            self.monitors = monitors
+            self._update_new_circuit(first)
+        else:
+            self.display_errors(parser.error_message_list, first)
+            if first:
+                self._choose_file(first)
+
+        self.Layout()
+
+    def display_errors(self, error_message_list, first=False):
+        """Display errors in dialog box."""
+        errors = ""
+        for error in error_message_list:
+            errors += f"\n{error}"
+        if first:
+            message = f"{errors} \n \n{self.first_parse_error_string}"
+        else:
+            message = f"{errors} \n \n{self.parse_error_string}"
+        errorBox = dlgs.ScrolledMessageDialog(
+            self,
+            message,
+            error_message_list[-1],
+            style=wx.DEFAULT_DIALOG_STYLE+wx.RESIZE_BORDER,
+            size=wx.Size(750, 500)
+        )
+        text = errorBox.GetChildren()[0]
+        text.SetFont(self.errorBoxFont)
+        errorBox.ShowModal()
+
+    def _update_new_circuit(self, first=False):
         """Configure widgets for new circuit and bind events."""
-        self.setFileTitle(self.path)
+        self._set_file_title(self.path)
         self.cycles_completed = 0
-
-        self.updateCurrentConnections(first)
+        self._update_current_connections(first)
 
         # find new switches
         switches = self.devices.find_devices(self.names.query("SWITCH"))
@@ -592,7 +703,7 @@ class Gui(wx.Frame):
         for s in switches:
             name = self.names.get_name_string(s)
             state = self.devices.get_device(s).switch_state
-            shortName = self.shorten(name)
+            shortName = self._shorten(name)
             button = gb.GradientButton(
                 self.switches_window,
                 s,
@@ -602,9 +713,9 @@ class Gui(wx.Frame):
             button.SetToolTip(name)
             button.SetCursor(self.click)
             if state == 0:
-                self.changeButtonColours(button, darkred, red)
+                self._change_button_colours(button, darkred, red)
             else:
-                self.changeButtonColours(button, blue, lightblue)
+                self._change_button_colours(button, blue, lightblue)
             self.switch_buttons[name] = [button, state]
 
         # bind switch buttons to event
@@ -623,7 +734,7 @@ class Gui(wx.Frame):
             gates = self.devices.find_devices(gate_type)
             for gateId in gates:
                 gate = self.devices.get_device(gateId)
-                label = self.shorten(
+                label = self._shorten(
                     self.names.get_name_string(gate.device_id)
                 )
                 extra = f": {str(len(gate.inputs.keys()))} inputs"
@@ -633,7 +744,7 @@ class Gui(wx.Frame):
             other_devices = self.devices.find_devices(dev_type)
             for id in other_devices:
                 d = self.devices.get_device(id)
-                label = self.shorten(self.names.get_name_string(d.device_id))
+                label = self._shorten(self.names.get_name_string(d.device_id))
                 kind = self.names.get_name_string(d.device_kind)
                 extra = ""
                 if kind == "CLOCK":
@@ -647,7 +758,7 @@ class Gui(wx.Frame):
             device_button = gb.GradientButton(
                 self.devices_window,
                 id,
-                label=self.shorten(f"{label}{extra}"),
+                label=self._shorten(f"{label}{extra}"),
                 size=self.standard_button_size
             )
             c = wx.Cursor(wx.Image('gui_utils/smallinfo.png'))
@@ -655,8 +766,10 @@ class Gui(wx.Frame):
             kindId = self.devices.get_device(id).device_kind
             kindLabel = self.names.get_name_string(kindId)
             device_button.SetToolTip(f"{label}, {kindLabel}{extra}")
-            device_button.SetTopStartColour(self.getDeviceColour(kindId)[0])
-            device_button.SetBottomEndColour(self.getDeviceColour(kindId)[0])
+            device_button.SetTopStartColour(self._get_device_colour(kindId)[0])
+            device_button.SetBottomEndColour(
+                self._get_device_colour(kindId)[0]
+            )
             device_button.Bind(
                 wx.EVT_ENTER_WINDOW,
                 self.on_enter_device_button
@@ -679,7 +792,7 @@ class Gui(wx.Frame):
                 label=curr,
                 size=self.standard_button_size
             )
-            self.changeButtonColours(button, blue, lightblue)
+            self._change_button_colours(button, blue, lightblue)
             button.SetCursor(self.click)
             self.monitor_buttons[curr] = button
 
@@ -703,8 +816,8 @@ class Gui(wx.Frame):
             self.canvas.render(text)
         self.Layout()
 
-    def updateCurrentConnections(self, first=False):
-        """Updates current connections after user changes."""
+    def _update_current_connections(self, first=False):
+        """Update current connections after user changes."""
         # If this is not the first time a circuit is loaded,
         # must destroy the existing widgets for connections
         if not first:
@@ -718,8 +831,8 @@ class Gui(wx.Frame):
                 self.connections[(device_id, input)] = device.inputs[input]
         self.connections_info = []
         for input, output in self.connections.items():
-            inputName = self.getSignalName(input[0], input[1])
-            outputName = self.getSignalName(output[0], output[1])
+            inputName = self._get_signal_name(input[0], input[1])
+            outputName = self._get_signal_name(output[0], output[1])
             self.connections_info.append([
                 f"{outputName} to {inputName}",
                 input,
@@ -755,7 +868,7 @@ class Gui(wx.Frame):
         self.delete_connection.Bind(wx.EVT_BUTTON, self.on_delete_connection)
         self.Layout()
 
-    def setFileTitle(self, path):
+    def _set_file_title(self, path):
         """Display name of open file at top of screen."""
         label = os.path.basename(os.path.splitext(path)[0])
         if len(label) > 20:
@@ -774,7 +887,7 @@ class Gui(wx.Frame):
                 "About Logsim", wx.ICON_INFORMATION | wx.OK
             )
         if Id == wx.ID_OPEN:
-            self.choose_file()
+            self._choose_file()
         if Id == wx.ID_HELP_COMMANDS:
             wx.MessageBox(
                 self.help_string,
@@ -797,46 +910,26 @@ class Gui(wx.Frame):
 
     def on_browse(self, event):
         """Handle event when user clicks browse button."""
-        self.choose_file()
-
-    def choose_file(self):
-        """Handle the event when user wants to find circuit definition file."""
-        openFileDialog = wx.FileDialog(
-            self, "Open txt file", "", "",
-            wildcard="TXT files (*.txt)|*.txt",
-            style=wx.FD_OPEN+wx.FD_FILE_MUST_EXIST
-        )
-        if openFileDialog.ShowModal() == wx.ID_CANCEL:
-            return
-        path = openFileDialog.GetPath()
-        names = Names()
-        devices = Devices(names)
-        network = Network(names, devices)
-        monitors = Monitors(names, devices, network)
-        scanner = Scanner(path, names)
-        parser = Parser(names, devices, network, monitors, scanner)
-        if parser.parse_network():
-            self.path = path
-            self.names = names
-            self.devices = devices
-            self.network = network
-            self.monitors = monitors
-            self.updateNewCircuit()
-        else:
-            wx.MessageBox(
-                self.parse_error_string,
-                "Unable to parse file.",
-                wx.ICON_INFORMATION | wx.OK
-            )
-        self.Layout()
+        self._choose_file()
 
     def on_delete_connection(self, event):
-        """Handles event when user presses delete connection."""
+        """Handle event when user presses delete connection."""
         connectionIndex = self.connections_spinner.GetSelection()
         [inputIds, outputIds] = self.connections_info[connectionIndex][1:3]
         input_device_id = inputIds[0]
         input_port_id = inputIds[1]
-        self.network.delete_connection(input_device_id, input_port_id)
+
+        int = GuiCommandInterface(
+            "",
+            self.names,
+            self.devices,
+            self.network,
+            self.monitors
+        )
+        int.delete_connection(
+            input_device_id,
+            input_port_id,
+        )
 
         print(
             f"Deleted connection from "
@@ -849,12 +942,12 @@ class Gui(wx.Frame):
         for i in [(d.device_id, d.outputs) for d in self.devices.devices_list]:
             for output in i[1]:
                 allOutputIds.append((i[0], output))
-                allOutputNames.append(self.getSignalName(i[0], output))
+                allOutputNames.append(self._get_signal_name(i[0], output))
 
         newConnection = wx.SingleChoiceDialog(
             self,
             "Choose a new output to connect input "
-            f"{self.getSignalName(input_device_id, input_port_id)}",
+            f"{self._get_signal_name(input_device_id, input_port_id)}",
             "Replace Connection",
             allOutputNames,
             style=wx.CHOICEDLG_STYLE
@@ -870,17 +963,23 @@ class Gui(wx.Frame):
         if newConnection.ShowModal() == wx.ID_OK:
             choice = newConnection.GetSelection()
             (dev, port) = allOutputIds[choice]
-            error_type = self.network.make_connection(
+            int = GuiCommandInterface(
+                "",
+                self.names,
+                self.devices,
+                self.network,
+                self.monitors
+            )
+            text, success = int.make_connection(
                 input_device_id,
                 input_port_id,
                 dev,
                 port
             )
-            if error_type == self.network.NO_ERROR:
-                text = "Successfully made new connection"
-                self.canvas.render(text)
-        newConnection.Destroy()
-        self.updateCurrentConnections()
+            self.canvas.render(text)
+            if success:
+                newConnection.Destroy()
+                self._update_current_connections()
 
     def on_spin_cycles(self, event):
         """Handle the event when the user changes the number of cycles."""
@@ -892,9 +991,8 @@ class Gui(wx.Frame):
         """Stop colour change when user hovers over device button."""
         btn = event.GetEventObject()
         deviceKindId = self.devices.get_device(btn.GetId()).device_kind
-        btn.SetTopStartColour(self.getDeviceColour(deviceKindId)[0])
-        btn.SetBottomEndColour(self.getDeviceColour(deviceKindId)[0])
-
+        btn.SetTopStartColour(self._get_device_colour(deviceKindId)[0])
+        btn.SetBottomEndColour(self._get_device_colour(deviceKindId)[0])
         self.Layout()
 
     def on_run_button(self, event):
@@ -940,16 +1038,16 @@ class Gui(wx.Frame):
         self.canvas.render(text, clearAll=True)
 
     def on_switch_button(self, event):
-        """Handle the event when the user clicks the switch button."""
+        """Handle the event when the user clicks a switch button."""
         button = event.GetEventObject()
         switchId = button.GetId()
         switchName = self.names.get_name_string(switchId)
 
         if self.switch_buttons[switchName][1] == 1:
-            self.changeButtonColours(button, darkred, red)
+            self._change_button_colours(button, darkred, red)
             self.switch_buttons[switchName][1] = 0
         else:
-            self.changeButtonColours(button, blue, lightblue)
+            self._change_button_colours(button, blue, lightblue)
             self.switch_buttons[switchName][1] = 1
         newStatus = self.switch_buttons[switchName][1]
         self.devices.set_switch(switchId, newStatus)
@@ -958,10 +1056,10 @@ class Gui(wx.Frame):
         self.canvas.render(text)
 
     def on_monitor_button(self, event):
-        """Handle the event when the user clicks the monitor button."""
+        """Handle the event when the user clicks a monitor button."""
         button = event.GetEventObject()
         monitorName = self.names.get_name_string(button.GetId())
-        text = self.destroyMonitor(monitorName)
+        text = self._destroy_monitor(monitorName)
         self.monitor_buttons.pop(monitorName)
         self.canvas.render(text)
         button.Destroy()
@@ -971,7 +1069,7 @@ class Gui(wx.Frame):
         """Handle the event when the user clears all monitors."""
         for button in self.monitor_buttons.values():
             button.Destroy()
-        for monitorName in self.monitors.get_signal_names()[0]:
+        for monitorName in self.monitors._get_signal_names()[0]:
             commandint = GuiCommandInterface(
                 monitorName,
                 self.names,
@@ -988,12 +1086,12 @@ class Gui(wx.Frame):
     def on_monitor_input(self, event):
         """Handle the event when the user adds a monitor."""
         name = self.monitor_input.GetValue()
-        if self.isValidMonitor(name):
-            if self.isMonitoring(name):
+        if self._is_valid_monitor(name):
+            if self._is_monitoring(name):
                 text = f"Already monitoring {name}"
             else:
-                text = self.makeMonitor(name)
-                self.addMonitorButton(name)
+                text = self._make_monitor(name)
+                self._add_monitor_button(name)
         else:
             text = "Invalid monitor"
         self.canvas.render(text)
@@ -1021,33 +1119,33 @@ class Gui(wx.Frame):
         if extraInfo is not None:
             if command == "s":
                 # extraInfo = switch_state
-                self.on_command_line_set_switch(extraInfo)
+                self._on_command_line_set_switch(extraInfo)
             elif command == "m":
                 # extraInfo = monitors, [device_id, port_id]
-                self.on_command_line_add_monitor(
+                self._on_command_line_add_monitor(
                     extraInfo[1][0], extraInfo[1][1]
                 )
             elif command == "z":
                 # extraInfo = monitors, [device_id, port_id]
-                self.on_command_line_zap_monitor(
+                self._on_command_line_zap_monitor(
                     extraInfo[1][0], extraInfo[1][1]
                 )
             elif command == "r":
-                self.on_command_line_run(extraInfo)  # extraInfo = cycles
+                self._on_command_line_run(extraInfo)  # extraInfo = cycles
             elif command == "c":
-                self.on_command_line_cont(extraInfo)  # extraInfo = cycles
+                self._on_command_line_cont(extraInfo)  # extraInfo = cycles
 
         self.canvas.render(text)
 
-    def on_command_line_run(self, cycles):
+    def _on_command_line_run(self, cycles):
         """Handle signal display when run command issued via command line."""
         self.cycles_completed = cycles
 
-    def on_command_line_cont(self, cycles):
+    def _on_command_line_cont(self, cycles):
         """Handle signal display when run command issued via command line."""
         self.cycles_completed += cycles
 
-    def on_command_line_set_switch(self, switch):
+    def _on_command_line_set_switch(self, switch):
         """Change colour of switch button based on command line input."""
         switchName = self.names.get_name_string(switch[0])
         status = switch[1]
@@ -1055,26 +1153,26 @@ class Gui(wx.Frame):
         self.switch_buttons[switchName][1] = status
 
         if status == 0:
-            self.changeButtonColours(button, darkred, red)
+            self._change_button_colours(button, darkred, red)
         else:
-            self.changeButtonColours(button, blue, lightblue)
+            self._change_button_colours(button, blue, lightblue)
         self.Layout()
 
-    def on_command_line_add_monitor(self, deviceId, portId):
+    def _on_command_line_add_monitor(self, deviceId, portId):
         """Add monitor button based on command line input."""
-        monitorName = self.getSignalName(deviceId, portId)
+        monitorName = self._get_signal_name(deviceId, portId)
         if monitorName not in self.monitor_buttons.keys():
-            self.addMonitorButton(monitorName)
+            self._add_monitor_button(monitorName)
 
-    def on_command_line_zap_monitor(self, deviceId, portId):
+    def _on_command_line_zap_monitor(self, deviceId, portId):
         """Destroy monitor button based on command line input."""
-        monitorName = self.getSignalName(deviceId, portId)
+        monitorName = self._get_signal_name(deviceId, portId)
         button = self.monitor_buttons[monitorName]
         button.Destroy()
         self.monitor_buttons.pop(monitorName)
         self.Layout()
 
-    def getSignalName(self, deviceId, portId):
+    def _get_signal_name(self, deviceId, portId):
         """Get name of monitor from device id and port id."""
         deviceName = self.names.get_name_string(deviceId)
         if portId is None:
@@ -1084,7 +1182,7 @@ class Gui(wx.Frame):
             monitorName = f"{deviceName}.{portName}"
         return monitorName
 
-    def makeMonitor(self, monitorName):
+    def _make_monitor(self, monitorName):
         """Create a new monitoring point based on user selection."""
         commandint = GuiCommandInterface(
             monitorName,
@@ -1098,7 +1196,7 @@ class Gui(wx.Frame):
         self.canvas.render(text)
         return text
 
-    def destroyMonitor(self, monitorName):
+    def _destroy_monitor(self, monitorName):
         """Destroy monitor."""
         commandint = GuiCommandInterface(
             monitorName, self.names, self.devices, self.network, self.monitors
@@ -1107,18 +1205,18 @@ class Gui(wx.Frame):
         self.canvas.render(text)
         return text
 
-    def isMonitoring(self, monitor):
+    def _is_monitoring(self, monitor):
         """Return True if monitor point is already being monitored."""
         return monitor in self.monitors.get_signal_names()[0]
 
-    def isValidMonitor(self, monitor):
+    def _is_valid_monitor(self, monitor):
         """Return True if suggested monitor point is a recognised output."""
         signalNames = self.monitors.get_signal_names()
         return monitor in signalNames[0] or monitor in signalNames[1]
 
-    def addMonitorButton(self, name):
+    def _add_monitor_button(self, name):
         """Add monitor button when monitor successfully created."""
-        shortName = self.shorten(name)
+        shortName = self._shorten(name)
         id = self.names.lookup([name])[0]
         newButton = gb.GradientButton(
             self.monitors_window,
@@ -1126,7 +1224,7 @@ class Gui(wx.Frame):
             label=shortName,
             size=self.standard_button_size
         )
-        self.changeButtonColours(newButton, blue, lightblue)
+        self._change_button_colours(newButton, blue, lightblue)
         newButton.Bind(wx.EVT_BUTTON, self.on_monitor_button)
         newButton.SetToolTip(name)
         newButton.SetCursor(self.click)
@@ -1137,14 +1235,14 @@ class Gui(wx.Frame):
         self.monitor_buttons[name] = newButton
         self.Layout()
 
-    def shorten(self, name):
+    def _shorten(self, name):
         """Get shortened name for button label."""
         if len(name) > 8:
             return f"'{name[0:5]}...'"
         else:
             return name
 
-    def getDeviceColour(self, kind):
+    def _get_device_colour(self, kind):
         """Colour code device button."""
         if kind in self.devices.gate_types:
             return [blue, lightblue]
@@ -1157,7 +1255,7 @@ class Gui(wx.Frame):
         else:
             return white
 
-    def changeButtonColours(self, button, outer, inner):
+    def _change_button_colours(self, button, outer, inner):
         button.SetTopStartColour(outer)
         button.SetTopEndColour(inner)
         button.SetBottomStartColour(inner)

@@ -63,6 +63,7 @@
   "test_parser_errors.py::TestParserDevices::()::test_parse_devices_list[symbol_list1-False-1-1]",
   "test_parser_errors.py::TestParserDevices::()::test_parse_devices_list[symbol_list2-False-1-0]",
   "test_parser_errors.py::TestParserDevices::()::test_parse_device_semantic",
+  "test_parser_errors.py::TestParserDevices::()::test_device_already_present",
   "test_parser_errors.py::TestParserDevices::()::test_parse_device_missing_semicolon_handling",
   "test_parser_errors.py::TestParserDevices::()::test_parse_device_optional_qual[parse_device_optional_qual.txt-0-0]",
   "test_parser_errors.py::TestParserDevices::()::test_parse_device_optional_qual[parse_device_should_have_qual.txt-0-1]",
@@ -95,6 +96,10 @@
   "test_parser_errors.py::TestParserErrorRecovery::()::test_error_recovery_parse_devices_list[er_device_list_missing_open_square.txt-CONNECTIONS]",
   "test_parser_errors.py::TestParserErrorRecovery::()::test_error_recovery_parse_device_id[er_parse_device_bad_id.txt-kind]",
   "test_parser_errors.py::TestParserErrorRecovery::()::test_error_recovery_parse_device_id[er_parse_device_id_missing_semicolon.txt-{]",
+  "test_parser_errors.py::test_empty_file",
+  "test_parser_errors.py::test_unclosed_comment_handling[within_devices.txt-2]",
+  "test_parser_errors.py::test_unclosed_comment_handling[within_connections.txt-3]",
+  "test_parser_errors.py::test_unclosed_comment_handling[within_monitors.txt-3]",
   "test_scanner.py::test_get_symbol",
   "test_scanner.py::test_show_error"
 ]

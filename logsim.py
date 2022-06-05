@@ -63,20 +63,15 @@ def main(arg_list):
     if not options:  # no option given, use the graphical user interface
 
         if len(arguments) != 1:  # wrong number of arguments
-            print("Error: one file path required\n")
-            print(usage_message)
-            sys.exit()
-
-        [path] = arguments
-        scanner = Scanner(path, names)
-        parser = Parser(names, devices, network, monitors, scanner)
-        if parser.parse_network():
-            # Initialise an instance of the gui.Gui() class
-            app = wx.App()
-            gui = Gui("Logic Simulator", path, names, devices, network,
-                      monitors)
-            gui.Show(True)
-            app.MainLoop()
+            path = None
+        else:
+            [path] = arguments
+        # Initialise an instance of the gui.Gui() class
+        app = wx.App()
+        gui = Gui("Logic Simulator", path, names, devices, network,
+                    monitors)
+        gui.Show(True)
+        app.MainLoop()
 
 
 if __name__ == "__main__":

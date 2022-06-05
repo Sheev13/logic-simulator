@@ -69,3 +69,4 @@ sidebar_guide_string = "The sidebar can be used to adjust simulation " \
                             "simulation."\
 
 parse_error_string = "Unable to parse file. Old file will remain loaded."
+first_parse_error_string = "Unable to parse file. Please choose a valid circuit file."

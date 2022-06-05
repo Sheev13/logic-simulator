@@ -32,6 +32,9 @@ class Symbol:
         self.line = None
 
 
+        self.comment_start = None
+
+
 class Scanner:
     """Read circuit definition file and translate the characters into symbols.
 
@@ -281,7 +284,7 @@ class Scanner:
         return line
 
     def show_error(self, symbol):
-        """Print current input line with carat pointing to error location."""
+        """Print current input line with caret pointing to error location."""
         char = self.current_char
         file_pos = self.f.tell()
         linecount = self.linecount
@@ -295,23 +298,23 @@ class Scanner:
             if linestart != 1:  # if there is a previous line
                 self.f.seek(prev_linestart - 1)
                 errorline1 = self._get_error_line()
-                caratline = " " * len(errorline1) + "^"
+                caretline = " " * len(errorline1) + "^"
                 self.f.seek(linestart - 1)
                 errorline2 = self._get_error_line()
-                message = errorline1 + "\n" + caratline + "\n" + errorline2
+                message = errorline1 + "\n" + caretline + "\n" + errorline2 + "\n"
                 error_line_num -= 1
                 col = len(errorline1)
             else:  # if there is no previous line
                 self.f.seek(linestart - 1)
                 errorline = self._get_error_line()
-                caratline = "^"
-                message = errorline + "\n" + caratline
+                caretline = "^"
+                message = errorline + "\n" + caretline + "\n"
                 col = error_pos - linestart
         else:
             self.f.seek(linestart - 1)
             errorline = self._get_error_line()
-            caratline = " " * (error_pos - linestart) + "^"
-            message = errorline + "\n" + caratline
+            caretline = " " * (error_pos - linestart) + "^"
+            message = errorline + "\n" + caretline + "\n"
             col = error_pos - linestart
 
         # return file object pointers to prior settings

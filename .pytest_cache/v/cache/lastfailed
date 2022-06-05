@@ -1,3 +1,4 @@
 {
+  "test_parser_errors.py::test_unclosed_comment_handling[within_connections.txt-2]": true,
   "test_scanner.py::test__open_file": true
 }
