@@ -842,8 +842,8 @@ class Gui(wx.Frame):
                 self.connections[(device_id, input)] = device.inputs[input]
         self.connections_info = []
         for input, output in self.connections.items():
-            inputName = self._get_signal_name(input[0], input[1])
-            outputName = self._get_signal_name(output[0], output[1])
+            inputName = self.devices.get_signal_name(input[0], input[1])
+            outputName = self.devices.get_signal_name(output[0], output[1])
             self.connections_info.append([
                 _("from") + f" {outputName} " + _("to") + f" {inputName}",
                 input,
@@ -951,12 +951,14 @@ class Gui(wx.Frame):
         for i in [(d.device_id, d.outputs) for d in self.devices.devices_list]:
             for output in i[1]:
                 allOutputIds.append((i[0], output))
-                allOutputNames.append(self._get_signal_name(i[0], output))
+                allOutputNames.append(
+                    self.devices.get_signal_name(i[0], output)
+                )
 
         newConnection = wx.SingleChoiceDialog(
             self,
             _("Choose a new output to connect input ") +
-            f"{self.getSignalName(input_device_id, input_port_id)}",
+            f"{self.devices.get_signal_name(input_device_id, input_port_id)}",
             _("Replace Connection"),
             allOutputNames,
             style=wx.CHOICEDLG_STYLE
@@ -1070,7 +1072,7 @@ class Gui(wx.Frame):
         newStatus = self.switch_buttons[switchName][1]
         self.devices.set_switch(switchId, newStatus)
 
-        text = f"{switchName} " + _("turned") + " {newStatus}."
+        text = f"{switchName} " + _("turned") + f" {newStatus}."
         self.canvas.render(text)
 
     def on_monitor_button(self, event):
@@ -1087,7 +1089,7 @@ class Gui(wx.Frame):
         """Handle the event when the user clears all monitors."""
         for button in self.monitor_buttons.values():
             button.Destroy()
-        for monitorName in self.monitors._get_signal_names()[0]:
+        for monitorName in self.monitors.get_signal_names()[0]:
             commandint = GuiCommandInterface(
                 monitorName,
                 self.names,
@@ -1106,7 +1108,7 @@ class Gui(wx.Frame):
         name = self.monitor_input.GetValue()
         if self._is_valid_monitor(name):
             if self._is_monitoring(name):
-                text = _("Already monitoring") + " {name}"
+                text = _("Already monitoring") + f" {name}"
             else:
                 text = self._make_monitor(name)
                 self._add_monitor_button(name)
@@ -1186,13 +1188,13 @@ class Gui(wx.Frame):
 
     def _on_command_line_add_monitor(self, deviceId, portId):
         """Add monitor button based on command line input."""
-        monitorName = self._get_signal_name(deviceId, portId)
+        monitorName = self.devices.get_signal_name(deviceId, portId)
         if monitorName not in self.monitor_buttons.keys():
             self._add_monitor_button(monitorName)
 
     def _on_command_line_zap_monitor(self, deviceId, portId):
         """Destroy monitor button based on command line input."""
-        monitorName = self._get_signal_name(deviceId, portId)
+        monitorName = self.devices.get_signal_name(deviceId, portId)
         button = self.monitor_buttons[monitorName]
         button.Destroy()
         self.monitor_buttons.pop(monitorName)

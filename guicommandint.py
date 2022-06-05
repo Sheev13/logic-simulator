@@ -215,7 +215,8 @@ class GuiCommandInterface:
             monitor_error = self.monitors.make_monitor(device, port,
                                                        self.cycles_completed)
             if monitor_error == self.monitors.NO_ERROR:
-                return _("Successfully made monitor."), [self.monitors, monitor]
+                return _("Successfully made monitor."), \
+                       [self.monitors, monitor]
         return _("Error! Could not make monitor."), [self.monitors, monitor]
 
     def zap_command(self):
@@ -224,7 +225,8 @@ class GuiCommandInterface:
         if monitor is not None:
             [device, port] = monitor
             if self.monitors.remove_monitor(device, port):
-                return _("Successfully zapped monitor."), [self.monitors, monitor]
+                return _("Successfully zapped monitor."), \
+                       [self.monitors, monitor]
         return _("Error! Could not zap monitor."), [self.monitors, monitor]
 
     def run_network(self, cycles):
@@ -250,7 +252,10 @@ class GuiCommandInterface:
             self.devices.cold_startup()
             if self.run_network(cycles):
                 self.cycles_completed += cycles
-            return "".join([_("Running for "), str(cycles)," " , _("cycles.")]), cycles
+            return " ".join([
+                _("Running for"),
+                str(cycles),
+                _("cycles.")]), cycles
         return _("Invalid number of cycles."), cycles
 
     def continue_command(self):
@@ -261,8 +266,12 @@ class GuiCommandInterface:
                 return _("Error! Nothing to continue. Run first."), 0
             elif self.run_network(cycles):
                 self.cycles_completed += cycles
-                return " ".join([_("Continuing for"), str(cycles), _("cycles."),
-                                "Total:", str(self.cycles_completed)]), cycles
+                return " ".join([
+                    _("Continuing for"),
+                    str(cycles),
+                    _("cycles."),
+                    "Total:",
+                    str(self.cycles_completed)]), cycles
         return _("Error! Invalid number of cycles."), cycles
 
     def make_connection(self, input_device_id, input_port_id,
