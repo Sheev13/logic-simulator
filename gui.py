@@ -653,9 +653,9 @@ class Gui(wx.Frame):
         for error in error_message_list:
             errors += f"\n{error}"
         if first:
-            message = f"{errors} \n \n{self.first_parse_error_string}"
+            message = f"{errors} \n \n{self.first_parse_error_string()}"
         else:
-            message = f"{errors} \n \n{self.parse_error_string}"
+            message = f"{errors} \n \n{self.parse_error_string()}"
         errorBox = dlgs.ScrolledMessageDialog(
             self,
             message,
@@ -1311,5 +1311,8 @@ class Gui(wx.Frame):
 
     
     def parse_error_string(self):
-        return _("Unable to parse file. Old file will remain loaded.")
+        return _("Unable to load file. Old file will remain loaded.")
+
+    def first_parse_error_string(self):
+        return _("Unable to load file. Please choose valid file.")
 
