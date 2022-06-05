@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2022-06-05 09:51+0100\n"
-"PO-Revision-Date: 2022-06-05 19:12+0100\n"
+"PO-Revision-Date: 2022-06-05 19:33+0100\n"
 "Last-Translator: \n"
 "Language-Team: GROUP 4\n"
 "Language: es\n"
@@ -180,6 +180,14 @@ msgstr "Borrar lienzo"
 #: gui.py:442
 msgid "Command line input. See User Guide for help."
 msgstr "Línea de comandos. Consulte el manual para obtener consejos."
+
+#: gui.py:623
+msgid "No file selected. Exiting GUI."
+msgstr "Nada archivo eligido. Saliendo de GUI."
+
+#: gui.py:624
+msgid "Exiting GUI."
+msgstr "Saliendo de GUI."
 
 #: gui.py:679
 msgid "Switches (toggle on/off):"

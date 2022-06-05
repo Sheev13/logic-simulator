@@ -392,7 +392,7 @@ class Gui(wx.Frame):
             wx.ID_ANY,
             "",
             style=wx.TE_PROCESS_ENTER,
-            size=wx.Size(150, 25)
+            size=wx.Size(175, 25)
         )
         self.monitor_input.SetHint(_("Add new monitor"))
         self.monitor_input.SetFont(inputBoxFont)
@@ -535,7 +535,7 @@ class Gui(wx.Frame):
 
         self.monitors_help_sizer.Add(self.monitors_text, 0, wx.ALIGN_CENTER, 5)
         self.monitors_help_sizer.Add(self.monitor_input, 0, wx.ALL, 5)
-        self.monitors_help_sizer.AddStretchSpacer()
+        #self.monitors_help_sizer.AddStretchSpacer()
         self.monitors_help_sizer.Add(
             self.clear_all_monitors,
             1,
@@ -620,8 +620,8 @@ class Gui(wx.Frame):
             else:
                 # if this is the first time, exit GUI
                 wx.MessageBox(
-                    "No file selected. Exiting GUI.",
-                    "Exiting GUI",
+                    _("No file selected. Exiting GUI."),
+                    _("Exiting GUI"),
                     wx.ICON_INFORMATION | wx.OK
                 )
                 self.Close(True)
