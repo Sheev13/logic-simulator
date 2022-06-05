@@ -676,7 +676,6 @@ class Gui(wx.Frame):
         """Configure widgets for new circuit and bind events."""
         self._set_file_title(self.path)
         self.cycles_completed = 0
-
         self._update_current_connections(first)
 
         # find new switches

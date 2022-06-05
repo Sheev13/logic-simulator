@@ -37,12 +37,20 @@ canvas_control_string = "Signals on the canvas can be manipulated to " \
                             "Click and hold to drag the signals "\
                             "around the space"
 
-sidebar_guide_string = "The sidebar can be used to set device properties " \
-                            "and monitors.\n" \
+sidebar_guide_string = "The sidebar can be used to adjust simulation " \
+                            "settings.\n" \
                             "\nClick 'Browse' to load a new circuit file." \
                             "\n \n" \
                             "See the list of devices to decide what you " \
-                            "want to monitor." \
+                            "want to monitor. Hover on a device to see " \
+                            "its full name, kind and qualifier information. " \
+                            "\n \n" \
+                            "To remove a connection before or during a " \
+                            "simulation, choose from the dropdown list " \
+                            "next to 'Devices' and click 'Delete Connection." \
+                            " You will be prompted to select a new output " \
+                            "to connect to the input from the deleted " \
+                            "connection." \
                             "\n \n" \
                             "Click the switch buttons to toggle on or off." \
                             "\n \n" \

@@ -44,6 +44,7 @@
   "test_network.py::test_delete_connection_gives_error[(I1, I2)-network.DEVICE_ABSENT]",
   "test_network.py::test_delete_connection_gives_error[(SW1_ID, I1)-network.PORT_ABSENT]",
   "test_network.py::test_delete_connection_gives_error[(OR1_ID, I1)-network.CONNECTION_ABSENT]",
+  "test_network.py::test_execute_not",
   "test_network.py::test_execute_xor",
   "test_network.py::test_execute_non_xor_gates[AND1_ID-switch_outputs0-LOW-devices.AND]",
   "test_network.py::test_execute_non_xor_gates[AND1_ID-switch_outputs1-HIGH-devices.AND]",

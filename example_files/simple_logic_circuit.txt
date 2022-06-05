@@ -26,8 +26,7 @@
         };
         {
             id: G3;
-            kind: OR;
-            qual: 2;
+            kind: XOR;
         };
     ];
 
