@@ -30,6 +30,7 @@ class Symbol:
         self.id = None
         self.pos = None
         self.line = None
+        self.linestart = None
 
 
 class Scanner:
@@ -151,6 +152,7 @@ class Scanner:
         inv = False
         symb.pos = self.f.tell()
         symb.line = self.linecount
+        symb.linestart = self.linestart
         while self.current_char.isalnum() or self._invalid_current():
             if self._invalid_current():
                 inv = True
@@ -167,6 +169,7 @@ class Scanner:
         inv = False
         symb.pos = self.f.tell()
         symb.line = self.linecount
+        symb.linestart = self.linestart
         while self.current_char.isdigit() or self._invalid_current():
             if self._invalid_current():
                 inv = True
@@ -186,11 +189,13 @@ class Scanner:
 
         if self.current_char == "#":
             start = self.f.tell()
+            line = self.linecount
+            linestart = self.linestart
             self._next()
             while self.current_char != "#":
                 if self.current_char == "":
                     end = True
-                    return True, start
+                    return True, start, line, linestart
                 self._next()
             if not end:
                 self._next()
@@ -208,25 +213,26 @@ class Scanner:
         if self.current_char.isspace():
             self._next_non_ws()
 
-        return False, None
+        return False, None, None, None
 
     def get_symbol(self):
         """Translate the next sequence of characters into a symbol."""
         sym = Symbol()
-        inv = False
-        unclosed_comment = False
+        uc_comment = False
 
         if self.current_char.isspace():
             self._next_non_ws()
 
         # comment
         while self.current_char in ["#", "/"]:
-            unclosed_comment, unclosed_start = self._skip_comment()
+            uc_comment, uc_start, uc_line, uc_ls = self._skip_comment()
 
-        if unclosed_comment:
-            sym.pos = unclosed_start
-            sym.line = self.linecount
+        #  unclosed comment
+        if uc_comment:
+            sym.pos = uc_start
+            sym.line = uc_line
             sym.type = self.UNCLOSED
+            sym.linestart = uc_ls
 
         # name/keyword
         elif self.current_char.isalpha():
@@ -252,6 +258,7 @@ class Scanner:
         elif self.current_char in self.puncs:
             sym.pos = self.f.tell()
             sym.line = self.linecount
+            sym.linestart = self.linestart
             sym.type = self.PUNCTUATION
             sym.id = self.names.query(self.current_char)
             self._next()
@@ -260,6 +267,7 @@ class Scanner:
         elif self.current_char == "":
             sym.pos = self.f.tell()
             sym.line = self.linecount
+            sym.linestart = self.linestart
             sym.type = self.EOF
 
         # invalid character
@@ -267,6 +275,7 @@ class Scanner:
             sym.type = self.INVALID_CHAR
             sym.pos = self.f.tell()
             sym.line = self.linecount
+            sym.linestart = self.linestart
             self._next()
 
         return sym
@@ -285,37 +294,40 @@ class Scanner:
         char = self.current_char
         file_pos = self.f.tell()
         linecount = self.linecount
+        file_linestart = self.linestart
+
         error_pos = symbol.pos
         error_line_num = symbol.line
-        linestart = self.linestart
+        error_linestart = symbol.linestart
         prev_linestart = self.prev_linestart
         col = 0
 
-        if error_pos == linestart:
-            if linestart != 1:  # if there is a previous line
+        if error_pos == error_linestart:  # "if symbol is at start of line"
+            # "if there is a previous line and symbol is not unclosed comment"
+            if error_linestart != 1 and symbol.type != self.UNCLOSED:  
                 self.f.seek(prev_linestart - 1)
                 errorline1 = self._get_error_line()
                 caratline = " " * len(errorline1) + "^"
-                self.f.seek(linestart - 1)
+                self.f.seek(error_linestart - 1)
                 errorline2 = self._get_error_line()
                 message = errorline1 + "\n" + caratline + "\n" + errorline2
                 error_line_num -= 1
                 col = len(errorline1)
-            else:  # if there is no previous line
-                self.f.seek(linestart - 1)
+            else:  # "if no previous line or symbol is unclosed comment"
+                self.f.seek(error_linestart - 1)
                 errorline = self._get_error_line()
                 caratline = "^"
                 message = errorline + "\n" + caratline
-                col = error_pos - linestart
+                col = error_pos - error_linestart
         else:
-            self.f.seek(linestart - 1)
+            self.f.seek(error_linestart - 1)
             errorline = self._get_error_line()
-            caratline = " " * (error_pos - linestart) + "^"
+            caratline = " " * (error_pos - error_linestart) + "^"
             message = errorline + "\n" + caratline
-            col = error_pos - linestart
+            col = error_pos - error_linestart
 
         # return file object pointers to prior settings
-        self.linestart = linestart
+        self.linestart = file_linestart
         self.prev_linestart = prev_linestart
         self.linecount = linecount
         self.f.seek(file_pos)
