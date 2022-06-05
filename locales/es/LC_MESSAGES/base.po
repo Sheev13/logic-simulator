@@ -275,7 +275,7 @@ msgstr "Haga clic 'Navegar' para cargar un archivo nuevo."
 
 #: gui.py:1188
 msgid "See the list of devices to decide what you "
-msgstr "Consulte la lista de los dispositivo para decider lo que "
+msgstr "Consulte la lista de los dispositivos para decider lo que "
 
 #: gui.py:1189
 msgid "want to monitor. Hover on a device to see "
