@@ -434,7 +434,7 @@ class Gui(wx.Frame):
         self.clear_button.SetFont(wx.Font(go_font))
 
         self.command_line_input = wx.TextCtrl(
-            self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER, size=(420, 25)
+            self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER, size=(450, 25)
         )
         self.command_line_input.SetHint(
             _("Command line input. See User Guide for help.")
