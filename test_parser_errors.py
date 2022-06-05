@@ -7,6 +7,21 @@ from monitors import Monitors
 from parse import Parser
 from scanner import Scanner, Symbol
 
+# Workaround to stop Python stealing _ for translations
+# Necessary for tests to work
+import sys
+import wx
+import builtins
+
+
+def _hook(obj):
+    if obj is not None:
+        print(repr(obj))
+
+
+builtins.__dict__['_'] = wx.GetTranslation
+sys.displayhook = _hook
+
 
 def new_parser(path):
     """Return a Parser class instance for given path."""
@@ -597,7 +612,7 @@ def test_empty_file():
 
 @pytest.mark.parametrize("text_file, expected_number_errors",
                              [("within_devices.txt",
-                               2), #why is this failing dammit
+                               2), # why is this failing dammit
                               ("within_connections.txt",
                                3),
                               ("within_monitors.txt",
@@ -615,5 +630,3 @@ def test_unclosed_comment_handling(text_file, expected_number_errors):
     final_error_count = parser_obj.error_count
 
     assert final_error_count == expected_number_errors
-
-

@@ -23,9 +23,9 @@ from monitors import Monitors
 from scanner import Scanner
 from parse import Parser
 
+from gui_utils.gui_utils import Utils
 from userint import UserInterface
 from guicommandint import GuiCommandInterface
-from gui_utils.gui_utils import *
 
 
 class MyGLCanvas(wxcanvas.GLCanvas):
@@ -325,7 +325,9 @@ class Gui(wx.Frame):
         self.userint = UserInterface(names, devices, network, monitors)
 
         """Initialise utils."""
+        self.utils = Utils()
         self.click = wx.Cursor(wx.Image("gui_utils/smallclick.png"))
+        self.info_cursor = wx.Cursor(wx.Image('gui_utils/smallinfo.png'))
         self.standard_button_size = wx.Size(85, 36)
 
         """Initialise widgets and layout."""
@@ -346,7 +348,7 @@ class Gui(wx.Frame):
         self.SetMenuBar(menuBar)
 
         # Set background colour for GUI
-        self.SetBackgroundColour(paleyellow)
+        self.SetBackgroundColour(self.utils.paleyellow)
 
         # Set fonts
         fileFont = wx.Font(wx.FontInfo(18).FaceName("Mono").Bold())
@@ -410,7 +412,11 @@ class Gui(wx.Frame):
         self.run_button = gb.GradientButton(self, wx.ID_ANY, label=_("Run"))
         self.run_button.SetCursor(self.click)
         self.run_button.SetFont(wx.Font(go_font))
-        self._change_button_colours(self.run_button, darkgreen, midgreen)
+        self._change_button_colours(
+            self.run_button,
+            self.utils.darkgreen,
+            self.utils.midgreen
+        )
 
         self.continue_button = gb.GradientButton(
             self,
@@ -420,8 +426,8 @@ class Gui(wx.Frame):
         self.continue_button.SetFont(wx.Font(go_font))
         self._change_button_colours(
             self.continue_button,
-            darkpurple,
-            lightpurple
+            self.utils.darkpurple,
+            self.utils.lightpurple
         )
         self.continue_button.SetCursor(self.click)
 
@@ -651,9 +657,9 @@ class Gui(wx.Frame):
         for error in error_message_list:
             errors += f"\n{error}"
         if first:
-            message = f"{errors} \n \n{self.first_parse_error_string()}"
+            message = f"{errors} \n \n{self.utils.first_parse_error_string}"
         else:
-            message = f"{errors} \n \n{self.parse_error_string()}"
+            message = f"{errors} \n \n{self.utils.parse_error_string}"
         errorBox = dlgs.ScrolledMessageDialog(
             self,
             message,
@@ -706,9 +712,17 @@ class Gui(wx.Frame):
             button.SetToolTip(name)
             button.SetCursor(self.click)
             if state == 0:
-                self._change_button_colours(button, darkred, red)
+                self._change_button_colours(
+                    button,
+                    self.utils.darkred,
+                    self.utils.red
+                )
             else:
-                self._change_button_colours(button, blue, lightblue)
+                self._change_button_colours(
+                    button,
+                    self.utils.blue,
+                    self.utils.lightblue
+                )
             self.switch_buttons[name] = [button, state]
 
         # bind switch buttons to event
@@ -754,8 +768,8 @@ class Gui(wx.Frame):
                 label=self._shorten(f"{label}{extra}"),
                 size=self.standard_button_size
             )
-            c = wx.Cursor(wx.Image('gui_utils/smallinfo.png'))
-            device_button.SetCursor(c)
+
+            device_button.SetCursor(self.info_cursor)
             kindId = self.devices.get_device(id).device_kind
             kindLabel = self.names.get_name_string(kindId)
             device_button.SetToolTip(f"{label}, {kindLabel}{extra}")
@@ -785,7 +799,11 @@ class Gui(wx.Frame):
                 label=curr,
                 size=self.standard_button_size
             )
-            self._change_button_colours(button, blue, lightblue)
+            self._change_button_colours(
+                button,
+                self.utils.blue,
+                self.utils.lightblue
+            )
             button.SetCursor(self.click)
             self.monitor_buttons[curr] = button
 
@@ -886,20 +904,20 @@ class Gui(wx.Frame):
             self._choose_file()
         if Id == wx.ID_HELP_COMMANDS:
             wx.MessageBox(
-                self.help_string(),
+                self.utils.help_string,
                 _("Command Line Guide"),
                 wx.ICON_INFORMATION | wx.OK
             )
         if Id == wx.ID_CONTEXT_HELP:
             wx.MessageBox(
-                self.canvas_controls_string(),
+                self.utils.canvas_controls_string,
                 _("Canvas Controls"),
                 wx.ICON_INFORMATION | wx.OK
             )
 
         if Id == wx.ID_HELP_PROCEDURES:
             wx.MessageBox(
-                self.sidebar_guide_string(),
+                self.utils.sidebar_guide_string,
                 _("Sidebar Guide"),
                 wx.ICON_INFORMATION | wx.OK
             )
@@ -943,7 +961,7 @@ class Gui(wx.Frame):
             allOutputNames,
             style=wx.CHOICEDLG_STYLE
         )
-        newConnection.SetBackgroundColour(paleyellow)
+        newConnection.SetBackgroundColour(self.utils.paleyellow)
 
         while newConnection.ShowModal() == wx.ID_CANCEL:
             wx.MessageBox(
@@ -1036,10 +1054,18 @@ class Gui(wx.Frame):
         switchName = self.names.get_name_string(switchId)
 
         if self.switch_buttons[switchName][1] == 1:
-            self._change_button_colours(button, darkred, red)
+            self._change_button_colours(
+                button,
+                self.utils.darkred,
+                self.utils.red
+            )
             self.switch_buttons[switchName][1] = 0
         else:
-            self._change_button_colours(button, blue, lightblue)
+            self._change_button_colours(
+                button,
+                self.utils.blue,
+                self.utils.lightblue
+            )
             self.switch_buttons[switchName][1] = 1
         newStatus = self.switch_buttons[switchName][1]
         self.devices.set_switch(switchId, newStatus)
@@ -1145,9 +1171,17 @@ class Gui(wx.Frame):
         self.switch_buttons[switchName][1] = status
 
         if status == 0:
-            self._change_button_colours(button, darkred, red)
+            self._change_button_colours(
+                button,
+                self.utils.darkred,
+                self.utils.red
+            )
         else:
-            self._change_button_colours(button, blue, lightblue)
+            self._change_button_colours(
+                button,
+                self.utils.blue,
+                self.utils.lightblue
+            )
         self.Layout()
 
     def _on_command_line_add_monitor(self, deviceId, portId):
@@ -1216,7 +1250,11 @@ class Gui(wx.Frame):
             label=shortName,
             size=self.standard_button_size
         )
-        self._change_button_colours(newButton, blue, lightblue)
+        self._change_button_colours(
+            newButton,
+            self.utils.blue,
+            self.utils.lightblue
+        )
         newButton.Bind(wx.EVT_BUTTON, self.on_monitor_button)
         newButton.SetToolTip(name)
         newButton.SetCursor(self.click)
@@ -1237,79 +1275,18 @@ class Gui(wx.Frame):
     def _get_device_colour(self, kind):
         """Colour code device button."""
         if kind in self.devices.gate_types:
-            return [blue, lightblue]
+            return [self.utils.blue, self.utils.lightblue]
         elif self.names.get_name_string(kind) == "CLOCK":
-            return [darkgreen, midgreen]
+            return [self.utils.darkgreen, self.utils.midgreen]
         elif self.names.get_name_string(kind) == "DTYPE":
-            return [darkred, red]
+            return [self.utils.darkred, self.utils.red]
         elif self.names.get_name_string(kind) == "SWITCH":
-            return [darkpink, lightpink]
+            return [self.utils.darkpink, self.utils.lightpink]
         else:
-            return white
+            return self.utils.white
 
     def _change_button_colours(self, button, outer, inner):
         button.SetTopStartColour(outer)
         button.SetTopEndColour(inner)
         button.SetBottomStartColour(inner)
         button.SetBottomEndColour(outer)
-
-    def help_string(self):
-        return _("Enter command line inputs in the bottom left of") \
-                    + _(" the interface.") + "\n" \
-                    "\n" + _("Possible commands:") + \
-                    "\n \nr N\n" + _("Run simulator for N cycles") \
-                    + "\n \nc N\n" + _("Continue running simulation")\
-                    + _(" for N cycles") + \
-                    "\n \ns X N\n" + _("Set switch X to N (0 or 1)") +\
-                    "\n \nm X\n" + _("Start monitoring output signal X")\
-                    + "\n \nz X\n" + _("Stop monitoring X")
-
-    def canvas_controls_string(self):
-        return _("Signals on the canvas can be manipulated to") \
-                    + _(" better view them.") + "\n" \
-                    "\n" + _("Scroll in to zoom in") + \
-                    "\n \n" + \
-                    _("Scroll out to zoom out - this may ") \
-                    + _("be useful if you have many monitors") \
-                    + "\n \n" \
-                    + _("Click and hold to drag the signals ")\
-                    + _("around the space")
-
-    def sidebar_guide_string(self):
-        return _("The sidebar can be used to adjust simulation ") \
-                    + _("settings") + ".\n\n" + \
-                    _("Click 'Browse' to load a new circuit file.") \
-                    + "\n \n" + \
-                    _("See the list of devices to decide what you ") \
-                    + _("want to monitor. Hover on a device to see ") \
-                    + _("its full name, kind and qualifier information.") \
-                    + "\n \n" +\
-                    _("To remove a connection before or during a ") \
-                    + _("simulation, choose from the dropdown list ") \
-                    + _("next to 'Devices' and click 'Delete Connection.") \
-                    + _("Select a new output ") \
-                    + _("to connect to the input from the deleted ") \
-                    + _("connection.") \
-                    + "\n \n" + \
-                    _("Click the switch buttons to toggle on or off.") \
-                    + "\n \n" + \
-                    _("Type the name of an output in the 'Add new ") \
-                    + _("monitor' box to add to monitors.") \
-                    + _(" Press 'Clear All' to remove all monitors.") \
-                    + _(" Click on an individual monitor button to ") \
-                    + _("remove it.")\
-                    + "\n \n" + \
-                    _("Adjust the number of cycles with the spinner.")\
-                    + "\n \n" + \
-                    _("Press 'Run' or 'Continue' to start the ") \
-                    + _("simulation.")\
-                    + "\n \n" + \
-                    _("Press 'Clear Canvas' to reset the ") \
-                    + _("simulation.")\
-
-
-    def parse_error_string(self):
-        return _("Unable to load file. Old file will remain loaded.")
-
-    def first_parse_error_string(self):
-        return _("Unable to load file. Please choose valid file.")
