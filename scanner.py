@@ -132,7 +132,7 @@ class Scanner:
         """Return True if current character is invalid."""
         char = self.current_char
         if not char.isspace() and not char.isalnum():
-            if char != "" and char not in self.puncs:
+            if char != "" and char not in self.puncs and char not in ['/', '#']:
                 return True
         return False
 
