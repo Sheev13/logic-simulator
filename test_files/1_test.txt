@@ -7,7 +7,13 @@ DEVICES [
 {id: SW1; kind: SWITCH; qual: 0;};
 
 {id: SW2; kind: SWITCH ; qual: 0;};
+
 {id: SW3; kind: SWITCH; qual: 0;};
+
+{id: SW3; kind: SWITCHs; qual: 0;};
+#currently first error to be spotted will
+be taken#
+
 
 {id: RESET; kind: SWITCH; qual: 0;};
 
@@ -21,8 +27,6 @@ DEVICES [
 
 CONNECTIONS  [
     CLK1 :  D1.CLK  ;
-
-
 
     D1.QBAR : D1.DATA;
     SW1 : D1.SET;

@@ -1,0 +1,68 @@
+DEVICES [
+{ id  :  D1 ;  kind : DTYPE ; } ;
+{id: D2; kind: DTYPE; };
+{id: D3; kind: DTYPE; };
+{id: CLK1; kind: CLOCK; qual: 1;};
+
+{id: SW1; kind: SWITCH; qual: 0;};
+
+{id: SW2; kind: SWITCH ; qual: 0;};
+
+{id: SW3; kind: SWITCH; qual: 0;};
+
+{id: SW3; kind: SWITCHs; qual: 0;};
+#currently first error to be spotted will
+be taken#
+
+
+{id: RESET; kind: SWITCH; qual: 0;};
+
+{id: INV1; kind: NAND; qual: 2;};
+{id: GAND; kind: AND; qual: 3;};
+{id: GOR; kind: OR; qual: 2;};
+{id: INV2; kind: NOR; qual: 2;};
+{id: INV3; kind: NAND; qual: 2;};
+
+] ;
+
+CONNECTIONS  [
+    CLK1 :  D1.CLK  ;
+
+    D1.QBAR : D1.DATA;
+    SW1 : D1.SET;
+    INV3 : D1.CLEAR;
+    D2.QBAR: D2.DATA;
+    D1.QBAR: D2.CLK;
+    SW2: D2.SET;
+    INV3 : D2.CLEAR;
+    D3.QBAR: D3.DATA;
+    D2.QBAR: D3.CLK;
+    SW3: D3.SET;
+    INV3 : D3.CLEAR;
+
+    D1.Q: GAND.I1;
+    D2.Q: INV1.I1;
+    D2.Q: INV1.I2;
+    INV1: GAND.I2;
+    D3.Q: GAND.I3;
+
+    GAND: GOR.I1;
+    RESET: GOR.I2;
+
+    GOR: INV2. I1;
+    GOR: INV2.I2;
+
+    INV2: INV3. I1;
+    INV2: INV3.I2;
+    ]
+;
+
+MONITORS  [
+    CLK1
+    D1.Q # ;
+    D2.Q;
+    D3.Q;
+]
+;
+
+

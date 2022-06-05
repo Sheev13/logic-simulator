@@ -263,7 +263,6 @@ class Parser:
                     elif self.symbol.id == self.scanner.OPEN_CURLY:
                         continue
                     elif self.end_of_file:
-                        # TODO: need to check this
                         return
                     elif self.symbol.id == self.scanner.CONNECTIONS_ID or \
                             self.symbol.id == self.scanner.MONITOR_ID:
@@ -328,6 +327,7 @@ class Parser:
         missing_device_semicolon = False
         device_qual_symbol = None  # initialising for semantic reporting
         device_kind_symbol = None  # initialising for semantic reporting
+        device_name = None
         while True:
             if self.symbol.id != self.scanner.OPEN_CURLY:
                 self.error(
@@ -372,7 +372,7 @@ class Parser:
                     self.parse_device_qual()
                 if missing_semicolon:
                     if self.end_of_file:
-                        return
+                        return True
                     print(
                         "missed a semicolon in device qual, will skip to "
                         "next device")
@@ -434,6 +434,11 @@ class Parser:
                         self.semantic_error(
                             f"Device kind {device_kind_string} not "
                             f"recognised.", device_kind_symbol
+                        )
+                    elif error_type == self.devices.DEVICE_PRESENT:
+                        self.semantic_error(
+                            f"Device {device_name} already present.",
+                            device_name_symbol
                         )
                 #else:
                     # print(
@@ -534,6 +539,8 @@ class Parser:
                     [self.scanner.QUAL_KEYWORD_ID, self.scanner.CLOSE_CURLY],
                 )
                 break
+                # this causes small issue with error counting for unclosed
+                # comments - deal with if time
 
             self.set_next()
             if self.unclosed_comment:

@@ -567,11 +567,38 @@ class TestParserErrorRecovery:
         assert spy_symbol_id.spy_return == expected_symbol_string
 
 
-def test_empty_file(capfd):
+def test_empty_file():
+    """Test an empty file will throw an error"""
     parser_obj = new_parser(f"test_files/empty_file_error_test.txt")
 
     result = parser_obj.parse_network()
-    out, err = capfd.readouterr()
-    #assert out == "ERROR: Empty definition file was loaded.\nCompletely " \
-                 # "parsed the definition file. 1 error(s) found in total.\n"
+
+    # test it is not just a file with an unclosed comment in it
+    unclosed_comment = parser_obj.unclosed_comment
+    assert not unclosed_comment
+
+    # test an error is thrown
     assert not result
+
+@pytest.mark.parametrize("text_file, expected_number_errors",
+                             [("within_devices.txt",
+                               2), #why is this failing dammit
+                              ("within_connections.txt",
+                               3),
+                              ("within_monitors.txt",
+                               3),
+                              ])
+def test_unclosed_comment_handling(text_file, expected_number_errors):
+    """Test unclosed comment handling gives correct error count"""
+
+    # want to test that the total error count will stay constant after an
+    # unclosed comment is found
+
+    parser_obj = new_parser(f"test_files/unclosed_comment_testing/{text_file}")
+
+    parser_obj.parse_network()
+    final_error_count = parser_obj.error_count
+
+    assert final_error_count == expected_number_errors
+
+
