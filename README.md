@@ -12,20 +12,20 @@ cd logic-simulator/final
 ```
 To run the Logic Simulator in **English**, run the command:
 ```
-LANG=en_EN.utf-8 ./logsim.py
+LANG=en_EN.utf-8 python logsim.py
 ```
 To run the Logic Simulator in **Spanish**, run the command:
 ```
-LANG=es_ES.utf-8 ./logsim.py
+LANG=es_ES.utf-8 python logsim.py
 ```
 The above commands will prompt you to select a file to load. To immediately load a file upon start-up run the command:
 
 ```
-LANG=en_EN.utf-8 ./logsim.py <file-path>
+LANG=en_EN.utf-8 python logsim.py <file-path>
 ```
   or 
 ```
-LANG=es_ES.utf-8 ./logsim.py <file-path>
+LANG=es_ES.utf-8 python logsim.py <file-path>
 ```
 depending on your language preference.
 
