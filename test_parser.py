@@ -1,5 +1,4 @@
 """Test the parser module."""
-from this import d
 import pytest
 
 from names import Names
@@ -8,6 +7,21 @@ from devices import Devices
 from monitors import Monitors
 from parse import Parser
 from scanner import Scanner
+
+# Workaround to stop Python stealing _ for translations
+# Necessary for tests to work
+import sys
+import wx
+import builtins
+
+
+def _hook(obj):
+    if obj is not None:
+        print(repr(obj))
+
+
+builtins.__dict__['_'] = wx.GetTranslation
+sys.displayhook = _hook
 
 
 def new_parser(path):

@@ -304,6 +304,7 @@ class Scanner:
             if error_linestart != 1 and symbol.type != self.UNCLOSED:
                 self.f.seek(prev_linestart - 1)
                 errorline1 = self._get_error_line()
+
                 caretline = " " * len(errorline1) + "^"
                 self.f.seek(error_linestart - 1)
                 errorline2 = self._get_error_line()

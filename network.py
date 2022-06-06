@@ -35,7 +35,7 @@ class Network:
                                      device.
 
     delete_connection(self, input_device_id, input_port_id): Deletes the
-                                     connection associated with given inputs.                
+                                     connection associated with given inputs.
 
     check_network(self): Checks if all inputs in the network are connected.
 
@@ -71,7 +71,7 @@ class Network:
         [self.NO_ERROR, self.INPUT_TO_INPUT, self.OUTPUT_TO_OUTPUT,
          self.INPUT_CONNECTED, self.PORT_ABSENT, self.CONNECTION_ABSENT,
          self.DEVICE_ABSENT] = self.names.unique_error_codes(7)
- 
+
         self.steady_state = True  # for checking if signals have settled
 
     def get_connected_output(self, device_id, input_id):

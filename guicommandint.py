@@ -96,7 +96,7 @@ class GuiCommandInterface:
         elif command == "c":
             text, extra = self.continue_command()
         else:
-            text, extra = "Invalid command. See User Guide for help.", None
+            text, extra = _("Invalid command. See User Guide for help."), None
         return [
             command,
             text,
@@ -131,7 +131,7 @@ class GuiCommandInterface:
         self.skip_spaces()
         name_string = ""
         if not self.character.isalpha():  # the string must start with a letter
-            print("Error! Expected a name.")
+            print(_("Error! Expected a name."))
             return None
         while self.character.isalnum():
             name_string = "".join([name_string, self.character])
@@ -149,7 +149,7 @@ class GuiCommandInterface:
         else:
             name_id = self.names.query(name_string)
         if name_id is None:
-            print("Error! Unknown name.")
+            print(_("Error! Unknown name."))
         return name_id
 
     def read_signal_name(self):
@@ -177,7 +177,7 @@ class GuiCommandInterface:
         self.skip_spaces()
         number_string = ""
         if not self.character.isdigit():
-            print("Error! Expected a number.")
+            print(_("Error! Expected a number."))
             return None
         while self.character.isdigit():
             number_string = "".join([number_string, self.character])
@@ -186,7 +186,7 @@ class GuiCommandInterface:
 
         if upper_bound is not None:
             if number > upper_bound:
-                print("Number out of range.")
+                print(_("Number out of range."))
                 return None
 
         if lower_bound is not None:
@@ -204,8 +204,8 @@ class GuiCommandInterface:
             state = self.read_number(0, 1)
             if state is not None:
                 if self.devices.set_switch(id, state):
-                    return "Successfully set switch.", [id, state]
-        return "Error! Invalid switch.", None
+                    return _("Successfully set switch."), [id, state]
+        return _("Error! Invalid switch."), None
 
     def monitor_command(self):
         """Set the specified monitor."""
@@ -215,8 +215,9 @@ class GuiCommandInterface:
             monitor_error = self.monitors.make_monitor(device, port,
                                                        self.cycles_completed)
             if monitor_error == self.monitors.NO_ERROR:
-                return "Successfully made monitor.", [self.monitors, monitor]
-        return "Error! Could not make monitor.", [self.monitors, monitor]
+                return _("Successfully made monitor."), \
+                       [self.monitors, monitor]
+        return _("Error! Could not make monitor."), [self.monitors, monitor]
 
     def zap_command(self):
         """Remove the specified monitor."""
@@ -224,8 +225,9 @@ class GuiCommandInterface:
         if monitor is not None:
             [device, port] = monitor
             if self.monitors.remove_monitor(device, port):
-                return "Successfully zapped monitor.", [self.monitors, monitor]
-        return "Error! Could not zap monitor.", [self.monitors, monitor]
+                return _("Successfully zapped monitor."), \
+                       [self.monitors, monitor]
+        return _("Error! Could not zap monitor."), [self.monitors, monitor]
 
     def run_network(self, cycles):
         """Run the network for the specified number of simulation cycles.
@@ -236,7 +238,7 @@ class GuiCommandInterface:
             if self.network.execute_network():
                 self.monitors.record_signals()
             else:
-                print("Error! Network oscillating.")
+                print(_("Error! Network oscillating."))
                 return False
         return True
 
@@ -250,20 +252,27 @@ class GuiCommandInterface:
             self.devices.cold_startup()
             if self.run_network(cycles):
                 self.cycles_completed += cycles
-            return "".join(["Running for ", str(cycles), " cycles."]), cycles
-        return "Invalid number of cycles.", cycles
+            return " ".join([
+                _("Running for"),
+                str(cycles),
+                _("cycles.")]), cycles
+        return _("Invalid number of cycles."), cycles
 
     def continue_command(self):
         """Continue a previously run simulation."""
         cycles = self.read_number(0, None)
         if cycles is not None:  # if the number of cycles provided is valid
             if self.cycles_completed == 0:
-                return "Error! Nothing to continue. Run first.", 0
+                return _("Error! Nothing to continue. Run first."), 0
             elif self.run_network(cycles):
                 self.cycles_completed += cycles
-                return " ".join(["Continuing for", str(cycles), "cycles.",
-                                "Total:", str(self.cycles_completed)]), cycles
-        return "Error! Invalid number of cycles.", cycles
+                return " ".join([
+                    _("Continuing for"),
+                    str(cycles),
+                    _("cycles."),
+                    "Total:",
+                    str(self.cycles_completed)]), cycles
+        return _("Error! Invalid number of cycles."), cycles
 
     def make_connection(self, input_device_id, input_port_id,
                         dev, port):
@@ -275,9 +284,9 @@ class GuiCommandInterface:
             port
         )
         if connection_error == self.network.NO_ERROR:
-            return "Successfully made new connection.", True
+            return _("Successfully made new connection."), True
         else:
-            return "Could not make connection.", False
+            return _("Could not make connection."), False
 
     def delete_connection(self, input_device_id, input_port_id):
         """Delete a connection."""

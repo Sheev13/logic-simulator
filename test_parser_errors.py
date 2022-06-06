@@ -7,6 +7,21 @@ from monitors import Monitors
 from parse import Parser
 from scanner import Scanner, Symbol
 
+# Workaround to stop Python stealing _ for translations
+# Necessary for tests to work
+import sys
+import wx
+import builtins
+
+
+def _hook(obj):
+    if obj is not None:
+        print(repr(obj))
+
+
+builtins.__dict__['_'] = wx.GetTranslation
+sys.displayhook = _hook
+
 
 def new_parser(path):
     """Return a Parser class instance for given path."""
@@ -68,11 +83,11 @@ class TestParserDevices:
             success,
             expected_error_count,
             parse_device_call_number):
-        """Test Parser.parse_devices_list error handling in outer
+        """Test Parser._parse_devices_list error handling in outer
         'wrapping' for a DEVICES list.
 
-        The use of patching lets one assume that Parser.parse_device
-        reaches the end of all the devices and that Parser.set_next
+        The use of patching lets one assume that Parser._parse_device
+        reaches the end of all the devices and that Parser._set_next
         always returns the correct symbol.
         """
 
@@ -87,51 +102,51 @@ class TestParserDevices:
         def mock_error(self, msg, expt_list):
             parser_obj.error_count += 1
             print(f"SYNTAX ERROR FOUND: {msg}, recevied"
-                  f" {parser_obj.get_symbol_string()}")
+                  f" {parser_obj._get_symbol_string()}")
 
-        # Parser.error is patched so that we do not test scanner.show_error
-        mocker.patch('parse.Parser.error', mock_error)
+        # Parser._error is patched so that we do not test scanner.show_error
+        mocker.patch('parse.Parser._error', mock_error)
 
         def mock_set_next(self):
             parser_obj.symbol.id = next(gen)
             return
 
-        # Parser.set_next is patched so that we do not test scanner
+        # Parser._set_next is patched so that we do not test scanner
         # functionality
-        mocker.patch('parse.Parser.set_next', mock_set_next)
+        mocker.patch('parse.Parser._set_next', mock_set_next)
 
         def mock_parse_device(self, err):
             parser_obj.symbol.id = parser_obj.scanner.CLOSE_SQUARE
             return False
 
-        # Parser.parse_device is patched so that we are only testing the
-        # actual parse_device_list function
-        mocker.patch('parse.Parser.parse_device', mock_parse_device)
+        # Parser._parse_device is patched so that we are only testing the
+        # actual _parse_device_list function
+        mocker.patch('parse.Parser._parse_device', mock_parse_device)
 
-        spy = mocker.spy(parser_obj, "parse_device")
+        spy = mocker.spy(parser_obj, "_parse_device")
 
-        assert parser_obj.parse_devices_list() == success
+        assert parser_obj._parse_devices_list() == success
         assert parser_obj.error_count == expected_error_count
         assert spy.call_count == parse_device_call_number
 
     def test_parse_device_semantic(self, mocker):
         """Test if a semantic error will be detected and handled
-        correctly in Parser.parse_device
+        correctly in Parser._parse_device
         """
 
         parser_obj = new_parser("test_files/parse_device_semantic_error.txt")
-        parser_obj.set_next()
+        parser_obj._set_next()
 
         def mock_error(self, msg, expt_list):
             parser_obj.error_count += 1
             print(f"SYNTAX ERROR FOUND: {msg}, recevied"
-                  f" {parser_obj.get_symbol_string()}")
+                  f" {parser_obj._get_symbol_string()}")
 
-        mocker.patch('parse.Parser.error', mock_error)
+        mocker.patch('parse.Parser._error', mock_error)
 
-        spy_semantic = mocker.spy(parser_obj, "semantic_error")
-        spy_syntactic = mocker.spy(parser_obj, "error")
-        assert not parser_obj.parse_device(0)  # no missing semicolon
+        spy_semantic = mocker.spy(parser_obj, "_semantic_error")
+        spy_syntactic = mocker.spy(parser_obj, "_error")
+        assert not parser_obj._parse_device(0)  # no missing semicolon
         assert spy_semantic.call_count == 1  # semantic error is detected
         assert spy_syntactic.call_count == 0  # no syntax error detected
 
@@ -139,37 +154,37 @@ class TestParserDevices:
         """Test if specific device semantic errors will be handled
         appropriately"""
 
-        #if time, add more tests to parametise and figure out how to access
+        # if time, add more tests to parametise and figure out how to access
         # error_type / use stdout capture to assert?
 
         parser_obj = \
             new_parser("test_files/device_semantic_testing/device_present.txt")
 
-
-        spy_semantic = mocker.spy(parser_obj, "semantic_error")
+        spy_semantic = mocker.spy(parser_obj, "_semantic_error")
         parser_obj.parse_network()
         spy_semantic.assert_called_once()
 
     def test_parse_device_missing_semicolon_handling(self, mocker):
-        """Test if one of parse_device_id/parse_device_kind/parse_device_qual
+        """Test if one of
+        _parse_device_id/_parse_device_kind/_parse_device_qual
         return a missing semicolon, the next device is skipped
         """
 
-        # e.g. if parse_device_id encounters a misisng semicolon, no calls to
+        # e.g. if _parse_device_id encounters a misisng semicolon, no calls to
         # device kind or device qual are made
 
         parser_obj = new_parser(
             "test_files/parse_device_missing_semicolon_handling.txt")
-        parser_obj.set_next()
+        parser_obj._set_next()
 
-        mocker.patch('parse.Parser.parse_device_id', return_value=(True,
-                                                                   None, None))
+        mocker.patch('parse.Parser._parse_device_id', return_value=(True,
+                                                                    None,
+                                                                    None))
+        spy_id = mocker.spy(parser_obj, "_parse_device_id")
+        spy_kind = mocker.spy(parser_obj, "_parse_device_kind")
+        spy_qual = mocker.spy(parser_obj, "_parse_device_qual")
 
-        spy_id = mocker.spy(parser_obj, "parse_device_id")
-        spy_kind = mocker.spy(parser_obj, "parse_device_kind")
-        spy_qual = mocker.spy(parser_obj, "parse_device_qual")
-
-        parser_obj.parse_device(0)
+        parser_obj._parse_device(0)
         assert spy_id.call_count == 1  # called but missing semicolon
         assert spy_kind.call_count == 0  # not called
         assert spy_qual.call_count == 0  # not called
@@ -185,13 +200,13 @@ class TestParserDevices:
         continue regardless if qualifier is semantically necessary
         """
         parser_obj = new_parser(f"test_files/{text_file}")
-        parser_obj.set_next()
+        parser_obj._set_next()
 
-        spy_qual = mocker.spy(parser_obj, "parse_device_qual")
-        spy_syntactic = mocker.spy(parser_obj, "error")
-        spy_semantic = mocker.spy(parser_obj, "semantic_error")
+        spy_qual = mocker.spy(parser_obj, "_parse_device_qual")
+        spy_syntactic = mocker.spy(parser_obj, "_error")
+        spy_semantic = mocker.spy(parser_obj, "_semantic_error")
 
-        parser_obj.parse_device(0)
+        parser_obj._parse_device(0)
         assert spy_qual.call_count == 0  # correctly skipped
         assert spy_semantic.call_count == semantic_errors
         assert spy_syntactic.call_count == syntax_errors
@@ -212,19 +227,19 @@ class TestParserDevices:
         """
 
         parser_obj = new_parser(f"test_files/{text_file}")
-        parser_obj.set_next()
+        parser_obj._set_next()
 
         def mock_error(self, msg, expt_list):
             parser_obj.error_count += 1
             print(f"SYNTAX ERROR FOUND: {msg}, recevied"
-                  f" {parser_obj.get_symbol_string()}")
+                  f" {parser_obj._get_symbol_string()}")
 
-        mocker.patch('parse.Parser.error', mock_error)
+        mocker.patch('parse.Parser._error', mock_error)
 
-        spy_parse_device_id = mocker.spy(parser_obj, "parse_device_id")
-        spy_error = mocker.spy(parser_obj, "error")
+        spy_parse_device_id = mocker.spy(parser_obj, "_parse_device_id")
+        spy_error = mocker.spy(parser_obj, "_error")
 
-        parser_obj.parse_device_id()
+        parser_obj._parse_device_id()
         assert spy_parse_device_id.spy_return[0] == missing_semicolon
         assert spy_parse_device_id.spy_return[1] == device_name
         assert spy_error.call_count == error_calls
@@ -246,19 +261,19 @@ class TestParserDevices:
         definition file, the appropriate error will be thrown
         """
         parser_obj = new_parser(f"test_files/{text_file}")
-        parser_obj.set_next()
+        parser_obj._set_next()
 
         def mock_error(self, msg, expt_list):
             parser_obj.error_count += 1
             print(f"SYNTAX ERROR FOUND: {msg}, recevied"
-                  f" {parser_obj.get_symbol_string()}")
+                  f" {parser_obj._get_symbol_string()}")
 
-        mocker.patch('parse.Parser.error', mock_error)
+        mocker.patch('parse.Parser._error', mock_error)
 
-        spy_parse_device_kind = mocker.spy(parser_obj, "parse_device_kind")
-        spy_error = mocker.spy(parser_obj, "error")
+        spy_parse_device_kind = mocker.spy(parser_obj, "_parse_device_kind")
+        spy_error = mocker.spy(parser_obj, "_error")
 
-        parser_obj.parse_device_kind()
+        parser_obj._parse_device_kind()
         assert spy_parse_device_kind.spy_return[0] == missing_semicolon
         assert spy_parse_device_kind.spy_return[1] == device_kind_string
         assert spy_error.call_count == error_calls
@@ -285,19 +300,19 @@ class TestParserDevices:
         """
 
         parser_obj = new_parser(f"test_files/{text_file}")
-        parser_obj.set_next()
+        parser_obj._set_next()
 
         def mock_error(self, msg, expt_list):
             parser_obj.error_count += 1
             print(f"SYNTAX ERROR FOUND: {msg}, recevied"
-                  f" {parser_obj.get_symbol_string()}")
+                  f" {parser_obj._get_symbol_string()}")
 
-        mocker.patch('parse.Parser.error', mock_error)
+        mocker.patch('parse.Parser._error', mock_error)
 
-        spy_parse_device_qual = mocker.spy(parser_obj, "parse_device_qual")
-        spy_error = mocker.spy(parser_obj, "error")
+        spy_parse_device_qual = mocker.spy(parser_obj, "_parse_device_qual")
+        spy_error = mocker.spy(parser_obj, "_error")
 
-        parser_obj.parse_device_qual()
+        parser_obj._parse_device_qual()
         assert spy_parse_device_qual.spy_return[0] == missing_semicolon
         assert spy_error.call_count == syntax_errors
 
@@ -328,10 +343,10 @@ class TestParserConnections:
                              ])
     def test_parse_connections_list_wrapper(self, mocker, symbol_list, success,
                                             set_next_count, error_count):
-        """Test Parser.parse_connections_list error handling in outer
+        """Test Parser._parse_connections_list error handling in outer
         'wrapping' for a CONNECTIONS list.
 
-        The use of patching lets one assume that Parser.parse_connection
+        The use of patching lets one assume that Parser._parse_connection
         reaches the end of all the connections and that Parser.set_next
         always returns the correct symbol.
         """
@@ -348,48 +363,48 @@ class TestParserConnections:
             parser_obj.symbol.id = next(gen)
             return
 
-        # Parser.set_next is patched so that we do not test scanner
+        # Parser._set_next is patched so that we do not test scanner
         # functionality
-        mocker.patch('parse.Parser.set_next', mock_set_next)
+        mocker.patch('parse.Parser._set_next', mock_set_next)
 
         def mock_error(self, msg, expt_list):
             parser_obj.error_count += 1
             print(f"SYNTAX ERROR FOUND: {msg}, recevied"
-                  f" {parser_obj.get_symbol_string()}")
+                  f" {parser_obj._get_symbol_string()}")
 
-        mocker.patch('parse.Parser.error', mock_error)
+        mocker.patch('parse.Parser._error', mock_error)
 
         def mock_parse_connection(self, err):
             parser_obj.symbol.id = parser_obj.scanner.CLOSE_SQUARE
             return False
 
-        mocker.patch('parse.Parser.parse_connection', mock_parse_connection)
+        mocker.patch('parse.Parser._parse_connection', mock_parse_connection)
 
-        spy_set_next = mocker.spy(parser_obj, "set_next")
-        spy_error = mocker.spy(parser_obj, "error")
+        spy_set_next = mocker.spy(parser_obj, "_set_next")
+        spy_error = mocker.spy(parser_obj, "_error")
 
-        assert parser_obj.parse_connections_list(0) == success
+        assert parser_obj._parse_connections_list(0) == success
         assert spy_set_next.call_count == set_next_count
         assert spy_error.call_count == error_count
 
     def test_parse_connection_semantic(self, mocker):
         """Test if a semantic error will be detected and handled
-        correctly in Parser.parse_connection.
+        correctly in Parser._parse_connection.
         """
         parser_obj = new_parser(
             "test_files/parse_connection_semantic_error.txt")
-        parser_obj.set_next()
+        parser_obj._set_next()
 
         def mock_error(self, msg, expt_list):
             parser_obj.error_count += 1
             print(f"SYNTAX ERROR FOUND: {msg}, recevied"
-                  f" {parser_obj.get_symbol_string()}")
+                  f" {parser_obj._get_symbol_string()}")
 
-        mocker.patch('parse.Parser.error', mock_error)
+        mocker.patch('parse.Parser._error', mock_error)
 
-        spy_semantic = mocker.spy(parser_obj, "semantic_error")
-        spy_syntactic = mocker.spy(parser_obj, "error")
-        assert not parser_obj.parse_connection(0)  # no missing semicolon
+        spy_semantic = mocker.spy(parser_obj, "_semantic_error")
+        spy_syntactic = mocker.spy(parser_obj, "_error")
+        assert not parser_obj._parse_connection(0)  # no missing semicolon
         assert spy_semantic.call_count == 1  # absent device syntax errors
         assert spy_syntactic.call_count == 0  # no syntax error detected
 
@@ -418,21 +433,21 @@ class TestParserConnections:
                               ])
     def test_parse_signal(self, mocker, text_file, end_marker_missing,
                           signal_name, port_name, errors):
-        """Test that if something is wrong in Parser.parse_signal
+        """Test that if something is wrong in Parser._parse_signal
         then the correct error handling will occur by checking the calls
-        Parser.error().
+        Parser._error().
         """
         parser_obj = new_parser(f"test_files/{text_file}")
-        parser_obj.set_next()
+        parser_obj._set_next()
 
         def mock_error(self, msg, expt_list):
             parser_obj.error_count += 1
             print(f"SYNTAX ERROR FOUND: {msg}, recevied"
-                  f" {parser_obj.get_symbol_string()}")
+                  f" {parser_obj._get_symbol_string()}")
 
-        mocker.patch('parse.Parser.error', mock_error)
-        spy_syntactic = mocker.spy(parser_obj, "error")
-        result = parser_obj.parse_signal()
+        mocker.patch('parse.Parser._error', mock_error)
+        spy_syntactic = mocker.spy(parser_obj, "_error")
+        result = parser_obj._parse_signal()
 
         assert result[0] == end_marker_missing
         assert result[1] == parser_obj.names.query(signal_name)
@@ -466,11 +481,11 @@ class TestParserMonitors:
     def test_parse_monitors_list(self, mocker, symbol_list, success,
                                  set_next_count, error_count):
         """
-        Test Parser.parse_monitors_list error handling in outer
+        Test Parser._parse_monitors_list error handling in outer
         'wrapping' for a MONITORS list.
 
-        The use of patching lets one assume that Parser.parse_monitor
-        reaches the end of all the monitors and that Parser.set_next
+        The use of patching lets one assume that Parser._parse_monitor
+        reaches the end of all the monitors and that Parser._set_next
         always returns the correct symbol.
         """
 
@@ -487,24 +502,24 @@ class TestParserMonitors:
             return
         # Parser.set_next is patched so that we do not test scanner
         # functionality
-        mocker.patch('parse.Parser.set_next', mock_set_next)
+        mocker.patch('parse.Parser._set_next', mock_set_next)
 
         def mock_error(self, msg, expt_list):
             parser_obj.error_count += 1
             print(f"SYNTAX ERROR FOUND: {msg}, recevied"
-                  f" {parser_obj.get_symbol_string()}")
-        mocker.patch('parse.Parser.error', mock_error)
+                  f" {parser_obj._get_symbol_string()}")
+        mocker.patch('parse.Parser._error', mock_error)
 
         def mock_parse_monitor(self, err):
             parser_obj.symbol.id = parser_obj.scanner.CLOSE_SQUARE
             return False
 
-        mocker.patch('parse.Parser.parse_monitor', mock_parse_monitor)
+        mocker.patch('parse.Parser._parse_monitor', mock_parse_monitor)
 
-        spy_set_next = mocker.spy(parser_obj, "set_next")
-        spy_error = mocker.spy(parser_obj, "error")
+        spy_set_next = mocker.spy(parser_obj, "_set_next")
+        spy_error = mocker.spy(parser_obj, "_error")
 
-        assert parser_obj.parse_monitors_list(0) == success
+        assert parser_obj._parse_monitors_list(0) == success
         assert spy_set_next.call_count == set_next_count
         assert spy_error.call_count == error_count
 
@@ -516,13 +531,13 @@ class TestParserMonitors:
     def test_parse_monitor_semantic(self, mocker, text_file, semantic_errors,
                                     syntax_errors):
         """Test if a semantic error will be detected and handled
-        correctly in Parser.parse_monitor.
+        correctly in Parser._parse_monitor.
         """
         parser_obj = new_parser(f"test_files/{text_file}")
         parser_obj.symbol = Symbol()
 
-        spy_syntactic = mocker.spy(parser_obj, "error")
-        spy_semantic = mocker.spy(parser_obj, "semantic_error")
+        spy_syntactic = mocker.spy(parser_obj, "_error")
+        spy_semantic = mocker.spy(parser_obj, "_semantic_error")
 
         parser_obj.parse_network()
         assert spy_semantic.call_count == semantic_errors
@@ -539,7 +554,7 @@ class TestParserErrorRecovery:
                               ])
     def test_error_recovery_parse_devices_list(
             self, mocker, text_file, expected_symbol_string):
-        """Test Error Recovery in Parser.parse_devices_list
+        """Test Error Recovery in Parser._parse_devices_list
         is correct by checking the expected symbol is
         skipped to after an error is reported.
         """
@@ -551,9 +566,9 @@ class TestParserErrorRecovery:
             return "caret message", "ln", "cn"
         mocker.patch('scanner.Scanner.show_error', mock_scanner_error)
 
-        spy_symbol_id = mocker.spy(parser_obj, "get_symbol_string")
+        spy_symbol_id = mocker.spy(parser_obj, "_get_symbol_string")
 
-        parser_obj.parse_devices_list()
+        parser_obj._parse_devices_list()
         assert spy_symbol_id.spy_return == expected_symbol_string
 
     @pytest.mark.parametrize("text_file, expected_symbol_string",
@@ -570,15 +585,15 @@ class TestParserErrorRecovery:
         """
         parser_obj = new_parser(f"test_files/{text_file}")
         parser_obj.symbol = Symbol()
-        parser_obj.set_next()
+        parser_obj._set_next()
 
         def mock_scanner_error(self, symbol):
             return "caret message", "ln", "cn"
         mocker.patch('scanner.Scanner.show_error', mock_scanner_error)
 
-        spy_symbol_id = mocker.spy(parser_obj, "get_symbol_string")
+        spy_symbol_id = mocker.spy(parser_obj, "_get_symbol_string")
 
-        parser_obj.parse_device_id()
+        parser_obj._parse_device_id()
         assert spy_symbol_id.spy_return == expected_symbol_string
 
 
@@ -595,14 +610,13 @@ def test_empty_file():
     # test an error is thrown
     assert not result
 
+
 @pytest.mark.parametrize("text_file, expected_number_errors",
-                             [("within_devices.txt",
-                               2), #why is this failing dammit
-                              ("within_connections.txt",
-                               3),
-                              ("within_monitors.txt",
-                               3),
-                              ])
+                         [
+                             ("within_devices.txt", 2),
+                             ("within_connections.txt", 3),
+                             ("within_monitors.txt", 3),
+                         ])
 def test_unclosed_comment_handling(text_file, expected_number_errors):
     """Test unclosed comment handling gives correct error count"""
 
@@ -615,5 +629,3 @@ def test_unclosed_comment_handling(text_file, expected_number_errors):
     final_error_count = parser_obj.error_count
 
     assert final_error_count == expected_number_errors
-
-
