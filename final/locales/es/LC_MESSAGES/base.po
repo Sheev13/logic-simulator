@@ -1,0 +1,701 @@
+# SPANISH TRANSLATIONS.
+# Copyright (C) 2022 PP490 TNR22 JT741
+# PRIYANKA PATEL <PP490@CAM.AC.UK>, 2022.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2022-06-05 09:51+0100\n"
+"PO-Revision-Date: 2022-06-06 09:57+0100\n"
+"Last-Translator: \n"
+"Language-Team: GROUP 4\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 3.0.1\n"
+
+#: guicommandint.py:99
+msgid "Invalid command. See User Guide for help."
+msgstr "El comando es inválido. Consulte el manual de uso del programa para obtener consejos."
+
+#: guicommandint.py:134
+msgid "Error! Expected a name."
+msgstr "¡Error! Esperaba un nombre."
+
+#: guicommandint.py:152
+msgid "Error! Unknown name."
+msgstr "¡Error! Nombre desconocido."
+
+#: guicommandint.py:180
+msgid "Error! Expected a number."
+msgstr "¡Error! Esperaba un número."
+
+#: guicommandint.py:189 guicommandint.py:194
+msgid "Number out of range."
+msgstr "El número está fuera de rango."
+
+#: guicommandint.py:207
+msgid "Successfully set switch."
+msgstr "El interruptor es puesto."
+
+#: guicommandint.py:208
+msgid "Error! Invalid switch."
+msgstr "¡Error! El interruptor es inválido."
+
+#: guicommandint.py:218
+msgid "Successfully made monitor."
+msgstr "El monitor es creado."
+
+#: guicommandint.py:219
+msgid "Error! Could not make monitor."
+msgstr "¡Error! No puede añadir el monitor."
+
+#: guicommandint.py:227
+msgid "Successfully zapped monitor."
+msgstr "El monitor es eliminado."
+
+#: guicommandint.py:228
+msgid "Error! Could not zap monitor."
+msgstr "¡Error! No puede eliminar el monitor."
+
+#: guicommandint.py:239
+msgid "Error! Network oscillating."
+msgstr "¡Error! La red está oscilando."
+
+#: guicommandint.py:253
+msgid "Running for "
+msgstr "En ejecución por "
+
+#: guicommandint.py:253 guicommandint.py:264
+msgid "cycles."
+msgstr "ciclos."
+
+#: guicommandint.py:254
+msgid "Invalid number of cycles."
+msgstr "Número de ciclos es inválido."
+
+#: guicommandint.py:261
+msgid "Error! Nothing to continue. Run first."
+msgstr "¡Error! Debes ejecutar antes de continuar."
+
+#: guicommandint.py:264
+msgid "Continuing for"
+msgstr "Continuando por"
+
+#: guicommandint.py:266
+msgid "Error! Invalid number of cycles."
+msgstr "¡Error! Número de ciclos es inválido."
+
+#: guicommandint.py:278
+msgid "Successfully made new connection."
+msgstr "La conexión nuevo es creado."
+
+#: guicommandint.py:280
+msgid "Could not make connection."
+msgstr "No puede crear la conexión."
+
+#: gui.py:202
+msgid "Welcome to the Logic Simulator! "
+msgstr "¡Bienvenido al simulador de lógica! "
+
+#: gui.py:203
+msgid "See User Guide for help."
+msgstr "Consulte el manual de uso del programa para obtener consejos."
+
+#: gui.py:338 gui.py:615
+msgid "Open"
+msgstr "Abre"
+
+#: gui.py:339
+msgid "About"
+msgstr "Acerca de"
+
+#: gui.py:345
+msgid "Exit"
+msgstr "Salir"
+
+#: gui.py:345 gui.py:894
+msgid "Command Line Guide"
+msgstr "Manual de la línea de comandos"
+
+#: gui.py:346 gui.py:900
+msgid "Canvas Controls"
+msgstr "Controles del lienzo"
+
+#: gui.py:347 gui.py:907
+msgid "Sidebar Guide"
+msgstr "Manual de la columna anexa"
+
+#: gui.py:348
+msgid "File"
+msgstr "Archivo"
+
+#: gui.py:349
+msgid "User Guide"
+msgstr "Manual de uso del programa"
+
+#: gui.py:377
+msgid "Browse"
+msgstr "Navegar"
+
+#: gui.py:385
+msgid "Devices:"
+msgstr "Dispositivos:"
+
+#: gui.py:390
+msgid "Monitors:"
+msgstr "Monitores:"
+
+#: gui.py:399
+msgid "Add new monitor"
+msgstr "Añadir nuevo monitor"
+
+#: gui.py:402
+msgid "(click to remove)"
+msgstr "(clic para eliminar)"
+
+#: gui.py:405
+msgid "Clear All"
+msgstr "Borrar todos"
+
+#: gui.py:410
+msgid " Cycles: "
+msgstr " Ciclos: "
+
+#: gui.py:414
+msgid "Run"
+msgstr "Ejecutar"
+
+#: gui.py:422
+msgid "Continue"
+msgstr "Continuar"
+
+#: gui.py:435
+msgid "Clear Canvas"
+msgstr "Borrar lienzo"
+
+#: gui.py:444
+msgid "Command line input. See User Guide for help."
+msgstr "Línea de comandos. Consulte el manual para obtener consejos."
+
+#: gui.py:625
+msgid "No file selected. Exiting GUI."
+msgstr "Nada archivo eligido. Saliendo de GUI."
+
+#: gui.py:626
+msgid "Exiting GUI"
+msgstr "Saliendo de GUI"
+
+#: gui.py:681
+msgid "Switches (toggle on/off):"
+msgstr "Interruptores (haga clic para cambiar):"
+
+#: gui.py:683
+msgid "No switches in this circuit."
+msgstr "No hay interruptores en este circuito."
+
+#: gui.py:737
+msgid "inputs"
+msgstr "insumos"
+
+#: gui.py:748
+msgid "half-period"
+msgstr "semiperíodo"
+
+#: gui.py:806
+msgid "New circuit loaded."
+msgstr "Nuevo circuito cargado."
+
+#: gui.py:834
+msgid "from"
+msgstr "de"
+
+#: gui.py:834
+msgid "to"
+msgstr "a"
+
+#: gui.py:843
+msgid "Current Connections"
+msgstr "Conexiones actuales"
+
+#: gui.py:883
+msgid "Created by"
+msgstr "Creado por"
+
+#: gui.py:883
+msgid "Logic Simulator"
+msgstr "El simulador de lógica"
+
+#: gui.py:886
+msgid "About Logsim"
+msgstr "Acerca de logsim"
+
+#: gui.py:942
+msgid "Choose a new output to connect input "
+msgstr "Elige una nueva valor para conectar a "
+
+#: gui.py:944
+msgid "Replace Connection"
+msgstr "Reemplazar Conexión"
+
+#: gui.py:952
+msgid "You must select a new connection for this input."
+msgstr "Debes elegir una conexión nuevo."
+
+#: gui.py:953
+msgid "Error - Connection Needed"
+msgstr "Error - conexión necesaria"
+
+#: gui.py:981
+msgid "Number of cycles: "
+msgstr "Número de ciclos: "
+
+#: gui.py:1031
+msgid "Canvas cleared. Press run to start simulation again."
+msgstr "El lienzo borrado. Haga clic 'Ejecutar' para iniciar la simulación otra vez."
+
+#: gui.py:1049
+msgid "turned"
+msgstr "es"
+
+#: gui.py:1077
+msgid "All monitors destroyed."
+msgstr "Todos monitores eliminados."
+
+#: gui.py:1085 parse.py:1073
+msgid "Already monitoring"
+msgstr "Ya monitoreando"
+
+#: gui.py:1090
+msgid "Invalid monitor"
+msgstr "Monitor inválido"
+
+#: gui.py:1259
+msgid "Enter command line inputs in the bottom left of"
+msgstr "Ingrese en la línea de comandos en el parte inferior izquierda del"
+
+#: gui.py:1260
+msgid " the interface."
+msgstr " interfaz."
+
+#: gui.py:1261
+msgid "Possible commands:"
+msgstr "Comandos posibles:"
+
+#: gui.py:1262
+msgid "Run simulator for N cycles"
+msgstr "Ejecutar el simulador por N ciclos"
+
+#: gui.py:1263
+msgid "Continue running simulation"
+msgstr "Continuar la simulación"
+
+#: gui.py:1264
+msgid " for N cycles"
+msgstr " por N ciclos"
+
+#: gui.py:1265
+msgid "Set switch X to N (0 or 1)"
+msgstr "Poner interruptor X a N (0 o 1)"
+
+#: gui.py:1266
+msgid "Start monitoring output signal X"
+msgstr "Empezar a monitorizar X"
+
+#: gui.py:1267
+msgid "Stop monitoring X"
+msgstr "Dejar de monitorear X"
+
+#: gui.py:1270
+msgid "Signals on the canvas can be manipulated to"
+msgstr "Las señales en el lienzo se pueden manipular para"
+
+#: gui.py:1271
+msgid " better view them."
+msgstr " verlas mejor."
+
+#: gui.py:1272
+msgid "Scroll in to zoom in"
+msgstr "Desplácese para acercar"
+
+#: gui.py:1274
+msgid "Scroll out to zoom out - this may "
+msgstr "Desplácese para alejar - esto puede "
+
+#: gui.py:1275
+msgid "be useful if you have many monitors"
+msgstr "ser útil si hay muchos monitores"
+
+#: gui.py:1277
+msgid "Click and hold to drag the signals "
+msgstr "Haga clic y mantenga presionado para arrastrar las señales "
+
+#: gui.py:1278
+msgid "around the space"
+msgstr "alrededor del espacio"
+
+#: gui.py:1281
+msgid "The sidebar can be used to adjust simulation "
+msgstr "La columna anexa puede utilizar "
+
+#: gui.py:1282
+msgid "settings"
+msgstr "ajustar la simulación"
+
+#: gui.py:1283
+msgid "Click 'Browse' to load a new circuit file."
+msgstr "Haga clic 'Navegar' para cargar un archivo nuevo."
+
+#: gui.py:1285
+msgid "See the list of devices to decide what you "
+msgstr "Consulte la lista de los dispositivos para decider lo que "
+
+#: gui.py:1286
+msgid "want to monitor. Hover on a device to see "
+msgstr "quieres monitorizar. Pase el cursor sobre un dispositivo para ver "
+
+#: gui.py:1287
+msgid "its full name, kind and qualifier information."
+msgstr "su nombre, tipo y información de calificador."
+
+#: gui.py:1289
+msgid "To remove a connection before or during a "
+msgstr "Para eliminar una conexión antes de o durando una "
+
+#: gui.py:1290
+msgid "simulation, choose from the dropdown list "
+msgstr "simulación, elige de la lista desplegable "
+
+#: gui.py:1291
+msgid "next to 'Devices' and click 'Replace Connection'."
+msgstr "al lado de 'Dispositivos' y haga clic 'Reemplazar Conexión'."
+
+#: gui.py:1292
+msgid "Select a new output "
+msgstr "Elige una nueva valor "
+
+#: gui.py:1293
+msgid "to connect to the input from the deleted "
+msgstr "para conectar al insumo de la conexión "
+
+#: gui.py:1294
+msgid "connection."
+msgstr "eliminada."
+
+#: gui.py:1296
+msgid "Click the switch buttons to toggle on or off."
+msgstr "Haga clic en los butones de los interruptores para cambiar."
+
+#: gui.py:1298
+msgid "Type the name of an output in the 'Add new "
+msgstr "Escribe el nombre de una valor en el cuadro 'Añadir nueva "
+
+#: gui.py:1299
+msgid "monitor' box to add to monitors."
+msgstr "monitor' para añadir a la lista de monitores."
+
+#: gui.py:1300
+msgid " Press 'Clear All' to remove all monitors."
+msgstr " Haga clic 'Borrar todos' para eliminar todos monitores."
+
+#: gui.py:1301
+msgid " Click on an individual monitor button to "
+msgstr " Haga clic en un monitor individual para "
+
+#: gui.py:1302
+msgid "remove it."
+msgstr "eliminarlo."
+
+#: gui.py:1304
+msgid "Adjust the number of cycles with the spinner."
+msgstr "Adjusta el número de ciclos con la ruleta."
+
+#: gui.py:1306
+msgid "Press 'Run' or 'Continue' to start the "
+msgstr "Haga clic 'Ejecutar' o 'Continuar' para iniciar la "
+
+#: gui.py:1307 gui.py:1310
+msgid "simulation."
+msgstr "simulación."
+
+#: gui.py:1309
+msgid "Press 'Clear Canvas' to reset the "
+msgstr "Haga clic 'Borrar lienzo' para restablacer la "
+
+#: gui.py:1314
+msgid "Unable to load file. Old file will remain loaded."
+msgstr "No puede cargar el archivo. El archivo antiguo permanecerá cargado."
+
+#: gui.py:1317
+msgid "Unable to load file. Please choose valid file."
+msgstr "No puede cargar el archivo. Elige un archivo válido."
+
+#: parse.py:95
+msgid "Empty definition file was loaded."
+msgstr "El archivo es vacío."
+
+#: parse.py:98 parse.py:178
+msgid "Completely parsed the definition file."
+msgstr "El archivo es analizado completamente."
+
+#: parse.py:99 parse.py:179
+msgid "error(s) found in total."
+msgstr "error(es) encontrados en total."
+
+#: parse.py:111
+msgid "Multiple device lists found."
+msgstr "Varias listas de dispositivos encontrados."
+
+#: parse.py:125
+msgid "Multiple connections lists found."
+msgstr "Varias listas de conexiones encontrados."
+
+#: parse.py:137
+msgid "can't parse connections if not done devices"
+msgstr "no puede analizar las conexiones si los dispositivos no están analizados"
+
+#: parse.py:146
+msgid "Multiple monitors lists found."
+msgstr "Varias listas de monitores encontrados."
+
+#: parse.py:158
+msgid "can't parse monitors if not done devices"
+msgstr "no puede analizar los monitores si los dispositivos no están analizados"
+
+#: parse.py:167
+msgid "not DEVICES, CONNECTIONS, MONITORS nor EOF"
+msgstr "no es DEVICES, CONNECTIONS, MONITORS, ni EOF"
+
+#: parse.py:198 parse.py:282 parse.py:292 parse.py:334 parse.py:385
+#: parse.py:295 parse.py:485 parse.py:538 parse.py:551 parse.py:601
+#: parse.py:611 parse.py:657 parse.py:732 parse.py:742 parse.py:939
+#: parse.py:996 parse.py:1007
+msgid "expected"
+msgstr "esparado"
+
+#: parse.py:221
+msgid "missed semicolon at end of device definition, "
+msgstr "falta el punto y coma después de la definición del dispositivo, "
+
+#: parse.py:222
+msgid "will end up skipping the device after"
+msgstr "saltará el siguiente dispositivo"
+
+#: parse.py:239 parse.py:699 parse.py:977
+msgid "invalid character encountered"
+msgstr "carácter inválido encontrado"
+
+#: parse.py:252
+msgid "Invalid input to a DEVICES list. Devices "
+msgstr "Insumo inválido en una lista 'DEVICES'. Un dispositivo "
+
+#: parse.py:253
+msgid "should start with '{', or the list should "
+msgstr "debe empezar con '{', o la lista debe "
+
+#: parse.py:254
+msgid "end with ']' "
+msgstr "finir con ']' "
+
+#: parse.py:299
+msgid "Successfully parsed the DEVICES list! \n"
+msgstr "¡La lista DEVICES es analizada! \n"
+
+#: parse.py:749
+msgid "Successfully parsed the CONNECTIONS list! \n"
+msgstr "¡La lista CONNECTIONS es analizada! \n"
+
+#: parse.py:1014
+msgid "Successfully parsed the MONITORS list! \n"
+msgstr "¡La lista MONITORS es analizada! \n"
+
+#: parse.py:318
+msgid "error(s) found "
+msgstr "error(es) encontrados "
+
+#: parse.py:319
+msgid "when parsing the DEVICES list \n"
+msgstr "cuando analizando la lista DEVICES \n"
+
+#: parse.py:351
+msgid "missed a semicolon in device id, "
+msgstr "falta un punto y coma en 'device id', "
+
+#: parse.py:352 parse.py:266 parse.py:378
+msgid "will skip to next device"
+msgstr "saltará al siguiente dispositivo"
+
+#: parse.py:367
+msgid "missed a semicolon in device kind, "
+msgstr "falta un punto y coma en 'device kind', "
+
+#: parse.py:377
+msgid "missed a semicolon in device qual, "
+msgstr "falta un punto y coma en 'device qual', "
+
+#: parse.py:420
+msgid "qualifier not present."
+msgstr "calificador no está presente."
+
+#: parse.py:425
+msgid "qualifier is invalid."
+msgstr "calificador es inválido."
+
+#: parse.py:430
+msgid "Qualifier provided for "
+msgstr "El calificador por "
+
+#: parse.py:431
+msgid "when there should be none."
+msgstr "no se debe estar presente."
+
+#: parse.py:435
+msgid "Device kind"
+msgstr "Tipo de dispositivo"
+
+#: parse.py:436
+msgid "not recognised."
+msgstr "no es reconocido."
+
+#: parse.py:440
+msgid "Device "
+msgstr "El dispositivo "
+
+#: parse.py:440
+msgid "already present."
+msgstr "ya es presente."
+
+#: parse.py:476
+msgid "expected id keyword here"
+msgstr "'id keyword' esparado"
+
+#: parse.py:496 parse.py:502
+msgid "Invalid name provided - "
+msgstr "Nombre es inválido - "
+
+#: parse.py:497
+msgid "a keyword cannot be used as a device name"
+msgstr "un nombre de dispositivo no puede ser un 'keyword'"
+
+#: parse.py:503
+msgid "a device name should be alphanumeric"
+msgstr "un nombre de dispositivo debe ser alfanumérico"
+
+#: parse.py:515 parse.py:578 parse.py:634
+msgid "Missing semicolon"
+msgstr "Falta un punto y coma"
+
+#: parse.py:562
+msgid "Device type must be alphanumeric"
+msgstr "El tipo de dispositivo debe ser alfanumérico"
+
+#: parse.py:621
+msgid "unsupported qualifier input"
+msgstr "este calificador no permitido"
+
+#: parse.py:704
+msgid "Cannot use a KEYWORD for a signal name"
+msgstr "Un nombre de señal no puede ser un 'keyword'"
+
+#: parse.py:707 parse.py:983
+msgid "Unknown Error"
+msgstr "Error desconocido"
+
+#: parse.py:768 parse.py:1029
+msgid "error(s) found when parsing the "
+msgstr "error(es) encontrados cuando analizando "
+
+#: parse.py:769
+msgid "CONNECTIONS list \n"
+msgstr "la lista CONNECTIONS \n"
+
+#: parse.py:1030
+msgid "MONITORS list \n"
+msgstr "la lista MONITORS \n"
+
+#: parse.py:785
+msgid "No connection found before semicolon"
+msgstr "Ninguna conexión encontrado antes de punto y coma"
+
+#: parse.py:799
+msgid "missed colon in connection, "
+msgstr "falta colon en conexión, "
+
+#: parse.py:800
+msgid "will skip to next connection"
+msgstr "saltará a la siguiente conexión"
+
+#: parse.py:832
+msgid "Either left or right device is absent"
+msgstr "Un dispositivo no es presente"
+
+#: parse.py:836
+msgid "input is already connected."
+msgstr "insumo ya esta conectado."
+
+#: parse.py:840
+msgid "Both ports are inputs."
+msgstr "Los dos puertos son insumos."
+
+#: parse.py:842
+msgid "Right port id is invalid."
+msgstr "'id' del puerto a la derecha es inválido."
+
+#: parse.py:845
+msgid "Both ports are outputs."
+msgstr "Los dos puertos son valores."
+
+#: parse.py:880
+msgid "Expected an output name here"
+msgstr "Un nombre de valor esparado"
+
+#: parse.py:900
+msgid "expected an output name here"
+msgstr "un nombre de puerto esparado"
+
+#: parse.py:918
+msgid "missing ':' or ';'"
+msgstr "falta ':' o ';'"
+
+#: parse.py:1046
+msgid "No signal found before semicolon"
+msgstr "Ninguna señal encontrada antes de punto y coma"
+
+#: parse.py:1064
+msgid "Device you are trying to monitor is absent."
+msgstr "El dispositivo no es presente."
+
+#: parse.py:1070
+msgid "is not an output."
+msgstr "no es una valor."
+
+#: parse.py:1098
+msgid "Unclosed comment found - did you want to use "
+msgstr "Un comentario no cerrado encontrado. ¿Quieres usar "
+
+#: parse.py:1099
+msgid "'/' instead of '#' for your comment?"
+msgstr "'/', no '#', para tu comentario?"
+
+#: parse.py:1120 parse.py:1133 parse.py:1140 parse.py:1208
+msgid "ERROR on line "
+msgstr "ERROR en línea "
+
+#: parse.py:1121 parse.py:1134 parse.py:1141 parse.py:1209
+msgid "index "
+msgstr "índice "
+
+#: parse.py:1143
+msgid ", received "
+msgstr ", recibido "
+
+#: parse.py:1160
+msgid "Reached end of file without finding another"
+msgstr "Llegó al final del archivo sin encontrar"
+
+#: parse.py:1161
+msgid " semicolon - cannot perform error recovery."
+msgstr " otra punto y coma - no se puede recuperar."

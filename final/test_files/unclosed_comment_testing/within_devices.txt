@@ -1,0 +1,26 @@
+DEVICES [
+{ id  :  D1 ;  this_will_be_detected : DTYPE ;  } # ;
+{id: D2; kind: butnoweverythingwithbeignored; };
+{id: D3; kind: DTYPE; };
+{id: CLK1; kind: willbeignored; qual: 1;};
+
+{id: SW1; kind: SWITCH; qual: 0;};
+
+{id: ******; kind: SWITCH ; qual: 0;};
+
+{id: SW3; kind: SWITCH; qual: 0;};
+
+
+] ;
+
+CONNECTIONS  [
+doesn't matter what goes here because it is a 'comment'
+    ]
+;
+
+MONITORS  [
+
+]
+;
+
+

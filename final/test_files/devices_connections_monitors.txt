@@ -1,0 +1,14 @@
+DEVICES [
+{id: A; kind: SWITCH; qual: 0;};
+{id: B; kind: SWITCH; qual: 1;};
+{id: G1; kind: NOR; qual: 2;};
+];
+
+CONNECTIONS [
+    A: G1.I1;
+    B: G1.I2;
+];
+
+MONITORS [
+    A;B;G1;
+];
