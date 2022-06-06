@@ -1,2 +1,34 @@
-# Logic Simulator
-some useful information about the project will be written here eventually...
+# GF2 Software Project: Logic Simulator
+## Group 4: jt741, pp490, and tnr22
+
+### Initial Setup:
++ Clone the repository using the command:
+```
+git clone https://github.com/Sheev13/logic-simulator.git
+```
++ If you are using the Linux system in the DPO, make sure to start an anaconda shell and navigate to the correct directory using:
+```
+cd logic-simulator/final
+```
++ To run the Logic Simulator in **English**, run the command:
+```
+LANG=en_EN.utf-8 ./logsim.py
+```
++ To run the Logic Simulator in **Spanish**, run the command:
+```
+LANG=es_ES.utf-8 ./logsim.py
+```
+
+
+### For developers - running Pytests
++ To run pytests, make sure to first install the requirements by running the command:
+
+```
+pip install -r requirements.txt
+```
+
++ You may then run tests by running the command:
+
+```
+pytest
+```
