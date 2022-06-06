@@ -528,7 +528,7 @@ class Gui(wx.Frame):
         self.file_name_sizer.Add(self.file_name, 0, wx.ALIGN_CENTER, 5)
         self.file_name_sizer.AddStretchSpacer()
         self.file_name_sizer.AddStretchSpacer()
-        self.file_name_sizer.Add(self.browse, 0, wx.ALIGN_CENTER, 5)
+        self.file_name_sizer.Add(self.browse, 0, wx.ALIGN_CENTER, 10)
 
         self.devices_heading_sizer.Add(
             self.devices_heading,
@@ -773,7 +773,8 @@ class Gui(wx.Frame):
             device_button.SetCursor(self.info_cursor)
             kindId = self.devices.get_device(id).device_kind
             kindLabel = self.names.get_name_string(kindId)
-            device_button.SetToolTip(f"{label}, {kindLabel}{extra}")
+            fullName = self.names.get_name_string(id)
+            device_button.SetToolTip(f"{fullName}, {kindLabel}{extra}")
             device_button.SetTopStartColour(self._get_device_colour(kindId)[0])
             device_button.SetBottomEndColour(
                 self._get_device_colour(kindId)[0]
@@ -862,7 +863,7 @@ class Gui(wx.Frame):
         self.delete_connection = gb.GradientButton(
             self,
             wx.ID_ANY,
-            label=_("Replace Connection")
+            label=_("Delete Connection")
         )
 
         self.delete_connection.SetCursor(self.click)
@@ -972,6 +973,7 @@ class Gui(wx.Frame):
                 _("Error - Connection Needed"),
                 wx.ICON_ERROR
             )
+
 
         #if newConnection.ShowModal() == wx.ID_OK:
         choice = newConnection.GetSelection()
