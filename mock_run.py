@@ -12,12 +12,30 @@ from parse import Parser
 from userint import UserInterface
 # from gui import Gui
 
+
+
+# Workaround to stop Python stealing _ for translations
+# Necessary for tests to work
+import sys
+import wx
+import builtins
+
+
+def _hook(obj):
+    if obj is not None:
+        print(repr(obj))
+
+
+builtins.__dict__['_'] = wx.GetTranslation
+sys.displayhook = _hook
+
+
 names = Names()
 devices = Devices(names)
 network = Network(names, devices)
 monitors = Monitors(names, devices, network)
 
-path = 'test_files/unclosed_comment_testing/within_monitors.txt'
+path = 'example_files/binary_counter.txt'
 
 scanner = Scanner(path, names)
 parser = Parser(names, devices, network, monitors, scanner)
