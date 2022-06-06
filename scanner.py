@@ -1,4 +1,5 @@
 """Read the circuit definition file and translate the characters into symbols.
+
 Used in the Logic Simulator project to read the characters in the definition
 file and translate them into symbols that are usable by the parser.
 Classes
@@ -12,6 +13,7 @@ import pathlib
 
 class Symbol:
     """Encapsulate a symbol and store its properties.
+
     Parameters
     ----------
     No parameters.
@@ -31,6 +33,7 @@ class Symbol:
 
 class Scanner:
     """Read circuit definition file and translate the characters into symbols.
+
     Once supplied with the path to a valid definition file, the scanner
     translates the sequence of characters in the definition file into symbols
     that the parser can use. It also skips over comments and irrelevant
@@ -132,12 +135,14 @@ class Scanner:
         """Return True if current character is invalid."""
         char = self.current_char
         if not char.isspace() and not char.isalnum():
-            if char != "" and char not in self.puncs and char not in ['/', '#']:
+            if char != "" and char not in self.puncs and char not in [
+                    '/', '#']:
                 return True
         return False
 
     def _next_name(self, symb):
         """Read the file as necessary to return the next name string.
+
         Assumes current_char at time of function call is alphabetic
         """
         name = ""
@@ -154,6 +159,7 @@ class Scanner:
 
     def _next_number(self, symb):
         """Read the file as necessary to return the next number as an int.
+
         Assumes current_char at time of function call is numeric
         """
         n = ""
@@ -171,9 +177,10 @@ class Scanner:
 
     def _skip_comment(self):
         """Advance the file object reader pointer to after the current comment.
+
         Assumes current character is either # or /.
         Open comments denoted by / , closed comments by #...#
-        Return True and comment start pos if closed comment has not been closed.
+        Return True and comment start info if unclosed.
         """
         end = False
 
@@ -294,7 +301,7 @@ class Scanner:
 
         if error_pos == error_linestart:  # "if symbol is at start of line"
             # "if there is a previous line and symbol is not unclosed comment"
-            if error_linestart != 1 and symbol.type != self.UNCLOSED:  
+            if error_linestart != 1 and symbol.type != self.UNCLOSED:
                 self.f.seek(prev_linestart - 1)
                 errorline1 = self._get_error_line()
                 caretline = " " * len(errorline1) + "^"

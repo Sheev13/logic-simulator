@@ -189,7 +189,8 @@ def test_get_symbol(
     assert symb8.pos == 1
     assert symb8.line == 1
 
-    # file with only a number including an invalid char, should get INVALID_CHAR
+    # file with only a number including an invalid char, should get
+    # INVALID_CHAR
     assert symb9.type == invalid_number_scanner.INVALID_CHAR
     assert symb9.id is None
     assert symb9.pos == 1
@@ -208,14 +209,18 @@ def test_get_symbol(
 
 
 def test_show_error(
-    midline_symbol_scanner, linestart_symbol_scanner, lfstart_symbol_scanner, random_hash_scanner
-):
+        midline_symbol_scanner,
+        linestart_symbol_scanner,
+        lfstart_symbol_scanner,
+        random_hash_scanner):
     """Ensure Scanner.show_error() behaves correctly on a range of scenarios"""
     symb1 = midline_symbol_scanner.get_symbol()
-    assert midline_symbol_scanner.show_error(symb1)[0].startswith("# this is a comment # DEVICES")
+    assert midline_symbol_scanner.show_error(
+        symb1)[0].startswith("# this is a comment # DEVICES")
 
     symb2 = linestart_symbol_scanner.get_symbol()
-    assert linestart_symbol_scanner.show_error(symb2)[0].startswith("# this is a comment #")
+    assert linestart_symbol_scanner.show_error(
+        symb2)[0].startswith("# this is a comment #")
 
     symb3 = lfstart_symbol_scanner.get_symbol()
     assert lfstart_symbol_scanner.show_error(symb3)[0].startswith(";")
