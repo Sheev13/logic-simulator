@@ -17,7 +17,8 @@ class Network:
 
     Parameters
     ----------
-    devices - instance of the devices.Devices() class.
+    names: instance of the names.Names() class.
+    devices: instance of the devices.Devices() class.
 
     Public methods
     --------------

@@ -23,7 +23,7 @@ class GuiCommandInterface:
     devices: instance of the devices.Devices() class.
     network: instance of the network.Network() class.
     monitors: instance of the monitors.Monitors() class.
-    cycles_completed: number of completed cycles.
+    complete: number of completed cycles.
 
     Public methods:
     ---------------

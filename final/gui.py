@@ -273,6 +273,11 @@ class Gui(wx.Frame):
     Parameters
     ----------
     title: title of the window.
+    path: specified filepath when launching logsim.py (can be None).
+    names: instance instance of the names.Names() class.
+    devices: instance of the devices.Devices() class.
+    network: instance of the network.Network() class.
+    monitors: instance of the names.Names() class.
 
     Public methods
     --------------
