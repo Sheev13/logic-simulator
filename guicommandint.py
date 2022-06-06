@@ -30,22 +30,8 @@ class GuiCommandInterface:
     command_interface(self): Reads in the commands and calls the corresponding
                              functions.
 
-    read_command(self): Returns the first non-whitespace character.
-
-    get_character(self): Moves the cursor forward by one character in the user
-                         entry.
-
-    skip_spaces(self): Skips whitespace characters until a non-whitespace
-                       character is reached.
-
-    read_string(self): Returns the next alphanumeric string.
-
-    read_name(self): Returns the name ID of the current string.
-
     read_signal_name(self): Returns the device and port IDs of the current
                             signal name.
-
-    read_number(self, lower_bound, upper_bound): Returns the current number.
 
     switch_command(self): Sets the specified switch to the specified signal
                           level.
@@ -83,7 +69,7 @@ class GuiCommandInterface:
 
     def command_interface(self):
         """Read the command entered and call the corresponding function."""
-        command = self.read_command()  # read the first character
+        command = self._read_command()  # read the first character
         if command == "s":
             text, extra = self.switch_command()
         elif command == "m":
@@ -106,12 +92,12 @@ class GuiCommandInterface:
             self.monitors
         ]
 
-    def read_command(self):
+    def _read_command(self):
         """Return the first non-whitespace character."""
-        self.skip_spaces()
+        self._skip_spaces()
         return self.character
 
-    def get_character(self):
+    def _get_character(self):
         """Move the cursor forward by one character in the user entry."""
         if self.cursor < len(self.line):
             self.character = self.line[self.cursor]
@@ -119,30 +105,30 @@ class GuiCommandInterface:
         else:  # end of the line
             self.character = ""
 
-    def skip_spaces(self):
+    def _skip_spaces(self):
         """Skip whitespace until a non-whitespace character is reached."""
-        self.get_character()
+        self._get_character()
         while self.character.isspace():
-            self.get_character()
+            self._get_character()
 
-    def read_string(self):
+    def _read_string(self):
         """Return the next alphanumeric string."""
-        self.skip_spaces()
+        self._skip_spaces()
         name_string = ""
         if not self.character.isalpha():  # the string must start with a letter
             print(_("Error! Expected a name."))
             return None
         while self.character.isalnum():
             name_string = "".join([name_string, self.character])
-            self.get_character()
+            self._get_character()
         return name_string
 
-    def read_name(self):
+    def _read_name(self):
         """Return the name ID of the current string if valid.
 
         Return None if the current string is not a valid name string.
         """
-        name_string = self.read_string()
+        name_string = self._read_string()
         if name_string is None:
             return None
         else:
@@ -156,31 +142,31 @@ class GuiCommandInterface:
 
         Return None if either is invalid.
         """
-        device_id = self.read_name()
+        device_id = self._read_name()
         if device_id is None:
             return None
         elif self.character == ".":
-            port_id = self.read_name()
+            port_id = self._read_name()
             if port_id is None:
                 return None
         else:
             port_id = None
         return [device_id, port_id]
 
-    def read_number(self, lower_bound, upper_bound):
+    def _read_number(self, lower_bound, upper_bound):
         """Return the current number.
 
         Return None if no number is provided or if it falls outside the valid
         range.
         """
-        self.skip_spaces()
+        self._skip_spaces()
         number_string = ""
         if not self.character.isdigit():
             print(_("Error! Expected a number."))
             return None
         while self.character.isdigit():
             number_string = "".join([number_string, self.character])
-            self.get_character()
+            self._get_character()
         number = int(number_string)
 
         if upper_bound is not None:
@@ -197,10 +183,10 @@ class GuiCommandInterface:
 
     def switch_command(self):
         """Set the specified switch to the specified signal level."""
-        id = self.read_name()
+        id = self._read_name()
         state = None
         if id is not None:
-            state = self.read_number(0, 1)
+            state = self._read_number(0, 1)
             if state is not None:
                 if self.devices.set_switch(id, state):
                     return _("Successfully set switch."), [id, state]
@@ -244,7 +230,7 @@ class GuiCommandInterface:
     def run_command(self):
         """Run the simulation from scratch."""
         self.cycles_completed = 0
-        cycles = self.read_number(0, None)
+        cycles = self._read_number(0, None)
 
         if cycles is not None:  # if the number of cycles provided is valid
             self.monitors.reset_monitors()
@@ -259,7 +245,7 @@ class GuiCommandInterface:
 
     def continue_command(self):
         """Continue a previously run simulation."""
-        cycles = self.read_number(0, None)
+        cycles = self._read_number(0, None)
         if cycles is not None:  # if the number of cycles provided is valid
             if self.cycles_completed == 0:
                 return _("Error! Nothing to continue. Run first."), 0

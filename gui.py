@@ -1201,16 +1201,6 @@ class Gui(wx.Frame):
         self.monitor_buttons.pop(monitorName)
         self.Layout()
 
-    def _get_signal_name(self, deviceId, portId):
-        """Get name of monitor from device id and port id."""
-        deviceName = self.names.get_name_string(deviceId)
-        if portId is None:
-            monitorName = deviceName
-        else:
-            portName = self.names.get_name_string(portId)
-            monitorName = f"{deviceName}.{portName}"
-        return monitorName
-
     def _make_monitor(self, monitorName):
         """Create a new monitoring point based on user selection."""
         commandint = GuiCommandInterface(
