@@ -44,7 +44,7 @@ def new_parser(path):
 @pytest.fixture
 def new_parser_good_devices():
     """Return a Parser class instance for good devices."""
-    path = "test_files/devices.txt"
+    path = "test_files/just_switches.txt"
     return new_parser(path)
 
 
@@ -70,8 +70,9 @@ def new_parser_bad_devices_and_connections():
 
 
 @pytest.fixture
-def new_parser_good_devices_and_monitors():
-    """Return a Parser class instance for good devices and monitors."""
+def new_parser_unconnected_inputs():
+    """Return a Parser class instance for a definition file with
+    unconnected inputs."""
     path = "test_files/devices_and_monitors.txt"
     return new_parser(path)
 
@@ -136,18 +137,16 @@ def new_parser_invalid_char():
 
 
 def test_parse_network_no_errors(
-    new_parser_good_devices,
     new_parser_good_devices_and_connections,
-    new_parser_good_devices_and_monitors,
     new_parser_devices_connections_monitors,
-    new_parser_devices_monitors_connections
+    new_parser_devices_monitors_connections,
+    new_parser_good_devices
 ):
     """Test parse network works when no errors present in any simple files."""
-    assert new_parser_good_devices.parse_network()
     assert new_parser_good_devices_and_connections.parse_network()
-    assert new_parser_good_devices_and_monitors.parse_network()
     assert new_parser_devices_connections_monitors.parse_network()
     assert new_parser_devices_monitors_connections.parse_network()
+    assert new_parser_good_devices.parse_network()
 
 
 def test_parse_network_with_errors(
@@ -157,7 +156,8 @@ def test_parse_network_with_errors(
     new_parser_all_three_bad_devices,
     new_parser_all_three_bad_connections,
     new_parser_all_three_bad_monitors,
-    new_parser_invalid_char
+    new_parser_invalid_char,
+    new_parser_unconnected_inputs,
 ):
     """Test if parse network returns False when errors present in files."""
     assert not new_parser_bad_devices.parse_network()
@@ -167,8 +167,9 @@ def test_parse_network_with_errors(
     assert not new_parser_all_three_bad_connections.parse_network()
     assert not new_parser_all_three_bad_monitors.parse_network()
     assert not new_parser_invalid_char.parse_network()
+    assert not new_parser_unconnected_inputs.parse_network()
 
 
 def test_parse_network_comments(new_parser_comments):
     """Test parse network works when comments present in a simple file."""
-    assert new_parser_comments.parse_network()
+    assert not new_parser_comments.parse_network()

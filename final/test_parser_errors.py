@@ -614,7 +614,7 @@ def test_empty_file():
 @pytest.mark.parametrize("text_file, expected_number_errors",
                          [
                              ("within_devices.txt", 2),
-                             ("within_connections.txt", 3),
+                             ("within_connections.txt", 4),
                              ("within_monitors.txt", 3),
                          ])
 def test_unclosed_comment_handling(text_file, expected_number_errors):
@@ -629,3 +629,11 @@ def test_unclosed_comment_handling(text_file, expected_number_errors):
     final_error_count = parser_obj.error_count
 
     assert final_error_count == expected_number_errors
+
+
+def test_unconnected_inputs():
+    parser_obj = new_parser(f"test_files/unconnected_inputs.txt")
+
+    parser_obj.parse_network()
+    final_error_count = parser_obj.error_count
+    assert final_error_count == 1

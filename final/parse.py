@@ -148,6 +148,13 @@ class Parser:
                 if self._is_eof():
                     break
 
+        if not self.network.check_network():
+            unconnected = "Network is incomplete - all inputs must be " \
+                          "connected."
+            self.error_count += 1
+            print(unconnected)
+            self.error_message_list.append(unconnected)
+
         final_msg = (_("Completely parsed the definition file.") +
                      f" {self.error_count} " + _("error(s) found in total."))
         print(final_msg)
