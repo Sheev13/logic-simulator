@@ -149,7 +149,7 @@ def main(arg_list):
         app = App()
         builtins._ = wx.GetTranslation
         locale = wx.Locale()
-        locale.Init(wx.LANGUAGE_SPANISH)
+        locale.Init(wx.LANGUAGE_DEFAULT)
         locale.AddCatalogLookupPathPrefix('locales')
         locale.AddCatalog('base')
         gui = Gui("Logic Simulator", path, names, devices, network,

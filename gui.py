@@ -392,7 +392,7 @@ class Gui(wx.Frame):
             wx.ID_ANY,
             "",
             style=wx.TE_PROCESS_ENTER,
-            size=wx.Size(175, 25)
+            size=wx.Size(200, 25)
         )
         self.monitor_input.SetHint(_("Add new monitor"))
         self.monitor_input.SetFont(inputBoxFont)
@@ -440,7 +440,7 @@ class Gui(wx.Frame):
         self.clear_button.SetFont(wx.Font(go_font))
 
         self.command_line_input = wx.TextCtrl(
-            self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER, size=(450, 25)
+            self, wx.ID_ANY, "", style=wx.TE_PROCESS_ENTER, size=(550, 25)
         )
         self.command_line_input.SetHint(
             _("Command line input. See User Guide for help.")
@@ -526,6 +526,7 @@ class Gui(wx.Frame):
 
         # add widgets to smaller sizers
         self.file_name_sizer.Add(self.file_name, 0, wx.ALIGN_CENTER, 5)
+        self.file_name_sizer.AddStretchSpacer()
         self.file_name_sizer.AddStretchSpacer()
         self.file_name_sizer.Add(self.browse, 0, wx.ALIGN_CENTER, 5)
 
@@ -972,26 +973,26 @@ class Gui(wx.Frame):
                 wx.ICON_ERROR
             )
 
-        if newConnection.ShowModal() == wx.ID_OK:
-            choice = newConnection.GetSelection()
-            (dev, port) = allOutputIds[choice]
-            int = GuiCommandInterface(
-                "",
-                self.names,
-                self.devices,
-                self.network,
-                self.monitors
-            )
-            text, success = int.make_connection(
-                input_device_id,
-                input_port_id,
-                dev,
-                port
-            )
-            self.canvas.render(text)
-            if success:
-                newConnection.Destroy()
-                self._update_current_connections()
+        #if newConnection.ShowModal() == wx.ID_OK:
+        choice = newConnection.GetSelection()
+        (dev, port) = allOutputIds[choice]
+        int = GuiCommandInterface(
+            "",
+            self.names,
+            self.devices,
+            self.network,
+            self.monitors
+        )
+        text, success = int.make_connection(
+            input_device_id,
+            input_port_id,
+            dev,
+            port
+        )
+        self.canvas.render(text)
+        if success:
+            newConnection.Destroy()
+            self._update_current_connections()
 
     def on_spin_cycles(self, event):
         """Handle the event when the user changes the number of cycles."""
