@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2022-06-05 09:51+0100\n"
-"PO-Revision-Date: 2022-06-06 09:57+0100\n"
+"PO-Revision-Date: 2022-06-06 23:22+0100\n"
 "Last-Translator: \n"
 "Language-Team: GROUP 4\n"
 "Language: es\n"
@@ -460,6 +460,14 @@ msgstr "no puede analizar las conexiones si los dispositivos no están analizado
 #: parse.py:146
 msgid "Multiple monitors lists found."
 msgstr "Varias listas de monitores encontrados."
+
+#: parse.py:152
+msgid "Network is incomplete"
+msgstr "La red esta incompleta"
+
+#: parse.py:153
+msgid " - all inputs must be connected."
+msgstr " - todos insumos deben estar conectados."
 
 #: parse.py:158
 msgid "can't parse monitors if not done devices"

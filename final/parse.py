@@ -149,8 +149,8 @@ class Parser:
                     break
 
         if not self.network.check_network():
-            unconnected = "Network is incomplete - all inputs must be " \
-                          "connected."
+            unconnected = _("Network is incomplete") + \
+                          _(" - all inputs must be connected.")
             self.error_count += 1
             print(unconnected)
             self.error_message_list.append(unconnected)
