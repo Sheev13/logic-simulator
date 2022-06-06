@@ -188,11 +188,14 @@ class Parser:
                 if missing_semicolon:
                     if self.end_of_file:
                         break
-
-                    print(
-                        _("missed semicolon at end of device definition, ")
+                    # print warning about error recovery strategy
+                    # if a semicolon is missing it will skip the next device
+                    # entirely to find the next 'outer' semi-colon to
+                    # continue parsing with
+                    warn = _("missed semicolon at end of device definition, ")\
                         + _("will end up skipping the device after")
-                    )
+                    print(warn)
+                    self.error_message_list.append(warn)
 
                 if self.symbol.id == self.scanner.OPEN_CURLY:
                     parsing_devices = True
@@ -315,11 +318,7 @@ class Parser:
             if missing_semicolon:
                 if self.end_of_file:
                     return True
-                # print a warning that the entire device will be skipped?
-                # TODO: include line number etc
-                print(
-                    _("missed a semicolon in device id, ")
-                    + _("will skip to next device"))
+                # missed semicolon causes entire device to be skipped
                 break
 
             (
@@ -332,9 +331,7 @@ class Parser:
             if missing_semicolon:
                 if self.end_of_file:
                     return True
-                print(
-                    _("missed a semicolon in device kind, ")
-                    + _("will skip to next device"))
+                # missed semicolon causes entire device to be skipped
                 break
 
             if self.symbol.id == self.scanner.QUAL_KEYWORD_ID:
@@ -343,9 +340,7 @@ class Parser:
                 if missing_semicolon:
                     if self.end_of_file:
                         return True
-                    print(
-                        _("missed a semicolon in device qual, ")
-                        + _("will skip to next device"))
+                    # missed semicolon causes entire device to be skipped
                     break
             else:
                 device_qual = None
@@ -640,11 +635,6 @@ class Parser:
                     # the file we can break here
                     break
                 if missing_semicolon:
-                    # to improve, print a warning about how missing a
-                    # semicolon at the end of a connection definition will
-                    # cause the connection afterwards to be skipped due to
-                    # error recovery strategy - same for devices and monitors
-
                     if self.symbol.id == self.scanner.MONITOR_ID:
                         break
                     continue
@@ -902,11 +892,11 @@ class Parser:
                 if self.end_of_file:
                     break
                 if missing_semicolon:
-                    # will skip next monitor due to error recovery strategy
                     # if an error is found in _parse_monitor we should break
                     # here
                     if self.symbol.id == self.scanner.CONNECTIONS_ID:
                         break
+
                     continue
 
                 if self.symbol.type == self.scanner.NAME:
