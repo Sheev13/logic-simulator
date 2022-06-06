@@ -7,7 +7,6 @@ Classes:
 --------
 GuiCommandInterface - reads and parses user commands.
 """
-import wx
 
 
 class GuiCommandInterface:
