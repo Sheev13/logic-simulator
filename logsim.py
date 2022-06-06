@@ -98,7 +98,6 @@ class App(wx.App, InspectionMixin):
             setLang = supportedLangs[lang]
         else:
             setLang = wx.LANGUAGE_ENGLISH
-        print(setLang)
 
         if self.locale:
             assert sys.getrefcount(self.locale) <= 2
