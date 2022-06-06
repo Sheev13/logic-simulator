@@ -863,7 +863,7 @@ class Gui(wx.Frame):
         self.delete_connection = gb.GradientButton(
             self,
             wx.ID_ANY,
-            label=_("Delete Connection")
+            label=_("Replace Connection")
         )
 
         self.delete_connection.SetCursor(self.click)
