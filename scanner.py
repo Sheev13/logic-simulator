@@ -45,7 +45,11 @@ class Scanner:
     Public methods
     -------------
     get_symbol(self): Translates the next sequence of characters into a symbol
-                      and returns the symbol.
+                      and returns the symbol object.
+
+    show_error(symbol): Retrieves relevant lines around an error with a caret
+                        pointing to the error location and returns the
+                        printable error string.
     """
 
     def __init__(self, path, names):
@@ -287,7 +291,7 @@ class Scanner:
         return line
 
     def show_error(self, symbol):
-        """Print current input line with caret pointing to error location."""
+        """Print relevant lines with caret pointing to error location."""
         char = self.current_char
         file_pos = self.f.tell()
         linecount = self.linecount
