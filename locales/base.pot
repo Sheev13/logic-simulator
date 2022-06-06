@@ -128,7 +128,7 @@ msgid "Current Connections"
 msgstr ""
 
 #: gui.py:736
-msgid "Delete Connection"
+msgid "Replace Connection"
 msgstr ""
 
 #: gui.py:769
@@ -284,7 +284,7 @@ msgid "simulation, choose from the dropdown list "
 msgstr ""
 
 #: gui.py:1194
-msgid "next to 'Devices' and click 'Delete Connection."
+msgid "next to 'Devices' and click 'Replace Connection'."
 msgstr ""
 
 #: gui.py:1195

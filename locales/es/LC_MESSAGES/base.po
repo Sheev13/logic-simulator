@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2022-06-05 09:51+0100\n"
-"PO-Revision-Date: 2022-06-05 21:44+0100\n"
+"PO-Revision-Date: 2022-06-06 09:57+0100\n"
 "Last-Translator: \n"
 "Language-Team: GROUP 4\n"
 "Language: es\n"
@@ -221,10 +221,6 @@ msgstr "a"
 msgid "Current Connections"
 msgstr "Conexiones actuales"
 
-#: gui.py:850
-msgid "Delete Connection"
-msgstr "Eliminar conexión"
-
 #: gui.py:883
 msgid "Created by"
 msgstr "Creado por"
@@ -243,7 +239,7 @@ msgstr "Elige una nueva valor para conectar a "
 
 #: gui.py:944
 msgid "Replace Connection"
-msgstr "Reemplazar conexión"
+msgstr "Reemplazar Conexión"
 
 #: gui.py:952
 msgid "You must select a new connection for this input."
@@ -374,8 +370,8 @@ msgid "simulation, choose from the dropdown list "
 msgstr "simulación, elige de la lista desplegable "
 
 #: gui.py:1291
-msgid "next to 'Devices' and click 'Delete Connection."
-msgstr "al lado de 'Dispositivos' y haga clic 'Eliminar conexión'."
+msgid "next to 'Devices' and click 'Replace Connection'."
+msgstr "al lado de 'Dispositivos' y haga clic 'Reemplazar Conexión'."
 
 #: gui.py:1292
 msgid "Select a new output "

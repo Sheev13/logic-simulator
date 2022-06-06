@@ -65,7 +65,7 @@ class Utils:
             + "\n \n" +\
             _("To remove a connection before or during a ") \
             + _("simulation, choose from the dropdown list ") \
-            + _("next to 'Devices' and click 'Delete Connection.")\
+            + _("next to 'Devices' and click 'Replace Connection'.")\
             + _("Select a new output ") \
             + _("to connect to the input from the deleted ") \
             + _("connection.") \
