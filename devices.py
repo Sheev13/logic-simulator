@@ -119,7 +119,7 @@ class Devices:
             self.NOR,
             self.XOR,
             self.NOT] = self.names.lookup(gate_strings)
- 
+
         self.device_types = [self.CLOCK, self.SWITCH,
                              self.D_TYPE] = self.names.lookup(device_strings)
         self.dtype_input_ids = [self.CLK_ID, self.SET_ID, self.CLEAR_ID,

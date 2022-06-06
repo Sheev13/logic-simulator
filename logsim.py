@@ -34,15 +34,24 @@ supportedLangs = {
     u"es": wx.LANGUAGE_SPANISH
 }
 
+
 def _hook(obj):
     if obj is not None:
-        print (repr(obj))
+        print(repr(obj))
+
 
 builtins.__dict__['_'] = wx.GetTranslation
 
+
 class App(wx.App, InspectionMixin):
+    """Set up App class for GUI.
+
+    Necessary to update GUI language.
+    """
+
     def OnInit(self):
-        self.Init()
+        """Set display hook and update language."""
+        self.Init()  # InspectionMixin
         sys.displayhook = _hook
         self.appName = "Logic Simulator"
         self.doConfig()
@@ -54,7 +63,7 @@ class App(wx.App, InspectionMixin):
         return True
 
     def doConfig(self):
-        """Setup an application configuration file"""
+        """Set up an application configuration file."""
         # configuration folder
         sp = wx.StandardPaths.Get()
         self.configLoc = sp.GetUserConfigDir()
@@ -69,18 +78,18 @@ class App(wx.App, InspectionMixin):
         self.appConfig = wx.FileConfig(appName=self.appName,
                                        vendorName=u'who you wish',
                                        localFilename=os.path.join(
-                                       self.configLoc, "AppConfig"))
-    
+                                        self.configLoc, "AppConfig"))
+
         if not self.appConfig.HasEntry(u'Language'):
             # on first run we default to English
             self.appConfig.Write(key=u'Language', value=u'en')
-            
-        self.appConfig.Flush()
 
+        self.appConfig.Flush()
 
     def updateLanguage(self, lang):
         """
         Update the language to the requested one.
+
         Make *sure* any existing locale is deleted before the new
         one is created.
         """
@@ -101,7 +110,6 @@ class App(wx.App, InspectionMixin):
             self.locale.AddCatalog(langDomain)
         else:
             self.locale = None
-
 
 
 def main(arg_list):
@@ -152,8 +160,14 @@ def main(arg_list):
         locale.Init(wx.LANGUAGE_DEFAULT)
         locale.AddCatalogLookupPathPrefix('locales')
         locale.AddCatalog('base')
-        gui = Gui("Logic Simulator", path, names, devices, network,
-                    monitors)
+        gui = Gui(
+            "Logic Simulator",
+            path,
+            names,
+            devices,
+            network,
+            monitors
+        )
         gui.Show(True)
         app.MainLoop()
 

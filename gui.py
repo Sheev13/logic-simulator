@@ -974,8 +974,6 @@ class Gui(wx.Frame):
                 wx.ICON_ERROR
             )
 
-
-        #if newConnection.ShowModal() == wx.ID_OK:
         choice = newConnection.GetSelection()
         (dev, port) = allOutputIds[choice]
         int = GuiCommandInterface(
