@@ -29,6 +29,18 @@ class Utils:
         self.darkred = wx.Colour(139, 0, 0)
         self.black = wx.Colour(0, 0, 0)
 
+        self.click = wx.Cursor(wx.Image("./gui_utils/smallclick.png"))
+        self.info_cursor = wx.Cursor(wx.Image('gui_utils/smallinfo.png'))
+
+        self.fileFont = wx.Font(wx.FontInfo(18).FaceName("Mono").Bold())
+        self.genBtnFont = wx.Font(wx.FontInfo(10).FaceName("Mono").Bold())
+        self.helpFont = wx.Font(wx.FontInfo(10).FaceName("Mono"))
+        self.subHeadingFont = wx.Font(wx.FontInfo(12).FaceName("Mono"))
+        self.inputBoxFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL)
+        self.go_font = wx.Font(wx.FontInfo(14).FaceName("Rockwell"))
+        self.delete_font = wx.Font(wx.FontInfo(10).FaceName("Rockwell"))
+        self.error_box_font = wx.Font(wx.FontInfo(10).FaceName("Consolas"))
+
         """Initialise long strings."""
         self.first_parse_error_string = \
             _("Unable to load file. Please choose valid file.")

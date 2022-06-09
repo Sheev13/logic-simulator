@@ -329,10 +329,10 @@ class Gui(wx.Frame):
         self.path = path
         self.userint = UserInterface(names, devices, network, monitors)
 
-        """Initialise utils."""
+        """Initialise utils and standard display information."""
         self.utils = Utils()
-        self.click = wx.Cursor(wx.Image("gui_utils/smallclick.png"))
-        self.info_cursor = wx.Cursor(wx.Image('gui_utils/smallinfo.png'))
+        self.click = self.utils.click
+        self.info_cursor = self.utils.info_cursor
         self.standard_button_size = wx.Size(85, 36)
 
         """Initialise widgets and layout."""
@@ -356,14 +356,14 @@ class Gui(wx.Frame):
         self.SetBackgroundColour(self.utils.paleyellow)
 
         # Set fonts
-        fileFont = wx.Font(wx.FontInfo(18).FaceName("Mono").Bold())
-        genBtnFont = wx.Font(wx.FontInfo(10).FaceName("Mono").Bold())
-        helpFont = wx.Font(wx.FontInfo(10).FaceName("Mono"))
-        self.subHeadingFont = wx.Font(wx.FontInfo(12).FaceName("Mono"))
-        inputBoxFont = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL)
-        go_font = wx.Font(wx.FontInfo(14).FaceName("Rockwell"))
-        self.delete_font = wx.Font(wx.FontInfo(10).FaceName("Rockwell"))
-        self.errorBoxFont = wx.Font(wx.FontInfo(10).FaceName("Consolas"))
+        fileFont = self.utils.fileFont
+        genBtnFont = self.utils.genBtnFont
+        helpFont = self.utils.helpFont
+        self.subHeadingFont = self.utils.subHeadingFont
+        inputBoxFont = self.utils.inputBoxFont
+        go_font = self.utils.go_font
+        self.delete_font = self.utils.delete_font
+        self.errorBoxFont = self.utils.error_box_font
 
         # Canvas for drawing signals
         self.scrollable = wx.ScrolledCanvas(self, wx.ID_ANY)
