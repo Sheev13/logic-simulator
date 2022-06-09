@@ -293,7 +293,6 @@ class Parser:
             if self.unclosed_comment:
                 return
 
-        # print("Did not manage to parse the DEVICES list perfectly.")
         if self.error_count != 0:
             err = f"{self.error_count} " + _("error(s) found ") \
                   + _("when parsing the DEVICES list \n")
@@ -303,7 +302,6 @@ class Parser:
 
     def _parse_device(self, previous_errors):
         """Parse a single device."""
-        # print("Parsing a single device.")
         missing_device_semicolon = False
         device_qual_symbol = None  # initialising for semantic reporting
         device_kind_symbol = None  # initialising for semantic reporting
